@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Week 4: Algebraic Data Types</title>
+  <meta name="description" content="Week 4 Lecture Notes">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://kmicinski.com/cis352-s25/css/main.css">
+  <link rel="canonical" href="https://kmicinski.com/cis352-s25/notes/week/4">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="https://kmicinski.com/cis352-s25/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+/>
+</head>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href=https://kmicinski.com//cis352-s25/>CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href=https://kmicinski.com//cis352-s25/#schedule>Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href=https://kmicinski.com//cis352-s25/learning-objectives>Objectives</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href=https://kmicinski.com//cis352-s25/syllabus>Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s25/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s25/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <!-- <header class="post-header"> -->
+  <!--   <h1 class="post-title" itemprop="name headline">Week 4: Algebraic Data Types</h1> -->
+  <!-- </header> -->
+
+  <div class="post-content" itemprop="articleBody">
+    <h2 id="week-4-lecture-notes">Week 4 Lecture Notes</h2>
+
+<ul>
+  <li>
+    <p>I have decided to shift the schedule around a little bit to match
+course pacing, which does not affect the exam topics. I will talk
+about algebraic data and pattern matching this week in class.</p>
+  </li>
+  <li>
+    <p>Code links from previous classes (the ones I have) are on Blackboard.</p>
+  </li>
+  <li>
+    <p>Our goal today is to figure out how to use just simple cons cells to
+build tree-shaped data structures. Tree-shaped, or <em>algebraic</em> data
+is a ubiqutuous topic in functional programming, which emphasizes
+recursion (and induction) over tree-shaped data types, with finite
+objects built using some (finite) number of <em>constructors</em>
+(functions) each of which has a corresponding sequence of arguments
+(of some specific arity).</p>
+  </li>
+  <li>
+    <p>We will not study the formalization of algebraic data right now, but
+to briefly summarize the mathematics: a sequence of arguments (as
+input to a constructor) is characterized by a product type (a tuple
+is characterized by a <code class="language-plaintext highlighter-rouge">*</code> operation), and the ability to have
+multiple constructors is characterized by a sum type. For this
+reason, we call this kind of tree-shaped data, <em>algebraic data</em>.</p>
+  </li>
+  <li>
+    <p>Last week in class, we talked about building lists with <code class="language-plaintext highlighter-rouge">cons</code>. One
+key idea to establish is that every list can be canonically
+represented in the form:</p>
+  </li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(cons x0 (cons x1 ... (cons xn '()) ...))
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <p>Every list is ultimately written something like the above, with each
+individual cons cell represented as a heap-allocated (not with
+<code class="language-plaintext highlighter-rouge">malloc</code> but some custom allocator that allocates cons cells
+specifically) struct (a pair of the <code class="language-plaintext highlighter-rouge">car</code> and the <code class="language-plaintext highlighter-rouge">cdr</code>).</p>
+  </li>
+  <li>
+    <p>In Racket, lists are untyped, dynamic errors on lists happen when
+the expected length (or type of the underlying data) does not match
+the type expected by the code. This means that for now, we don’t
+have to think about the types–but we do have to be careful with how
+we use data.</p>
+  </li>
+  <li>
+    <p>We will introduce the idea of “type predicates.” A type predicate is
+a Racket function (returning only <code class="language-plaintext highlighter-rouge">#t</code> or <code class="language-plaintext highlighter-rouge">#f</code>) which classifies
+whether a given Racket value inhabits the type being defined. For
+example, the following type predicate defines a simple type of
+binary tree where each node contains some arbitrary value–there is
+no type checking imposed upon the value <code class="language-plaintext highlighter-rouge">v</code> carried by the node.</p>
+  </li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(define (tree? t)
+  (match t
+    ['empty #t]
+    [`(node ,v ,(? tree? t0) ,(? tree? t1)) #t]
+    [_ #f]))
+</code></pre></div></div>
+
+<p>The above code uses pattern matching, we will walk through it in class
+and carefully explain this example. Any time where you are using
+pattern matching, you could also (with more typing) be explicit, and
+build a large <code class="language-plaintext highlighter-rouge">cond</code> instead; using <code class="language-plaintext highlighter-rouge">cond</code>, each condition checks
+whether the pattern matches, and each corresponding branch extracts
+the matched elements and computes with them. This is basically what
+the pattern matcher is doing under the hood (but with the ability to
+reason about some properties of the pattern and optimize the search,
+potentially).</p>
+
+<p>Example trees here include:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(tree? 'empty) ;; #t
+(tree? '(node 1 empty empty)) ;; #t
+(tree? '(node 25 (node "hello" empty empty) empty)) ;; #t
+(tree? '(node "hello" 1 2)) ;; #f
+</code></pre></div></div>
+
+<ul>
+  <li>Our type predicate will typically have the pattern:</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(define (type? t)
+  (match t
+    [... #t]
+	...
+	[_ #f]))
+</code></pre></div></div>
+
+<p>In general, an algebraic type has a set of constructors–the type
+predicate will be formed by building a <code class="language-plaintext highlighter-rouge">match</code> statement over each of
+these constructors. For example, we might imagine a specification for
+a set of unary or binary trees:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(define (ubtree? t)
+  (match t
+    ['empty #t]
+    [`(unary ,v ,(? ubtree? t)) #t]
+    [`(binary ,v ,(? ubtree? t0) ,(? ubtree? t1)) #t]
+    [_ #f]))
+</code></pre></div></div>
+
+<p>We can read the Racket code as implementing a common English language
+description of the corresponding inductive definition of lists (using
+structural recursion to define the shape of lists):</p>
+
+<p>An value <code class="language-plaintext highlighter-rouge">t</code> is a <code class="language-plaintext highlighter-rouge">ubtree?</code> iff it:</p>
+<ul>
+  <li>is the specific symbol <code class="language-plaintext highlighter-rouge">'empty</code></li>
+  <li>A list of length three beginning with <code class="language-plaintext highlighter-rouge">'unary</code> is a <code class="language-plaintext highlighter-rouge">ubtree?</code>,
+assuming the third element also has to be a <code class="language-plaintext highlighter-rouge">ubtree?</code>.</li>
+  <li>A list of length four beginning with <code class="language-plaintext highlighter-rouge">'binary</code> is a <code class="language-plaintext highlighter-rouge">ubtree?</code>,
+assuming its last two elements are also <code class="language-plaintext highlighter-rouge">ubtree?</code>s.</li>
+  <li>Last, and importantly, no other types of values are <code class="language-plaintext highlighter-rouge">ubtree?s</code>.</li>
+</ul>
+
+<p>We eschew type theory at the moment, and in the first parts of this
+course we will focus on operational semantics. The role of type theory
+is to give a set of rules which can be run (and will necessarily
+terminate) to decide these stipulations are met. In Racket, we do not
+have a static type system–it is easier to check these properties
+on-the-fly and allow them to dynamically fail. Also, in my
+descriptions so far I’m cheating by not constraining the type of <code class="language-plaintext highlighter-rouge">v</code>
+in any way–in a static type system, we’d have to give <code class="language-plaintext highlighter-rouge">v</code> a type as
+well, and features like parametric polymorphism offer one way to
+achieve this statically.</p>
+
+<p>So to sum it up, an algebraic data type is a type that is built out of
+multiple constructors, each of which is allowed to take a specific
+sequence of arguments. We will not explicitly build this type into the
+type system in Racket (as Racket lacks a type system), but instead we
+will write “type predicates,” functions which implement all of the
+runtime checks necessary to operationalize the type.</p>
+
+<p>Programming with algebraic data involves matching on it. The great
+news here is that <em>every usage of algebraically-defined data must
+follow the same template as the type definition itself</em>. This is not
+just an idiom–it is a requirement to ensure that the semantics is
+total, and prevent dynamic errors in the form of match failures. For
+example, let’s say we have <code class="language-plaintext highlighter-rouge">distance?</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(define (distance? d)
+  (match d
+    [`(,(? integer?) feet) #t]
+    [`(,(? integer?) miles) #t]
+    [_ #f]))
+</code></pre></div></div>
+
+<p>Now, if we have a function that expects distances, it would be an
+error to write something like:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>;; distance? -&gt; integer?
+(define (to-inches d)
+  (match d
+    [`(,i feet) (* 12 i)]))
+</code></pre></div></div>
+
+<p>The issue is that the match pattern is <em>non-exhaustive</em> with respect to <code class="language-plaintext highlighter-rouge">distance?</code>. Again, just to be clear–the comment is not enforced by Racket <em>at all</em>, it is a conceptual annotation of what expect the static type of the function to be. To see the bug, we can look at the following call:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(to-inches '(5 miles))
+</code></pre></div></div>
+
+<p>Now, <code class="language-plaintext highlighter-rouge">to-inches</code> has no match pattern for <code class="language-plaintext highlighter-rouge">'(5 miles)</code>, and so it
+raises a dynamic error. If Racket had a static type system (like Typed
+Racket does), it could statically (at compile time) tell you that the
+match was non-total–however, this is also an optional feature
+(sometimes a compiler warning) in practice. But to us, it doesn’t seem
+very meaningful of a distinction, since we’re still seeing the bug at
+the same time. This becomes more important in larger developments,
+where errors manifest possibly far away from the code in which they
+originated (the “root cause” of the bug).</p>
+
+<h2 id="read-the-documentation">Read the Documentation</h2>
+
+<p>Here: <a href="https://docs.racket-lang.org/guide/match.html">https://docs.racket-lang.org/guide/match.html</a></p>
+
+<h2 id="exercises">Exercises</h2>
+
+<ul>
+  <li>Let’s define a <code class="language-plaintext highlighter-rouge">shape?</code> to be one of the following:
+    <ul>
+      <li>Rectangles can be shapes, and have to include points <code class="language-plaintext highlighter-rouge">x0, y0</code> and <code class="language-plaintext highlighter-rouge">x1, y1</code></li>
+      <li>Circles can be shapes, and have a starting point <code class="language-plaintext highlighter-rouge">x0, y0</code> and a radius <code class="language-plaintext highlighter-rouge">r</code> which is a real number</li>
+      <li>No other things are shapes.</li>
+    </ul>
+  </li>
+  <li>
+    <p>Write this as a Racket type predicate.</p>
+  </li>
+  <li>Define the function <code class="language-plaintext highlighter-rouge">area</code> on the type predicate <code class="language-plaintext highlighter-rouge">shape?</code>.</li>
+</ul>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '25) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src=https://kmicinski.com//cis352-s25/bower_components/jquery/dist/jquery.min.js></script>
+<script src=https://kmicinski.com//cis352-s25/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js></script>
+
+
+  </body>
+
+</html>

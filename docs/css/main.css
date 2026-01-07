@@ -85,7 +85,7 @@ a {
   text-decoration: none;
 }
 a:visited {
-  color: #1756a9;
+  color: rgb(22.9483471074, 86.2541322314, 168.5516528926);
 }
 a:hover {
   color: #111;
@@ -136,7 +136,7 @@ pre > code {
  */
 .wrapper {
   max-width: -webkit-calc(850px - (30px * 2));
-  max-width: calc(850px - (30px * 2));
+  max-width: calc(850px - 30px * 2);
   margin-right: auto;
   margin-left: auto;
   padding-right: 30px;
@@ -214,7 +214,7 @@ pre > code {
  * Site header
  */
 .site-header {
-  border-top: 5px solid #424242;
+  border-top: 5px solid rgb(66.25, 66.25, 66.25);
   border-bottom: 1px solid #e8e8e8;
   min-height: 56px;
   position: relative;
@@ -229,7 +229,7 @@ pre > code {
   float: left;
 }
 .site-title, .site-title:visited {
-  color: #424242;
+  color: rgb(66.25, 66.25, 66.25);
 }
 
 .site-nav {
@@ -270,7 +270,7 @@ pre > code {
     height: 15px;
   }
   .site-nav .menu-icon > svg path {
-    fill: #424242;
+    fill: rgb(66.25, 66.25, 66.25);
   }
   .site-nav .trigger {
     clear: both;
@@ -283,10 +283,12 @@ pre > code {
   .site-nav .page-link {
     display: block;
     padding: 5px 10px;
-    margin-left: 20px;
   }
   .site-nav .page-link:not(:last-child) {
     margin-right: 0;
+  }
+  .site-nav .page-link {
+    margin-left: 20px;
   }
 }
 
@@ -323,35 +325,35 @@ pre > code {
 
 .footer-col-1 {
   width: -webkit-calc(35% - (30px / 2));
-  width: calc(35% - (30px / 2));
+  width: calc(35% - 30px / 2);
 }
 
 .footer-col-2 {
   width: -webkit-calc(20% - (30px / 2));
-  width: calc(20% - (30px / 2));
+  width: calc(20% - 30px / 2);
 }
 
 .footer-col-3 {
   width: -webkit-calc(45% - (30px / 2));
-  width: calc(45% - (30px / 2));
+  width: calc(45% - 30px / 2);
 }
 
 @media screen and (max-width: 850px) {
   .footer-col-1,
   .footer-col-2 {
     width: -webkit-calc(50% - (30px / 2));
-    width: calc(50% - (30px / 2));
+    width: calc(50% - 30px / 2);
   }
   .footer-col-3 {
     width: -webkit-calc(100% - (30px / 2));
-    width: calc(100% - (30px / 2));
+    width: calc(100% - 30px / 2);
   }
 }
 @media screen and (max-width: 600px) {
   .footer-col {
     float: none;
     width: -webkit-calc(100% - (30px / 2));
-    width: calc(100% - (30px / 2));
+    width: calc(100% - 30px / 2);
   }
 }
 /**
@@ -447,24 +449,20 @@ pre > code {
 }
 
 /*********************************************/
-/** Week Heading Styling                   **/
+/** Week Header Styling                    **/
 /*********************************************/
 .week-header {
-  background-color: #ffffff; /* subtle background color */
-  padding: 0.8rem 1rem; /* space around heading */
-  border-bottom: 1px solid #ccc; /* small bar below */
-  margin-bottom: 1rem; /* space after the heading */
+  background-color: #ffffff;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 1rem;
 }
 
 .week-header h2 {
-  margin: 0; /* remove default H2 margin */
-  font-size: 2rem; /* slightly smaller than default H2 */
-  color: #444; /* darker text color */
-  font-weight: 600; /* heavier weight for emphasis */
-}
-
-.week-header h2 {
+  margin: 0;
   font-size: 1.1rem;
+  color: #444;
+  font-weight: 600;
 }
 
 /*********************************************/
@@ -941,7 +939,7 @@ ul p {
   position: relative;
   text-align: center;
   background-color: black;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, 0.8) 100%), linear-gradient(to left, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, 0.8) 100%), url(https://kmicinski.com//cis352-s25/assets/img/bannershort.png);
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, 0.8) 100%), linear-gradient(to left, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, 0.8) 100%), url(https://kmicinski.com//cis352-f23/assets/img/bannershort.jpeg);
   background-size: 800px 250px;
   height: 250px;
   background-repeat: no-repeat;
