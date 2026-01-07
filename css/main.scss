@@ -1,0 +1,493 @@
+---
+# Only the main Sass file needs front matter (the dashes are enough)
+---
+@charset "utf-8";
+
+//@import url("//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css");
+@import url("https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css");
+@import url("https://fonts.googleapis.com/css?family=Open+Sans");
+
+// Our variables
+$base-font-family: 'Open Sans', sans-serif;
+$base-font-size:   16px;
+$base-font-weight: 300;
+$small-font-size:  $base-font-size * 0.875;
+$base-line-height: 1.5;
+
+$spacing-unit:     30px;
+
+$text-color:       #111;
+$background-color: #fdfdfd;
+$brand-color:      #2a7ae2;
+
+$grey-color:       #828282;
+$grey-color-light: lighten($grey-color, 40%);
+$grey-color-dark:  darken($grey-color, 25%);
+
+// Width of the content area
+$content-width:    850px;
+
+$on-palm:          600px;
+$on-laptop:        850px;
+
+$baseurl: '{{ site.baseurl }}';
+
+// Use media queries like this:
+// @include media-query($on-palm) {
+//     .wrapper {
+//         padding-right: $spacing-unit / 2;
+//         padding-left: $spacing-unit / 2;
+//     }
+// }
+@mixin media-query($device) {
+    @media screen and (max-width: $device) {
+        @content;
+    }
+}
+
+// Import partials from `sass_dir` (defaults to `_sass`)
+@import
+        "base",
+        "layout",
+        "syntax-highlighting"
+;
+
+
+#curpic {
+    z-index: 2;
+}
+
+blockquote {
+    margin-top : 10px;
+    margin-left : 20px;
+    background-color: #f6ebc1;
+    border-left: 5px solid #fce27c;
+    padding: .5em 1em;
+}
+
+.smallright {
+  float: right;
+  width: 350px;
+}
+
+article img {
+  margin: auto;
+  width: 80%;
+}
+
+.main p {
+  text-indent: 0px
+}
+
+.post-link h2 { 
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.main h2 {
+  margin-top: .7em;
+  margin-bottom: .3em;
+}
+
+article p { 
+} 
+
+ul p { 
+   text-indent: 0px;
+}
+
+@media (min-width: 768px) {
+    .bs-docs-masthead {
+        //padding: 80px 0;
+    }
+}
+
+.jumbopic {
+    height: 100px;
+}
+
+.introtext h1,h2,h3,h4 { 
+    margin-bottom: 2px;
+}
+
+.introtext ul li { 
+    display: inline
+}
+
+.introtext h1,h2,h3,h4 {
+    //text-shadow: 2px 2px 2px rgba(255,255,255,.5);
+}
+
+.areadesc {
+    vertical-align: top;
+    text-align: center;
+    padding: 5px;
+    padding-left: 20px;
+}
+
+.areadesc h2,h4 {
+    margin-top: 0px;
+}
+
+.areadescleft {
+    vertical-align: top;
+    text-align: left;
+    padding: 5px;
+    padding-left: 20px;
+}
+
+.areadesc hr {
+    border-top: 2px solid #ccc;
+}
+
+.post-link h2 { 
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+//p {
+//  text-indent: 1em;
+//}
+
+#topcontainer {
+    max-width: $content-width;
+    width: $content-width;
+    left: 50%;
+    position: absolute;
+    top: 0px;
+}
+
+#topcontent {
+    width: $content-width;        
+    position: absolute;
+    text-align: left;
+    top: 340px;
+    color: #fff;
+    left: -50%
+}
+
+#mainpagecontent {
+    margin-top: 6.5em;
+}
+
+#mainpgvenn {
+    margin-top: 50px;
+    margin-bottom: 40px;
+}
+
+#mainwrapper {
+    margin-right: auto;
+    margin-left: auto;
+    max-width: $content-width;  //width
+}
+
+#mainwrapper h2 {
+    margin-top: 1em;
+    margin-bottom: .4em;
+}
+
+#mainwrapper h3 {
+    margin-top: .7em;
+    margin-bottom: .4em;
+}
+
+#topblurb {
+    margin-top: 25px;
+    color: black;
+}
+
+.compsecurity {
+  text-shadow: 2px 2px 3px #111, 0 0 25px #828282, 0 0 5px black
+}
+
+.introtext a {
+    color: white;
+}
+
+.blackhat {
+  color: black;
+  //     text-shadow: 2px 2px 4px #000000;
+  text-shadow: 1px 1px 2px white, 0 0 25px white, 0 0 5px white;
+  //text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ffffff;
+}
+
+.introtext a:hover {
+    color: cyan;
+}
+
+.researchareas {
+    witdh: 500px;
+}
+
+.introtext {
+  padding-top: 80px;
+  color: white;
+}
+
+#practice {
+  padding-top: 60px;
+}
+
+.introtext h1 {
+  font-size: 50px;
+}
+
+.introtext h2 {
+  font-size: 30px;
+}
+
+
+.bs-docs-header {
+    position: relative;
+    //padding: 30px 15px;
+    text-align: center;
+    background-color: black; // #212121;
+    background-image: 
+//    linear-gradient(to bottom, rgba(0, 0, 0, 0) 20%, rgba(0, 0, 0, .8) 100%), // 33
+  //  linear-gradient(to top, rgba(0, 0, 0, .2) 80%, rgba(0, 0, 0, .8) 100%), // 33
+    linear-gradient(to right, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, .8) 100%), 
+    linear-gradient(to left, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, .8) 100%), 
+    url({{ "/assets/img/bannershort.jpeg" | absolute_url }});
+    background-size: 800px 250px;
+    height: 250px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#researchareas {
+    magin: auto;
+}
+
+.outcomes {
+  font-size: 15pt;
+}
+
+.obj {
+  margin-bottom: 15px;
+  margin-top: 20px;
+}
+
+.post-link {
+    font-size: 12pt;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.social-media-list .glyphicon-calendar {
+    margin-right: 5px;
+}
+
+.projdesc {
+  border-right: 3px double #828282;
+  border-bottom: 0px solid #828282;
+}
+
+.grade-table {
+  margin-top: 30px;
+  border-bottom: 1px solid #dee2e6;
+  border-spacing: 0;
+  border-collapse: separate;
+  text-align: center;
+}
+
+.smgradecol {
+  border-right: 1px dotted #828282;
+}
+
+.lggradecol {
+  border-right: 3px double #828282;
+}
+
+.smhgradecol {
+  border-top: 0px dotted #828282;
+  border-right: 1px dotted #828282;
+}
+
+.lghgradecol {
+  border-top: 0px dotted #828282;
+  border-right: 3px double #828282;
+}
+
+
+.examdesc {
+  border-right: 3px double #828282;
+  border-bottom: 0px solid #828282;
+}
+
+.card-body {
+  padding: 5px;
+}
+
+.pcardtitle {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  text-align: center
+}
+
+.tagbox {
+    font-size: 11pt;
+}
+
+.card p {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  margin-bottom: 1px;
+}
+
+#projectquestions {
+  margin-top: 0px;
+  margin-bottom: 5px;
+}
+
+#examquestions {
+  border-top: 1px dotted black;
+  margin-top: 0px;
+  padding-top: 5px;
+}
+
+.egrade {
+  margin-top: 5px;
+}
+
+.participation {
+  margin-top: 15px;
+  font-size: 11pt;
+  line-height: 1;
+}
+
+// Syllabus stuff
+.egrade {
+  margin-left: 60px;
+}
+
+.pfail {
+  stroke: lightgrey;
+  transition: stroke-dashoffset 1s linear;
+  stroke-width: 1em;
+}
+
+.pminimal {
+  stroke: #FFC0CB;
+  transition: stroke-dashoffset 1s linear;
+  stroke-width: 1em;
+}
+
+.psat {
+  stroke: lightgreen;
+  transition: stroke-dashoffset 1s linear;
+  stroke-width: 1em;
+}
+
+.pex {
+  stroke: gold;
+  transition: stroke-dashoffset 1s linear;
+  stroke-width: 1em;
+}
+
+.eex {
+  stroke: gold;
+  transition: stroke-dashoffset 1s linear;
+  stroke-width: 1em;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+}
+
+.esat {
+  stroke: lightgreen;
+  transition: stroke-dashoffset 1s linear;
+  stroke-dashoffset: 0;
+  stroke-width: 1em;
+}
+
+.efail {
+  stroke: lightgrey;
+  transition: stroke-dashoffset 1s linear;
+  stroke-width: 1em;
+}
+
+#projectquestions {
+  position: relative;
+}
+
+#examquestions {
+  position: relative;
+}
+
+// .pgrade {
+//   display: block;
+//   height: 300px;
+//   width: 300px;
+//   margin: 2em auto;
+//   border-radius: 100%;
+//   position: relative;
+// }
+#exams:after {
+  position: absolute;
+  display: block;
+  height: 100px;
+  width: 100px;
+  left: 43%;
+  top: 33%;
+  content: attr(grade);
+  margin-top: 0px;
+  margin-left: 0px;
+  border-radius: 100%;
+  font-size: 2.5em;
+  //text-shadow: 0 0 0.5em black;
+}
+
+#projects:after {
+  position: absolute;
+  display: block;
+  left: 43%;
+  top: 26%;
+  content: attr(grade);
+  margin-top: 0px;
+  margin-left: 0px;
+  border-radius: 100%;
+  font-size: 2.5em;
+  //text-shadow: 0 0 0.5em black;
+}
+
+.leftside {
+  padding-top: 0px;
+  padding-left: 0px;
+  padding-right: 25px;
+}
+
+.rightside {
+  padding-top: 100px;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+#min {
+  text-align: center;
+}
+
+.points {
+  font-size: 14pt;
+  line-height: 1.4;
+  margin-bottom: 0px;
+  text-align: center;
+}
+
+
+/* .post-preview { */
+/*     position: relative; */
+/* } */
+
+/* .post-preview ::after { */
+/*     content  : ""; */
+/*     position : absolute; */
+/*     z-index  : 1; */
+/*     bottom   : 0; */
+/*     left     : 0; */
+/*     pointer-events   : none; */
+/*     background-image : linear-gradient(to bottom,  */
+/*                                        rgba(255,255,255, 0),  */
+/*                                        rgba(255,255,255, 1) 90%); */
+/*     width    : 100%; */
+/*     height   : 4em; */
+/* } */

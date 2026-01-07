@@ -1,0 +1,18 @@
+# Site settings
+title: CIS352
+baseurl: "cis352-f23"
+url: "https://kmicinski.com/"
+description: "CMSC352--Principles of Programming Languages (Fall '23) at Syracuse"
+permalink: pretty
+
+# Build settings
+#markdown: redcarpet
+
+# Build posts to appear in the future
+future: true
+
+defaults:
+  - scope:
+      path: "assets/img"
+    values:
+      image: true
