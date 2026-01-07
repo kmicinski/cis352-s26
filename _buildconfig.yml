@@ -1,8 +1,8 @@
 # Site settings
 title: CIS352
-baseurl: "cis352-f23"
+baseurl: "cis352-s26"
 url: "https://kmicinski.com/"
-description: "CMSC352--Principles of Programming Languages (Fall '23) at Syracuse"
+description: "CMSC352--Principles of Programming Languages (Spring '26) at Syracuse"
 permalink: pretty
 
 # Build settings

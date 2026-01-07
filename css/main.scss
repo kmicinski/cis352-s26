@@ -247,7 +247,7 @@ ul p {
   //  linear-gradient(to top, rgba(0, 0, 0, .2) 80%, rgba(0, 0, 0, .8) 100%), // 33
     linear-gradient(to right, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, .8) 100%), 
     linear-gradient(to left, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, .8) 100%), 
-    url({{ "/assets/img/bannershort.jpeg" | absolute_url }});
+    url({{ "/assets/img/bannershort.png" | absolute_url }});
     background-size: 800px 250px;
     height: 250px;
     background-repeat: no-repeat;
