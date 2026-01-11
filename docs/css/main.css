@@ -939,7 +939,7 @@ ul p {
   position: relative;
   text-align: center;
   background-color: black;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, 0.8) 100%), linear-gradient(to left, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, 0.8) 100%), url(http://localhost:4000/assets/img/bannershort.png);
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, 0.8) 100%), linear-gradient(to left, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, 0.8) 100%), url(https://kmicinski.com//cis352-s26/assets/img/bannershort.png);
   background-size: 800px 250px;
   height: 250px;
   background-repeat: no-repeat;
