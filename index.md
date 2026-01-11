@@ -13,7 +13,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-book-open reading-icon"></i>
-          <a href="https://kmicinski.com/cis352-s26/notes/week/1">Week 1 Lecture notes</a>
+          <a>Week 1 Lecture notes (to be posted...)</a>
         </div>
       </div>
     </li>
@@ -34,7 +34,7 @@ layout: mainpage
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
             <a href="https://kmicinski.com/cis352-s26/assets/slides/firstday.pdf">
-              Lecture Slides
+              Lecture Slides 
             </a>
           </li>
         </ul>
@@ -115,6 +115,23 @@ layout: mainpage
         </ul>
       </div>
     </li>
+	    <!-- Homework P1 -->
+    <li class="session-item">
+      <div class="date-col">1/20</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-code project-icon"></i>
+          Homework P1: Tic-Tac-Toe -- Released 1/20, <i>due 2/3</i>
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=ApIXt_Exf7g">Tic-Tac-Toe Video</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+
     <!-- Session: 1/22 -->
     <li class="session-item">
       <div class="date-col">1/22</div>
@@ -127,22 +144,6 @@ layout: mainpage
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://www.youtube.com/watch?v=0y325A82vMc&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=7">Lecture Video</a>
-          </li>
-        </ul>
-      </div>
-    </li>
-    <!-- Project P1 -->
-    <li class="session-item">
-      <div class="date-col">1/22</div>
-      <div class="session-col">
-        <div class="session-title">
-          <i class="fa-solid fa-code project-icon"></i>
-          Project P1: Interpreting LVar -- Released 1/22, <i>due 2/10</i>
-        </div>
-        <ul class="resources-list">
-          <li>
-            <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=ApIXt_Exf7g">Tic-Tac-Toe Video</a>
           </li>
         </ul>
       </div>
@@ -211,7 +212,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-book-open reading-icon"></i>
-          <a href="https://kmicinski.com/cis352-s26/notes/week/4">Week 3 Lecture notes</a>
+          <a href="https://kmicinski.com/cis352-s26/notes/week/4">(OLD) Week 3 Lecture notes</a>
         </div>
       </div>
     </li>
@@ -244,6 +245,22 @@ layout: mainpage
         </ul>
       </div>
     </li>
+    <li class="session-item deadline">
+      <div class="date-col">2/3</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-calendar-check deadline-icon"></i>
+          Homework P1 Deadline
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-upload"></i>
+            <a href="https://kmicinski.com/cis352-s26/projects/1">Submit Homework by 2/3</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+
     <li class="session-item">
       <div class="date-col">2/3</div>
       <div class="session-col">
@@ -287,46 +304,30 @@ layout: mainpage
 </div>
 <div class="week-schedule">
   <ul>
-    <!-- Session: 2/10 P1 Deadline -->
-    <li class="session-item deadline">
-      <div class="date-col">2/10</div>
-      <div class="session-col">
-        <div class="session-title">
-          <i class="fa-solid fa-calendar-check deadline-icon"></i>
-          Project P1 Deadline
-        </div>
-        <ul class="resources-list">
-          <li>
-            <i class="fa-solid fa-upload"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/1">Submit Project by 2/10</a>
-          </li>
-        </ul>
-      </div>
-    </li>
     <!-- Session: 2/10 -->
     <li class="session-item">
       <div class="date-col">2/10</div>
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Representing Graphs in Racket, Transitive Closure
+          Defining Transitive Closure via Natural Deduction, Graphs in Racket
         </div>
         <ul class="resources-list">
         </ul>
       </div>
     </li>
-    <!-- Session: 2/12 Project P2 -->
+    <!-- Session: 2/12 Homework P2 -->
     <li class="session-item">
       <div class="date-col">2/12</div>
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-code project-icon"></i>
-          Project P2: Transitive Closure -- Released (Due 2/26)
+          Homework P2: TBA -- Released (Due 2/26)
         </div>
         <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/2">Project Details</a>
+            <a href="https://kmicinski.com/cis352-s26/projects/2">Homework Details</a>
           </li>
         </ul>
       </div>
@@ -376,7 +377,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-file-lines notes-icon"></i>
-          Exam 1 (in class, 20%) - Code Comprehension: Racket fundamentals, recursion, interpreters
+          Exam 1 (in class, 20%) 
         </div>
       </div>
     </li>
@@ -415,12 +416,12 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-calendar-check deadline-icon"></i>
-          Project P2 Deadline
+          Homework P2 Deadline
         </div>
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-upload"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/2">Submit Project by 2/26</a>
+            <a href="https://kmicinski.com/cis352-s26/projects/2">Submit Homework by 2/26</a>
           </li>
         </ul>
       </div>
@@ -480,12 +481,12 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-code project-icon"></i>
-          Project P3: Scheme Interpreter -- Released (Due 3/24)
+          Homework P3: TBA -- Released (Due 3/24)
         </div>
         <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=-TN--YqcJhI&ab_channel=KristopherMicinski">Project Video</a>
+            <a href="https://www.youtube.com/watch?v=-TN--YqcJhI&ab_channel=KristopherMicinski">Homework Video</a>
           </li>
         </ul>
       </div>
@@ -582,12 +583,12 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-calendar-check deadline-icon"></i>
-          Project P3 Deadline
+          Homework P3 Deadline
         </div>
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-upload"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/3">Submit Project by 3/24</a>
+            <a href="https://kmicinski.com/cis352-s26/projects/3">Submit Homework by 3/24</a>
           </li>
         </ul>
       </div>
@@ -608,7 +609,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-file-lines notes-icon"></i>
-          Exam 2 (in class, 20%) - Code Comprehension: Lambda calculus, semantics, Church encoding
+          Exam 2 (in class, 20%)
         </div>
       </div>
     </li>
@@ -652,12 +653,12 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-code project-icon"></i>
-          Project 4 -- Released (Due 4/21)
+          Homework 4 -- Released (Due 4/21)
         </div>
         <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/4">Project Details</a>
+            <a href="https://kmicinski.com/cis352-s26/projects/4">Homework Details</a>
           </li>
         </ul>
       </div>
@@ -677,14 +678,8 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Type Inference via Constraint Solving (Hindley-Milner)
+          Parametric Polymorphism and System F
         </div>
-        <ul class="resources-list">
-          <li>
-            <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/types-part2.pdf">Lecture Slides</a>
-          </li>
-        </ul>
       </div>
     </li>
     <!-- Session: 4/9 -->
@@ -693,8 +688,14 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Polymorphism: Objects and Generics
+          Hindley-Milner Type Inference and Short Lecture: Objects vs. Closures
         </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/types-part2.pdf">Lecture Slides (provisional...)</a>
+          </li>
+        </ul>
       </div>
     </li>
   </ul>
@@ -741,12 +742,12 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-calendar-check deadline-icon"></i>
-          Project P4 Deadline
+          Homework P4 Deadline
         </div>
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-upload"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/4">Submit Project by 4/21</a>
+            <a href="https://kmicinski.com/cis352-s26/projects/4">Submit Homework by 4/21</a>
           </li>
         </ul>
       </div>
@@ -767,7 +768,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-file-lines notes-icon"></i>
-          Final Exam (in class, 20%) - Code Comprehension: Type systems
+          Final Exam (in class, 20%) 
         </div>
       </div>
     </li>
