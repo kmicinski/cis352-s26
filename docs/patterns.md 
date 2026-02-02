@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <title>Pattern Matching</title>
-  <meta name="description" content="## Topics">
+  <meta name="description" content="[Link to code](https://gist.github.com/kmicinski/456e65ec3cafaa750348df305e8a2466)">
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -86,7 +86,9 @@
   <!-- </header> -->
 
   <div class="post-content" itemprop="articleBody">
-    ## Topics
+    [Link to code](https://gist.github.com/kmicinski/456e65ec3cafaa750348df305e8a2466)
+
+## Topics
 
 - Trees, manually
 - Recursion over trees
