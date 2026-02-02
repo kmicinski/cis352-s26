@@ -5,9 +5,923 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 15 Jan 2026 17:01:42 -0500</pubDate>
-    <lastBuildDate>Thu, 15 Jan 2026 17:01:42 -0500</lastBuildDate>
+    <pubDate>Mon, 02 Feb 2026 02:58:18 -0500</pubDate>
+    <lastBuildDate>Mon, 02 Feb 2026 02:58:18 -0500</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>Pattern Matching</title>
+        <description>## Topics
+
+- Trees, manually
+- Recursion over trees
+- Introducing pattern matching
+- Matching list patterns (&quot;quasipatterns&quot;)
+- Matching predicate patterns
+- Trees, and algebraic data types generally
+
+---
+
+## Warmup
+
+**QuickAnswer**
+
+Let&apos;s write `(interleave l0 l1)`, a function that takes two lists l0/l1 and returns the elements of l0 interleaved with the elements of l1. Assume l0/l1 have the same length.
+
+```racket
+;; (interleave &apos;(0 1 2) &apos;(x y z)) =&gt; &apos;(0 x 1 y 2 z)
+(define (interleave l0 l1)
+  &apos;todo)
+```
+
+---
+
+## Introduction
+
+A big idea in CIS352 is being able to explain complex programming language features in terms of simpler ones. A very reasonable question is: &quot;why Racket? Why not Haskell, Rust, etc.&quot; The answer is that all of those languages have a *large* set of core features (e.g., static type system), which makes it harder to understand a very tiny core. There is an answer about Racket specifically in the next lecture--but for now, we will study just one more feature.
+
+Later on in the course we will study the λ-calculus: a language with only three forms. We will show that in fact it is possible to encode every single language feature in terms of the λ-calculus. While CIS352 covers Racket, a main reason for doing this is that it is a language that has a very direct connection to the untyped λ-calculus.
+
+Today we will talk about pattern matching, an increasingly-common language feature which originated in functional programming (SML, Haskell, etc.) but now exists in Python, Rust, and other general-purpose multi-paradigm languages.
+
+We are learning the absolutely minimal number of features necessary to build a complete, general-purpose programming language that allows us to get real work done. Because we want to fully understand *everything*, we will take a minimal number of things as fundamental. In the case of Racket, we will take only a *single* data structure as fundamental: lists. Nearly *everything* we build in class--from a data structures point of view--will be done *only* using lists.
+
+Next week, we&apos;ll use algebraic data types for their main purpose in CIS352: representing the *syntax* of another programming language, so that we can start writing interpreters.
+
+---
+
+## Trees, manually
+
+In Racket, we will define an algebraic data type via a &quot;type predicate:&quot;
+
+```racket
+(define (tree? t)
+  (cond [(equal? t &apos;empty) #t]
+        [(and (list? t)
+              (equal? (length t) 4) ;; node&apos;s length is exactly 4
+              (equal? (first t) &apos;node)
+              (tree? (third t))
+              (tree? (fourth t)))
+         #t]
+        [else #f]))
+```
+
+A binary tree is either:
+- The symbol `&apos;empty`
+- The list `` `(node ,v ,l0 ,l1) `` where:
+  - l&apos;s first element is `&apos;node`
+  - l&apos;s second element is any value v
+  - l&apos;s third element l0 is also a `tree?`
+  - l&apos;s fourth element l1 is also a `tree?`
+- A tree is *nothing else*
+
+Notice how the second `cond` case is extremely ugly: we have to spell out the shape of the list very precisely. The point of pattern matching is to avoid that pain.
+
+### Example trees
+
+```racket
+&apos;empty
+&apos;(node 5 empty empty)
+&apos;(node 5
+       (node 0 empty empty)
+       (node 10 (node 7 empty empty) (node 12 empty empty)))
+```
+
+**QuickAnswer**
+
+Write the tree:
+```
+         20
+        /  \
+       10  30
+```
+in a manner that satisfies `tree?`:
+
+```racket
+;; (node ...)
+```
+
+One fact about trees in Racket: they are *just lists*. We can build them entirely out of cons cells. We don&apos;t need any fancy machinery to define trees, other than recursion and lists. Once we have recursion and lists, we will see we can build the rest of computation.
+
+---
+
+## Recursion over trees
+
+Now we want to write a recursive function over trees. Let&apos;s start:
+
+```racket
+;; A tree&apos;s size is the number of *nodes* it contains
+(define (tree-size t)
+  (if (equal? t &apos;empty)
+      ;; (tree-size &apos;empty) =&gt; 0
+      0
+      ;; it&apos;s a node:
+      ;; the left subtree is (third t), the right subtree is (fourth t)
+      (let ([t0-size (tree-size (third t))]
+            [t1-size (tree-size (fourth t))])
+        (+ 1 t0-size t1-size))))
+```
+
+As we mentioned, every algebraic data type will tell us what the &quot;shape&quot; of our recursion should look like. In the case of trees, we get the following recursion principle:
+
+To define a recursive function f that works on all trees, define:
+- `(f &apos;empty)`
+- `(f \`(node ,v ,t0 ,t1))`
+  - *Using* the value of `(f t0)`, `(f t1)`. I.e., the result of applying f to the left / right subtree
+
+In the above definition, we used `(third t)` and `(fourth t)` to manually extract t0/t1. Today, we&apos;ll learn about pattern matching, which will make this much easier. But for now, let&apos;s work another example in the same style as the previous:
+
+**QuickAnswer**
+
+Define `(tree-sum t)`, assuming t satisfies `tree?`:
+- If t is `&apos;empty`, return 0
+- If t is a node, return `(second t)` + tree-sum applied to the left/right subtree (use `(third t)` and `(fourth t)` to get them).
+
+```racket
+;; (tree-sum &apos;(node 5 (node 10 empty empty) (node -5 empty empty))) =&gt; 10
+(define (tree-sum t)
+  &apos;todo)
+```
+
+---
+
+## Introducing pattern matching
+
+We will introduce a new construct: `(match e [pattern body] ...)`
+
+This says: &quot;match an expression e against a number of patterns.&quot;
+
+Here is a brief example:
+
+```racket
+(define (fib x)
+  (match x
+    [0 1]
+    [1 1]
+    [n (+ (fib (- x 1)) (fib (- x 2)))]))
+```
+
+A match expression consists of a:
+- **Discriminee**, an expression *being matched on / observed*
+- A number of pattern / body pairs, surrounded by `[ ... ]`
+
+The semantics is this:
+1. First, evaluate the discriminee down to a value, v
+2. Try to match v against the first pattern:
+   - If the pattern matches, bind pattern variables and evaluate the body
+3. If the first pattern fails to match, try the next pattern, ...
+4. If no pattern matches, raise an exception.
+
+**Trivia:** we call a match *total* or *exhaustive* when it matches all possible values that v could be. In this case, we can rest assured that we will never face an error simply due to the fact that we didn&apos;t have the right match case. Later on in the class, we will study tools for how we could reason about this (and related errors).
+
+### Pattern types so far
+
+- Every literal value (like `0`, `&quot;hello&quot;`, `&apos;foo`) can be used as a pattern
+  - Matches exactly that literal
+- A variable forms a pattern and binds the variable
+- The wildcard pattern `_` matches anything
+
+### Example: cond vs match
+
+The two are equivalent:
+
+```racket
+(define (foo x)
+  (cond [(equal? x &quot;hello&quot;) 1]
+        [(equal? x 15) 2]
+        [else 3]))
+
+(define (foo-using-match x)
+  (match x
+    [&quot;hello&quot; 1]
+    [15 2]
+    [_ 3]))
+```
+
+**QuickAnswer**
+
+Translate the following function, `bar`, to use match:
+
+```racket
+(define (bar x)
+  (cond [(equal? x 1) 1]
+        [(equal? x -1) -1]
+        [else (bar (- (- x 1)))]))
+
+(define (bar-match x)
+  &apos;todo)
+```
+
+---
+
+## Matching list patterns (&quot;quasipatterns&quot;)
+
+The next pattern we&apos;ll learn is the **most important for CIS352.**
+
+Let&apos;s look at the function `match-list`, which takes a list l and returns:
+- the first element if it is of length 1
+- the sum of the two elements if it is of length 2
+- the third elements onward if it is of length &gt; 2
+
+```racket
+(define (match-list l)
+  (match l
+    [`(,x0) x0]
+    [`(,x0 ,x1) (+ x0 x1)]
+    [`(,x0 ,x1 ,rest ...) rest]))
+```
+
+**IMPORTANT:** in a pattern, you *MUST* use `` ` ``, not `&apos;`
+
+**IMPORTANT:** when we use `...` in a pattern, it matches *zero or more* occurrences of the pattern immediately previous to it. If that pattern is a variable, then it is bound to a list.
+
+**IMPORTANT:** just to repeat this, in the following example, y is bound to a *list*, because we have `...` following y in the pattern.
+
+```racket
+(define (f+ l)
+  (match l
+    [`(1 ...) &quot;matches zero or more 1s&quot;]
+    [`(x ,y ...) &quot;matches any list starting with &apos;x, followed by y (matches as a list)&quot;]))
+```
+
+### Examples
+
+```racket
+;; (match-list &apos;(5)) =&gt; 5
+;; (match-list &apos;(1 2)) =&gt; 3
+;; (match-list &apos;(1 2 3)) =&gt; &apos;(3)
+;; (match-list &apos;(1 2 3 4)) =&gt; &apos;(3 4)
+```
+
+### Quasipattern details
+
+The `` `(,x0 ,x1 ,x2 ...) `` is called a *quasipattern*, which sounds complex, but it is actually quite simple once you get the gist of it:
+
+- `` `(,x0 ,x1 ,x2) `` matches a list of size 3
+  - x0, x1, and x2 are bound as pattern variables
+- `` `(,x0 ,x-rest ...) `` matches a list of size &gt;= 1
+  - x-rest can be `&apos;()`, or any length &gt; 0
+- We will only ever use `...` at the *end* of a quasipattern (pattern that matches a list).
+
+It turns out that x0, x1, and x2 are just *patterns*, which happen to be (in this case) variable patterns. We can use literals too, or any other pattern:
+
+```racket
+(match &apos;(1 2 3)
+  [`(1 2 ,x) x]) ;; returns 3
+```
+
+**QuickAnswer**
+
+Use match to define a function, `(every-other l)`, which returns every other element in l.
+
+```racket
+;; (every-other &apos;()) =&gt; &apos;()
+;; (every-other &apos;(1)) =&gt; &apos;(1)
+;; (every-other &apos;(1 2)) =&gt; &apos;(1)
+;; (every-other &apos;(1 2 3)) =&gt; &apos;(1 3)
+;; hints: three patterns to use
+;; `(,x0 ,x1 ,x-rest ...), `(,x0), and &apos;()
+(define (every-other l)
+  &apos;todo)
+```
+
+---
+
+## Matching predicate patterns
+
+Sometimes we want to say: &quot;match this, but only if it satisfies a certain predicate.&quot; To do that, we can use predicate patterns:
+
+```racket
+(define (bar++ x)
+  (match x
+    [(? even? y) (bar++ (- y 1))] ;; no reason I had to bind y
+    [(? odd?) (* x 3)])) ;; because y = x in this case!
+```
+
+The syntax for a predicate pattern is one of two things:
+- `(? predicate?)` Match if `predicate?` (a function returning #t/#f) holds
+- `(? predicate? x)` Match if `predicate?` holds, and *also* bind x
+
+Now, remember how list patterns work: `` `(,x ...) `` matches a *list* and binds it to `x`. Previously however, we mentioned that x need not be a name: it can be *any* pattern. It is often a name, in which case it matches *any* list as x. But we can also constrain it, to match a list of elements, all of which satisfy some property:
+
+```racket
+(define (evens-or-odds? l)
+  (match l
+    [&apos;() &quot;We got nothing.&quot;]
+    [`(,(? even? evens) ...) &quot;We got all evens.&quot;]
+    [`(,(? odd? odds) ...) &quot;We got all odds.&quot;]
+    [_ &quot;We got a mix.&quot;]))
+
+(evens-or-odds? &apos;(1 3 5))
+(evens-or-odds? &apos;(2 4 6))
+```
+
+**QuickAnswer**
+
+Describe the behavior of `mystery-function`. What does it return? Consider all possible inputs, but describe its behavior as precisely as you can.
+
+```racket
+(define (mystery-function l)
+  (match l
+    [`(1 ,(? zero? xs) ...) (length xs)]
+    [_ &quot;error&quot;]))
+```
+
+---
+
+## Trees, and algebraic data types generally
+
+We can use pattern matching to implement &quot;type predicates&quot; for algebraic data types: types defined via constructors of associated arities. We rewrite the `tree?` predicate using `match` as follows.
+
+```racket
+(define (match-tree? t)
+  (match t
+    [&apos;empty #t]
+    [`(node ,v ,(? match-tree? t0) ,(? match-tree? t1)) #t]
+    [_ #f]))
+```
+
+Now, let&apos;s use matching to sum up all of the elements in the tree:
+
+```racket
+;; sum-tree : match-tree? -&gt; number? (assume tree of numbers)
+(define (sum-tree t)
+  (match t ;; match is total by assumption that t satisfies match-tree?
+    [&apos;empty 0]
+    [`(node ,v ,t0 ,t1) (+ v (sum-tree t0) (sum-tree t1))]))
+```
+
+Now, we can define a function to calculate the maximum element in a tree of numbers. Make `&apos;empty` return `-inf.0`:
+
+```racket
+(define (max-tree t)
+  (match t
+    [&apos;empty -inf.0] ;; make the maximum negative infinity
+    [`(node ,v ,t0 ,t1) (max v (max-tree t0) (max-tree t1))]))
+```
+
+**QuickAnswer**
+
+A tree satisfies the BST (binary search tree) property whenever every subtree `` `(node ,v ,t0 ,t1) `` has that `(max t0) &lt; v &lt; (min t1)`.
+
+Basic idea: match t
+- If it&apos;s `&apos;empty`, return `#t`
+- If it&apos;s `` `(node ,v ,t0 ,t1) ``, call `(max-tree t)` (above) to calculate the maximum of t0 and t1, then check the necessary properties.
+
+```racket
+(define (bst-property? t)
+  &apos;todo)
+```
+</description>
+        <pubDate>Mon, 02 Feb 2026 00:00:00 -0500</pubDate>
+        <link>https://kmicinski.com/cis352-s26/patterns</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/patterns</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>The Algebra of Programming</title>
+        <description>&lt;p&gt;&lt;a href=&quot;https://gist.github.com/kmicinski/3219342bd9fa3aac5feff74288b41e14&quot;&gt;Link to code&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;Students often ask (in CIS352): “why learn Racket, a language with an arcane syntax that I might not use outside of this class?” It is a very reasonable question, and today we will answer it directly:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;We use Racket because Racket is the language that lets us most rapidly experiment with and compute over &lt;em&gt;term algebras&lt;/em&gt;.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Using algebra will allow us to reason rigorously about code, enabling us to (a) prove that certain fragments of code are &lt;em&gt;equal&lt;/em&gt; but also (b) giving us a way of gaining intuition for what the code is doing as we evaluate the program. The essential purpose of algebra is to be able to perform &lt;em&gt;equational reasoning&lt;/em&gt;: substituting equals by equals to iteratively establish the equality of increasingly-complex code via simple, easily-understood local conversions.&lt;/p&gt;
+
+&lt;p&gt;Computers are extremely complex, and the typical programmer’s mental model of the program’s execution probably involves (at least) some local variables, a stack, and memory (e.g., the heap). While this is not an unreasonable abstraction (although it is arguably a bit archaic for truly modern hardware), it relies on a lot of complexity which you (likely) do not fully understand. Our goal is to have you look at languages that are so simple, you can understand their execution completely, with &lt;em&gt;absolutely zero&lt;/em&gt; semantic ambiguity. To do that, we will start by connecting back to our high school algebra classes.&lt;/p&gt;
+
+&lt;p&gt;We all intuitively understand:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;f(x,y) = x^2 + cos(y/x)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In high-school algebra, we learn how to manipulate algebraic expressions, and in particular we know how to do substitution, e.g.:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;f(z+k, z^2) = (z+k)^2 + cos((z^2)/(z+k))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;High-school algebra then teaches us to “simplify” expressions into canonical forms. E.g., the “FOIL” rule, i.e., the identity:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(x + y)^2 = x^2 + 2xy + y^2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;A significant amount of high-school algebra is about building our intuition for how to simplify these algebraic expressions into canonical forms.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;term-algebras&quot;&gt;Term Algebras&lt;/h2&gt;
+
+&lt;p&gt;&lt;em&gt;“Term algebras are finite trees.”&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Definition: Term Algebra&lt;/strong&gt; (not to be confused with high-school algebra, etc.)&lt;/p&gt;
+
+&lt;p&gt;Assume T is a signature: a set of constructors (names) along with associated arities. The term algebra over T is the set of terms which may be formed by applying constructors (respecting their associated arities) to other terms in the algebra. We may construe zero-arity constructors as the algebra’s “constants.”&lt;/p&gt;
+
+&lt;p&gt;For example, take C = {&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;0&lt;/code&gt; with arity 0, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;1&lt;/code&gt; with arity 0, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;+&lt;/code&gt; with arity 2}&lt;/p&gt;
+
+&lt;p&gt;Terms include: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0 + 1&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1 + (0 + 1)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(0 + 0) + 1&lt;/code&gt;, etc…&lt;/p&gt;
+
+&lt;p&gt;We wrote examples in infix style to be intuitive. Pedantically, we might write:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;0(), 1(), +(0(),1()), +(1(),+(0(),1()))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Without loss of generality, we will represent all function calls in prefix form. By doing this, we see a central advantage of using Racket for the course: Racket’s lists enable us to &lt;em&gt;trivially&lt;/em&gt; represent term algebras.&lt;/p&gt;
+
+&lt;p&gt;You can think of term algebras as “raw, uninterpreted terms.”&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;(Rhetorical) Question:&lt;/strong&gt; Why are they so closely related to Racket?&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Answer:&lt;/strong&gt; Racket makes term algebras &lt;em&gt;immediately visible&lt;/em&gt;:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Constructors: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cons&lt;/code&gt; / &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;()&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Functions defined via case analysis: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;match&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Recursion mirrors the inductive structure of terms&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Now, let’s have you write this up in Racket: Write a type predicate, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add-expr?&lt;/code&gt;, which characterizes the set of expressions over the constants 1/0 and the two-argument +:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;               &lt;span class=&quot;c1&quot;&gt;;; 0 is an add-expr?&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;               &lt;span class=&quot;c1&quot;&gt;;; 1 is an add-expr?&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;;; Hint: possible to use a predicate pattern: ,(? p? e0)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;;; (+ e0 e1) is an add-expr? if e0 / e1 are add-expr?s&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now, given an expression, e, we may write a Racket function that evaluates the expression &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; down to a &lt;em&gt;number&lt;/em&gt;. In fact, if we construe &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add-expr?&lt;/code&gt; to define a programming language, then we are writing our first &lt;em&gt;interpreter&lt;/em&gt;. We will use recursion and matching to build our interpreter, following a common style we will learn about later. We will not focus extensively on interpreters in today’s class, but we &lt;em&gt;will&lt;/em&gt; use algebraic data types to define the &lt;em&gt;abstract syntax&lt;/em&gt; of programming languages frequently.&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (add-expr-&amp;gt;number &apos;(+ 1 (+ 0 (+ 1 0)))) =&amp;gt; 2&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-&amp;gt;number&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Given any signature T (a set of constructors and associated arities), it is possible to write a type predicate using match.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Let the algebra &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bool?&lt;/code&gt; be formed by the following constructors:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;true&lt;/code&gt; – of arity 0&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;false&lt;/code&gt; – of arity 0&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;and&lt;/code&gt; – of arity 2&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;or&lt;/code&gt; – of arity 2&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bool?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;true&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;false&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;bool?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;bool?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;bool?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;bool?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;  &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Define a function that converts a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bool?&lt;/code&gt; to a Racket &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;boolean?&lt;/code&gt; (i.e., just #t/#f).&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bool?-&amp;gt;racket&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;the-natural-numbers-as-a-term-algebra&quot;&gt;The natural numbers, as a term algebra&lt;/h2&gt;
+
+&lt;p&gt;We now define the natural numbers as a term algebra whose signature is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt; with arity 0 and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;S&lt;/code&gt; (successor) with arity 1:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;0&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;nat?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;zero&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;three&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Convert a Racket natural to a number:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;0&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;n+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;add1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Assume n0 satisfies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;, write &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-even?&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-even?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;0&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-even?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Don’t&lt;/em&gt; use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-&amp;gt;num&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-even?&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-odd?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Assume n0 and n1 are &lt;em&gt;both&lt;/em&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;. Now, define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(&amp;lt;= n0 n1)&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Basic approach: use recursion over n0 / n1:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Match n0, if n0 is 0 then return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;If n0 not 0, then what do you do…?&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;DON’T use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-&amp;gt;num&lt;/code&gt; (which makes this easier):&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-lte&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;quasiquoting-and-recursive-functions-on-algebras&quot;&gt;Quasiquoting and Recursive Functions on Algebras&lt;/h2&gt;
+
+&lt;p&gt;Last lecture (and this lecture), we learned about quasipatterns, which allow us to match list-like patterns. We can use quasiquoting to &lt;em&gt;produce&lt;/em&gt; lists which “drop in” or “splice in” other expressions.&lt;/p&gt;
+
+&lt;p&gt;For example:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; notice, `, *NOT* &apos;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This expression produces a list of three elements:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;20&lt;/code&gt;, because &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; was &lt;em&gt;unquoted&lt;/em&gt; (i.e., evaluated, to be dropped in)
+    &lt;ul&gt;
+      &lt;li&gt;The comma &lt;em&gt;unquotes&lt;/em&gt;, it says: “evaluate the next expression you read and then drop it in.”&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;, because x was under a quasiquote and not unquoted
+    &lt;ul&gt;
+      &lt;li&gt;Unless you unquote, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`&lt;/code&gt; acts like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;&lt;/code&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;21&lt;/code&gt;, because &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;,(+ x 1)&lt;/code&gt; says: evaluate &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ x 1)&lt;/code&gt;, then take its result and drop it in here.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;If we use quote &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;&lt;/code&gt; instead of quasiquote &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`&lt;/code&gt;, we will just get the literal expression, and no unquoting is possible:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; produces literally &apos;(,x x ,(+ x 1))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We will start to &lt;em&gt;use&lt;/em&gt; quasiquotes pervasively to &lt;em&gt;produce&lt;/em&gt; algebraic data. For example, we will now define the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(add-two n)&lt;/code&gt; function.&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; Assume n satisfies nat?&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-two&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-two&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; &apos;(S (S (S (S (S 0)))))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Assume n0, n1 both nat. Define n0 + n1. Algebraically, we say:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(plus 0 k) = k
+(plus (S n) k) = (S (plus n k))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Your result must satisfy &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;, and forall n0, n1 which satisfy &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;, we must have that:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(nat-&amp;gt;num (plus n0 n1)) = (+ (nat-&amp;gt;num n0) (nat-&amp;gt;num n1))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;plus&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;plus&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Idea: recursion on n0&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(times 0 k) = 0
+(times (S n) k) = k + (times n k)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Remember:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(nat-&amp;gt;num (times n0 n1)) = (* (nat-&amp;gt;num n0) (nat-&amp;gt;num n1))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;times&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Now, we use recursion on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt; to define the factorial function:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(fac 0) =&amp;gt; 1
+(fac (S n)) =&amp;gt; (S n) * (fac n)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Remember, we must produce a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;factorial&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;;; (factorial &apos;(S (S (S (S 0)))))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;;   =&amp;gt; &apos;(S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S 0))))))))))))))))))))))))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; (nat-&amp;gt;num (factorial &apos;(S (S (S (S 0)))))) =&amp;gt; 24&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;equality-and-canonical-terms-advanced&quot;&gt;Equality and Canonical Terms (Advanced)&lt;/h2&gt;
+
+&lt;p&gt;It is important to understand that the term algebra is a set of “raw” terms, which are not equated in any way. For example, although we may be tempted to think that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(+ 1 0)&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(+ 0 1)&lt;/code&gt; should represent the &lt;em&gt;same&lt;/em&gt; term (because they both evaluate to 1 in Racket), they are distinct terms from the perspective of the term algebra &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add-expr?&lt;/code&gt;. Specifically…&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; #f&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;definition-quotient-algebra&quot;&gt;Definition: Quotient Algebra&lt;/h3&gt;
+
+&lt;p&gt;In many settings, it will be desirable to define &lt;em&gt;equations&lt;/em&gt; over terms. These equations effectively partition the term algebra into equivalence classes. For example, for the algebra &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add-expr?&lt;/code&gt;, we might also consider the following equations:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(+ x y) = (+ y x)    (plus-comm)
+(+ 0 x) = x          (plus-id-0)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;From these two rules, we may prove that: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ x 0) = x&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ x 0) = (+ 0 x)&lt;/code&gt;     (applying plus-comm)&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ 0 x) = x&lt;/code&gt;           (applying plus-id-0)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Recall that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;=&lt;/code&gt; is reflexive, antisymmetric, and transitive.&lt;/p&gt;
+
+&lt;p&gt;When we take a term algebra and add an equivalence relation, we get a &lt;em&gt;quotient algebra&lt;/em&gt;. It is an esoteric-sounding name, but it involves a key distinction:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;The term algebra is just a &lt;em&gt;raw set of terms&lt;/em&gt;, all of which are just finite trees.&lt;/li&gt;
+  &lt;li&gt;A quotient algebra refines this, equating some of the terms to each other, effectively partitioning the space.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;For example, while…&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; #f&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;…in Racket, the quotient algebra formed by the two equations above would disagree, instead saying that all of the following are equal:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(+ 0 (+ 1 1)) = (+ 1 (+ 0 1)) = (+ 1 1)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;IMPORTANT:&lt;/strong&gt; Specific proofs around quotient algebras are a more advanced topic, and you will &lt;em&gt;not&lt;/em&gt; need to deeply understand them for the course. However, it is important to be able to understand the difference between “structural equality” (i.e., &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;equal?&lt;/code&gt;) and “application-specific” equality.&lt;/p&gt;
+
+&lt;p&gt;In general, it is not possible to decide whether two arbitrary quotient algebra terms are &lt;em&gt;equal&lt;/em&gt; or not. The “word problem for equational theories” says that it is impossible, &lt;em&gt;in general&lt;/em&gt;, to decide the equivalence of two terms t0 and t1, under the set of equations E.&lt;/p&gt;
+
+&lt;p&gt;While we cannot decide the equivalence of arbitrary algebraic formulas, almost all of our day-to-day programming is done in a setting where equality is &lt;em&gt;trivially&lt;/em&gt; decidable: for example, deciding the equality of numbers is easy.&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; Compare two add-expr?s for equality&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; Assume: n0 / n1 satisfy add-expr?&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This section was more advanced–let’s switch back to using algebra to do programming.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;folding-over-lists-foldr&quot;&gt;Folding over lists (foldr)&lt;/h2&gt;
+
+&lt;p&gt;We are now ready to use some of the algebra we have developed in this lecture to develop a very special function, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;foldr&lt;/code&gt;, which is defined via the following equations:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(fold-1)   (foldr f z &apos;()) = z
+(fold-2)   (foldr f z (cons hd tl)) = (f hd (foldr f z tl))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(foldr f z l)&lt;/code&gt; “folds” the function f across the list l with the initial value (“zero”) z. By “fold” f across the list, I actually mean “iterate” or “accumulate.” It will make more sense once we see an example:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (foldr + 0 &apos;(1 2 3)) =&amp;gt; 6&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; (foldr + 3 &apos;(1 2 3)) =&amp;gt; 9&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; (foldr * 1 &apos;(2 3 4)) =&amp;gt; 24&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Fold’s second argument is a “folder” or “updater” function, which takes two inputs:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;The next element in the list being inspected.&lt;/li&gt;
+  &lt;li&gt;The current “accumulator” value.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In the case of foldr (fold &lt;em&gt;right&lt;/em&gt;), the folder / updater function is applied from &lt;em&gt;right to left&lt;/em&gt;, and the initial accumulator value is z (the second argument, “zero”–a sensible default value).&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;hd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;tl&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;hd&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;tl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;equational-reasoning-example&quot;&gt;Equational reasoning example&lt;/h3&gt;
+
+&lt;p&gt;Let’s use equational reasoning to show that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(foldr + 0 &apos;(1 2 3)) = 6&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(foldr + 0 &apos;(1 2 3)) = (foldr + 0 (cons 1 (cons 2 (cons 3 &apos;()))))
+                     = (+ 1 (foldr + 0 (cons 2 (cons 3 &apos;())))) (via fold-2)
+                     = (+ 1 (+ 2 (foldr + 0 (cons 3 &apos;()))))    (via fold-2)
+                     = (+ 1 (+ 2 (+ 3 (foldr + 0 &apos;()))))       (via fold-2)
+                     = (+ 1 (+ 2 (+ 3 0)))                     (via fold-1)
+                     = (+ 1 (+ 2 3))
+                     = (+ 1 5)
+                     = 6
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Using the standard rules of arithmetic for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;, etc., and also the two rules:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(fold-1)   (foldr f z &apos;()) = z
+(fold-2)   (foldr f z (cons hd tl)) = (f hd (foldr f z tl))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Rigorously prove–via a series of equalities (annotate fold-1/2 when appropriate)–the following:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(foldr * 1 &apos;(2 3 4)) = 24
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;the-identity-l--foldr-cons--l&quot;&gt;The identity: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;l = (foldr cons &apos;() l)&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;As a more advanced example of how we might use algebra for programming, I want to pose the following equality:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;forall l. l = (foldr cons &apos;() l)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Why is this the case intuitively?&lt;/p&gt;
+
+&lt;p&gt;Pictorially, here is what &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(foldr f z l)&lt;/code&gt; is doing:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(cons x0 (cons x1 (cons x2 ... (cons xn-1 &apos;()) ...)))
+  |       |        |           |          | &apos;() maps to z
+  v       v        v           v          v
+( f   x0 ( f   x1 ( f   x2 ... (f    xn-1  z) ) ) )
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Notice how the fold transforms the list, effectively replacing each &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cons&lt;/code&gt; with a call to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;, and the empty list &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;()&lt;/code&gt; by the zero (initial value) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;z&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Now, back to our original claim: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;forall l. l = (foldr cons &apos;() l)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Pictorially, this is true because…&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  (cons x0 (cons x1 (cons x2 ... (cons xn-1 &apos;()) ...)))
+    |       |        |           |          |
+    v       v        v           v          v
+  (cons x0 (cons x1 (cons x2 ... (cons xn-1 &apos;()) ...)))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;ADVANCED (optional):&lt;/strong&gt; However, this picture is not a rigorous proof. To make a rigorous proof, we would do induction over the list l, establishing an inductive hypothesis that for all sublists xs of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(cons x xs)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;xs = (foldr cons &apos;() xs)&lt;/code&gt;, and we would prove that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(cons x xs) = (foldr cons &apos;() (cons x xs))&lt;/code&gt; by using (fold-2) and the induction hypothesis.&lt;/p&gt;
+
+&lt;p&gt;We will see this later on, when we look at using Lean.&lt;/p&gt;
+
+&lt;h3 id=&quot;the-power-of-fold&quot;&gt;The power of fold&lt;/h3&gt;
+
+&lt;p&gt;It is easy to miss the power of this idea, or see it as abstract pedantic nonsense. In fact, foldr characterizes an extremely common class of functions that process lists by accumulating a result, walking over the list in some order (right to left, as in foldr, or left to right as in foldl).&lt;/p&gt;
+
+&lt;p&gt;Foldr gives us a general-purpose way to transform lists by walking over each element one at a time and firing a two-argument “updater” function, which takes (a) the next value in the list, and (b) the current accumulator value (which defaults to “zero”, foldr’s third argument).&lt;/p&gt;
+
+&lt;p&gt;For example, we can define the function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(filter f l)&lt;/code&gt; via foldr:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;filter&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;next-elt&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;next-elt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cons&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;next-elt&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+         &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+         &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Use foldr to add all &lt;em&gt;even&lt;/em&gt; numbers in the list l:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (add-evens &apos;(0 1 2 3 4 5)) =&amp;gt; 6&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-evens&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+         &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
+         &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;fold-in-other-languages&quot;&gt;Fold in other languages&lt;/h3&gt;
+
+&lt;p&gt;Fold is a pervasive construct, popular across many languages. For example:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Rust:&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&quot;language-rust highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nd&quot;&gt;vec!&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;.iter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;.fold&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Python:&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;reduce&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;JavaScript:&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;reduce&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;acc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;C++:&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;std&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vector&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;std&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;accumulate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;begin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;SQL:&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;SELECT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;SUM&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;FROM&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;AS&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Fold is so popular because it represents the following imperative construct:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;acc = 0
+for (elt in list.reverse) { acc = f(elt,acc); }
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In practice, &lt;em&gt;almost any function over lists can be written using fold&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Also, fold forms the basis for MapReduce, a popular distributed / parallel computing framework:
+https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;What is the result of…&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;optional-using-algebra-for-proving-correctness-of-code&quot;&gt;Optional: Using algebra for proving correctness of code&lt;/h2&gt;
+
+&lt;p&gt;We will prove: for all l, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(filter (lambda (x) #t) l) = l&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Proof:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;First, we show that:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;next-elt&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;next-elt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cons&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;next-elt&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;=&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;cons&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Proving this equality is actually a bit tricky, because we have not talked about lambdas, but notice that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (x) #t)&lt;/code&gt; will &lt;em&gt;always&lt;/em&gt; return true, and thus the &lt;em&gt;guard&lt;/em&gt; is always true. Thus–because the guard is always true–the function is really equal to…&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;next-elt&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cons&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;next-elt&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This is &lt;em&gt;almost&lt;/em&gt; cons, and it is in fact &lt;em&gt;equal&lt;/em&gt; to cons, in the sense that the above lambda does the same things to the same arguments (i.e., the function is extensionally equal). We will see that they are related via a concept named η-expansion in the λ-calculus.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
+
+&lt;p&gt;Key concepts from this lecture:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;A “term algebra” is an infinite set of terms (all individually finite), each of which is formed via the application of constructors according to some signature T (constructors and their arities).&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Racket’s lists (“S-expressions”) naturally represent term algebras in prefix form, and it is easy to express term algebras via Racket type predicates using pattern matching.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Term algebras are all finite trees, and thus syntactic equality is dictated by structural equality (i.e., &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;equal?&lt;/code&gt; in Racket!).&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;It is sometimes desirable to extend term algebras with a set of equations. These equations partition the term algebra into equivalence classes, and form a quotient algebra–however, deciding equality of terms in an arbitrary quotient algebra is not possible (undecidable) in general via any algorithm. Instead, we must manually demonstrate a “proof,” via a chain of reasoning steps.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Algebra gives us a very powerful tool to reason about equality of programs by transitive term rewriting–each equality in the chain follows from some equation in the system.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Folding over lists is a fundamental looping construct, which allows us to “fold” an “updater” or “folder” function across a list, walking over it from right to left (hence fold&lt;em&gt;r&lt;/em&gt;) and starting with some initial accumulator zero.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Folds can be used for a wide range of list-processing tasks, we will begin to use them more frequently throughout class.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Mon, 02 Feb 2026 00:00:00 -0500</pubDate>
+        <link>https://kmicinski.com/cis352-s26/algebra</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/algebra</guid>
+        
+        
+      </item>
     
       <item>
         <title>Project 2: Transitive Closure</title>
