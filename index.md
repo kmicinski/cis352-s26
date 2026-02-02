@@ -32,6 +32,18 @@ layout: mainpage
             </a>
           </li>
           <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://youtu.be/bMaMFRBp6ZM">
+              Lecture 1 -- Video Course Notes (NEW 'S26)
+            </a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://gist.github.com/kmicinski/369d966d1fc1d1b7f35e1f1d699ac48e">
+              Lecture Notes -- Taken during class 1/13/26
+            </a>
+          </li>
+          <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
             <a href="https://kmicinski.com/cis352-s26/assets/slides/firstday.pdf">
               Lecture Slides 
@@ -59,6 +71,18 @@ layout: mainpage
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://www.youtube.com/watch?v=bnzjganKVgU">
               Definitions and the Environment
+            </a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=Z0T8kwlTNqY">
+              (NEW 'S26) [Course Notes] Lecture 2 Video Notes
+            </a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://gist.github.com/kmicinski/4fa69394a59e776fe9c661ca64f51fad">
+              Lecture Notes -- Taken during class 1/15/26
             </a>
           </li>
           <li>
@@ -231,17 +255,21 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          The Stack, Tail Calls, and Tail Recursion
+          Pattern Matching and Algebraic Data 
         </div>
         <ul class="resources-list">
           <li>
-            <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=kAskgLplQgw&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=13">Lecture Video</a>
-          </li>
-          <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/tailcalls.pdf">Lecture Slides</a>
+            <a href="https://kmicinski.com/cis352-s26/patterns">Lecture Notes</a>
           </li>
+          <!-- <li> -->
+          <!--   <i class="fa-brands fa-youtube youtube-icon"></i> -->
+          <!--   <a href="https://www.youtube.com/watch?v=kAskgLplQgw&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=13">Lecture Video</a> -->
+          <!-- </li> -->
+          <!-- <li> -->
+          <!--   <i class="fa-solid fa-file-lines notes-icon"></i> -->
+          <!--   <a href="https://kmicinski.com/cis352-s26/assets/slides/tailcalls.pdf">Lecture Slides</a> -->
+          <!-- </li> -->
         </ul>
       </div>
     </li>
@@ -277,9 +305,13 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Accumulation with Foldl/r
+          Programming with Algebra, Foldr
         </div>
         <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/algebra">Lecture Notes</a>
+          </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://www.youtube.com/watch?v=kAskgLplQgw&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=15">Lecture Video (Folding over Lists)</a>
@@ -287,10 +319,6 @@ layout: mainpage
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
             <a href="https://kmicinski.com/cis352-s26/assets/slides/folds.pdf">Fold Lecture Slides</a>
-          </li>
-          <li>
-            <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://gist.github.com/kmicinski/9986f2e78b5740eb2bf399f6bc40a090">Lecture Notes (2/5)</a>
           </li>
         </ul>
       </div>
@@ -310,7 +338,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Defining Transitive Closure via Natural Deduction, Graphs in Racket
+          Finishing Algebra, Folds. Transitive closure and natural deduction
         </div>
         <ul class="resources-list">
         </ul>
@@ -338,7 +366,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Building an Interpreter for IfArith + Structural Operational Semantics (SOS)
+          Review Day, More Detail on Homework 2
         </div>
         <ul class="resources-list">
           <li>

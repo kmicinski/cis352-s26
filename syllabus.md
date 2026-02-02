@@ -3,7 +3,7 @@ title: Syllabus
 layout: default
 --- 
 
-The syllabus is available as a .pdf file: [.pdf link here](/assets/syllabus.pdf). 
+The syllabus is available as a .pdf file: [.pdf link here](https://kmicinski.com/cis352-s26/assets/syllabus.pdf). 
 
 **Office hours**
 
