@@ -343,7 +343,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
 			  <i class="fa-solid fa-file-lines notes-icon"></i>
-			  <a href="https://kmicinski.com/cis352-s26/algebra">Lecture Notes for 2/10 - 2/12</a>
+			  <a href="https://kmicinski.com/cis352-s26/evaluation-order">Lecture Notes for 2/10 - 2/12</a>
 		  </li>
         </ul>
       </div>
