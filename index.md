@@ -338,9 +338,13 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Finishing Algebra, Folds. Transitive closure and natural deduction
+          Evaluation Order and Tail Recursion
         </div>
         <ul class="resources-list">
+          <li>
+			  <i class="fa-solid fa-file-lines notes-icon"></i>
+			  <a href="https://kmicinski.com/cis352-s26/algebra">Lecture Notes for 2/10 - 2/12</a>
+		  </li>
         </ul>
       </div>
     </li>
@@ -350,7 +354,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-code project-icon"></i>
-          Homework P2: TBA -- Released (Due 2/26)
+          Homework P2: Network Reachability (Due 2/26)
         </div>
         <ul class="resources-list">
           <li>
@@ -366,7 +370,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Review Day, More Detail on Homework 2
+		  Natural Deduction (Introduction) and Transitive Closure (Homework 2)
         </div>
         <ul class="resources-list">
           <li>
