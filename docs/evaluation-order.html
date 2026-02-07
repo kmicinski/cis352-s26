@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Evaluation Order</title>
+  <meta name="description" content="CIS352 – Spring 2026">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://kmicinski.com/cis352-s26/css/main.css">
+  <link rel="canonical" href="https://kmicinski.com/cis352-s26/evaluation-order">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="https://kmicinski.com/cis352-s26/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href=https://kmicinski.com//cis352-s26/>CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href=https://kmicinski.com//cis352-s26/#schedule>Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href=https://kmicinski.com//cis352-s26/syllabus>Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <!-- <header class="post-header"> -->
+  <!--   <h1 class="post-title" itemprop="name headline">Evaluation Order</h1> -->
+  <!-- </header> -->
+
+  <div class="post-content" itemprop="articleBody">
+    <h1 id="cis352--spring-2026">CIS352 – Spring 2026</h1>
+
+<p><a href="https://gist.github.com/kmicinski/7042e0c2143f3fa2236cfc4517a684e8">Link to code for these lecture notes</a></p>
+
+<h2 id="todays-agenda">Today’s agenda…</h2>
+<ul>
+  <li>□ Evaluation Order</li>
+  <li>□ Printf-style debugging and reachability hypotheses</li>
+  <li>□ Evaluation of function call</li>
+  <li>□ The Stack</li>
+  <li>□ Tail Position and Tail Calls</li>
+  <li>□ Tail Call Optimization (TCO) and Tail Recursive Functions</li>
+</ul>
+
+<hr />
+
+<h2 id="evaluation-order">Evaluation Order</h2>
+
+<p>Evaluation order refers to the order in which certain subexpressions in our program are <em>evaluated</em>. Evaluation happens in small steps: at the most basic level, the machine executes instructions on a multi-GHz clock. It is crucial for debugging and code comprehension to have a firm understanding of evaluation order. Exactly when and where expressions in our code are evaluated is something we need to make rigorous. We will do so soon by writing interpreters, but we will talk about it informally for now.</p>
+
+<p><strong>QuickAnswer:</strong> what is printed to the console for the following fragment?</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; displayln x to the console, then return y</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">display-and-return</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">displayln</span> <span class="nv">x</span><span class="p">)</span>
+  <span class="nv">y</span><span class="p">)</span> <span class="c1">;; note: the above definition builds an implicit (begin ...)</span>
+
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">my-plus</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">displayln</span> <span class="s">"adding"</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">displayln</span> <span class="p">(</span><span class="nf">my-plus</span> <span class="p">(</span><span class="nf">display-and-return</span> <span class="mi">5</span> <span class="mi">3</span><span class="p">)</span>
+                    <span class="p">(</span><span class="nf">display-and-return</span> <span class="mi">10</span> <span class="mi">4</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p>When we refer to “control” in the context of programming languages, we are often appealing to the idea that we are “focusing” on some subcomputation at each point. In functional languages, the notion of control is generally: what subexpression is being evaluated. In assembly language, the notion of control is %rip, i.e., the instruction pointer, which always points at the instruction currently being executed.
+It is a crucial skill to be able to trace through the program’s control flow and to be able to identify what is happening.</p>
+
+<p>For example, let’s look at the following program:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">foo</span> <span class="nv">x</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">x</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">xs</span> <span class="o">...</span><span class="p">)</span> <span class="p">(</span><span class="nf">first</span> <span class="nv">xs</span><span class="p">)]</span>
+    <span class="p">[</span><span class="o">'</span><span class="p">()</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="c1">;; (foo '())</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="printf-style-debugging-and-reachability-hypotheses">Printf-style debugging and reachability hypotheses</h2>
+
+<p>The program is broken, which we can see by uncommenting the line.</p>
+
+<p>Let’s imagine a hypothetical student, who looks at the code and doesn’t understand what is broken. The student looks at the code and thinks: “I don’t understand what’s going on, I handle the empty list and return zero!”</p>
+
+<p>To fix the program, we have to understand what is happening. This involves being able to look at the program and trace its control flow, explaining what is going on at each point.</p>
+
+<p>We can often make the problem easier by using “printf”-style debugging: we instrument our code with print statements to understand what is happening and where.</p>
+
+<p>We need to start by making a hypothesis. When you are confused about a bug, the first kind of hypothesis you should make is a reachability hypothesis: a prediction that some code is / isn’t executed. The reason these hypotheses are so useful is that they are easy to falsify: we add a print statement to our code.</p>
+
+<p>In this case, let’s play the role of the student and make a hypothesis: “the case for ‘() is (or isn’t) reached.” Now, let’s update our code:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">foo+</span> <span class="nv">x</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">x</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">xs</span> <span class="o">...</span><span class="p">)</span> <span class="p">(</span><span class="nf">first</span> <span class="nv">xs</span><span class="p">)]</span>
+    <span class="p">[</span><span class="o">'</span><span class="p">()</span> <span class="p">(</span><span class="nb">displayln</span> <span class="s">"here!"</span><span class="p">)</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="c1">;; (foo+ '())</span>
+</code></pre></div></div>
+
+<p>We can see: even though the code crashes, “here!” is never printed! Now we might be confused, so we could move the print statement to the beginning of the function, where it would be printed.</p>
+
+<p>Now we ask: why is the code not even reached? The answer in this case is that the match statements are in the wrong order: the first subsumes the second. If we truly wanted to see that, we could rearrange to print “here!” (or something else) at the beginning of that branch.</p>
+
+<p>When your code is broken, reachability hypotheses are one of the best tools at your disposal, because they allow you to gradually adjust the printing. As long as you can keep rerunning quickly, this can be an effective debugging technique. Of course, this style merely emulates step-based debugging (e.g., gdb), but: (a) many languages lack good debuggers and (b) sometimes running a debugger is not practical (such as in production environments where you can only emit logs).</p>
+
+<p>Building intuition about control flow is closely related to printf-style debugging: when we encounter bugs in our code, incorrect control flow is often the culprit.</p>
+
+<hr />
+
+<h2 id="evaluation-of-function-calls">Evaluation of function calls</h2>
+
+<p>To evaluate a function call, <code class="language-plaintext highlighter-rouge">(e-f e0 e1 ...)</code>, we:</p>
+
+<ul>
+  <li>
+    <p>Evaluate the function expression <code class="language-plaintext highlighter-rouge">e-f</code>, which might be trivial (if it is just a variable), but could involve arbitrary computation.</p>
+  </li>
+  <li>
+    <p>Evaluate each argument of the function down to a <em>value</em> (i.e., a result).</p>
+  </li>
+  <li>
+    <p>Build an environment for the function’s body to execute, by binding the formal parameters (among other things, which we will discuss later).</p>
+  </li>
+  <li>
+    <p>Evaluate the function’s body, awaiting a return value.</p>
+  </li>
+</ul>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>What is printed? Reminder: <code class="language-plaintext highlighter-rouge">(begin e0 ... en)</code> evaluates <code class="language-plaintext highlighter-rouge">e0 ...</code> for their effect, then returns the result of evaluating <code class="language-plaintext highlighter-rouge">en</code>.</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nb">displayln</span>
+ <span class="p">((</span><span class="k">begin</span> <span class="p">(</span><span class="nb">displayln</span> <span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">x</span><span class="p">)</span> <span class="p">(</span><span class="k">begin</span> <span class="p">(</span><span class="nb">displayln</span> <span class="nv">x</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="mi">3</span><span class="p">))))</span>
+  <span class="p">(</span><span class="k">begin</span> <span class="p">(</span><span class="nb">displayln</span> <span class="mi">5</span><span class="p">)</span> <span class="mi">3</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p>To facilitate calling a function, the computer has to remember where to return. For example, consider the following functions:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">f</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">-</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">h</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">f</span> <span class="p">(</span><span class="nf">f</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span> <span class="p">(</span><span class="nf">f</span> <span class="nv">y</span> <span class="nv">x</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p>The point is that–during execution–the call to <code class="language-plaintext highlighter-rouge">(h 1 2)</code> executes in fine-grained steps, evaluating one expression at a time. For example, when we call <code class="language-plaintext highlighter-rouge">(h x y)</code>, many things happen:</p>
+
+<ol>
+  <li>Enter body of <code class="language-plaintext highlighter-rouge">(h x y)</code>, await its return value</li>
+  <li>To evaluate <code class="language-plaintext highlighter-rouge">(f (f 1 2) (f 2 1))</code>:
+    <ol>
+      <li>First evaluate <code class="language-plaintext highlighter-rouge">f</code>: it is an identifier, so that is trivial.</li>
+      <li>Next, evaluate <code class="language-plaintext highlighter-rouge">(f 1 2)</code>, await its return value…
+        <ol>
+          <li>To evaluate <code class="language-plaintext highlighter-rouge">(f 1 2)</code>:
+            <ol>
+              <li>First evaluate <code class="language-plaintext highlighter-rouge">f</code>, <code class="language-plaintext highlighter-rouge">1</code>, <code class="language-plaintext highlighter-rouge">2</code>, all variables / constants</li>
+              <li>Now, evaluate the body of <code class="language-plaintext highlighter-rouge">f</code>, await its return value:
+                <ol>
+                  <li>To evaluate <code class="language-plaintext highlighter-rouge">(- 1 2)</code>, the body of <code class="language-plaintext highlighter-rouge">f</code>…
+                    <ol>
+                      <li>Applying the builtin <code class="language-plaintext highlighter-rouge">-</code> results in <code class="language-plaintext highlighter-rouge">-1</code></li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li>Because <code class="language-plaintext highlighter-rouge">(- 1 2)</code> was the body of <code class="language-plaintext highlighter-rouge">f</code>, return <code class="language-plaintext highlighter-rouge">-1</code> from <code class="language-plaintext highlighter-rouge">f</code></li>
+        </ol>
+      </li>
+      <li>Next, evaluate <code class="language-plaintext highlighter-rouge">(f 2 1)</code>, await its return value
+        <ol>
+          <li>First evaluate <code class="language-plaintext highlighter-rouge">f</code>, <code class="language-plaintext highlighter-rouge">2</code>, <code class="language-plaintext highlighter-rouge">1</code></li>
+          <li>Now, evaluate the body of <code class="language-plaintext highlighter-rouge">f</code>, await its return value:
+            <ol>
+              <li>Evaluate <code class="language-plaintext highlighter-rouge">(- 2 1)</code> to <code class="language-plaintext highlighter-rouge">1</code></li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li>Now, take the results of both subexpressions (<code class="language-plaintext highlighter-rouge">-1</code> and <code class="language-plaintext highlighter-rouge">1</code>) and apply <code class="language-plaintext highlighter-rouge">(f -1 1)</code>:
+        <ol>
+          <li><code class="language-plaintext highlighter-rouge">(- -1 1)</code> results in <code class="language-plaintext highlighter-rouge">-2</code></li>
+        </ol>
+      </li>
+    </ol>
+  </li>
+  <li>The return value from the whole computation is <code class="language-plaintext highlighter-rouge">-2</code></li>
+</ol>
+
+<p>This was a lengthy sequence, and I even skipped some steps, but the basic idea is to break the computation down into each atomic step.</p>
+
+<p>One thing to notice is that the top-level call to <code class="language-plaintext highlighter-rouge">(f ...)</code> involves significant computation. Ultimately, the first call <code class="language-plaintext highlighter-rouge">(f x y)</code> returns <code class="language-plaintext highlighter-rouge">-1</code>–but it has to call <code class="language-plaintext highlighter-rouge">(f y x)</code> before it can begin to call <code class="language-plaintext highlighter-rouge">-</code> on the result. The reason is simple: we can’t actually do the subtraction until we know which two values we’re subtracting.</p>
+
+<p>At various places in the code, we have to <em>suspend</em> the execution to <em>wait</em> for results. For example, the call <code class="language-plaintext highlighter-rouge">(f (f x y) (f y x))</code> has to: (a) evaluate <code class="language-plaintext highlighter-rouge">(f x y)</code>, which involves work of its own, then (b) evaluate <code class="language-plaintext highlighter-rouge">(f y x)</code>, and then (c) take the result of each of those subordinate expressions and apply <code class="language-plaintext highlighter-rouge">f</code> to it. In effect, what is happening is:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">h+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">a0</span> <span class="p">(</span><span class="nf">f</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">a1</span> <span class="p">(</span><span class="nf">f</span> <span class="nv">y</span> <span class="nv">x</span><span class="p">)])</span>
+    <span class="p">(</span><span class="nf">f</span> <span class="nv">a0</span> <span class="nv">a1</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p>This code is in A-normal form, where all functions are called with “simple” arguments. You will not need to know A-normal form in this class (it is covered more seriously in CIS531, “Compiler Design,” where it is related to SSA forms), but it is important to understand that we can apply transformations on our code to break it down so as to make all of the control as explicit as possible.</p>
+
+<p>Let’s work another example where we transform the code so that every function has only variables / constants as its arguments:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">demo</span> <span class="nv">l</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">*</span> <span class="p">(</span><span class="nf">first</span> <span class="nv">l</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="p">(</span><span class="nf">second</span> <span class="nv">l</span><span class="p">)</span> <span class="p">(</span><span class="nf">third</span> <span class="nv">l</span><span class="p">))))</span>
+</code></pre></div></div>
+
+<p>Notice how in <code class="language-plaintext highlighter-rouge">demo-anf</code>, we have “flattened” the order of evaluation, to make it <em>absolutely clear</em> where things happen. This translation is one of the key steps in the translation to machine code.</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">demo-anf</span> <span class="nv">l</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">a0</span> <span class="p">(</span><span class="nf">first</span> <span class="nv">l</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">a1</span> <span class="p">(</span><span class="nf">second</span> <span class="nv">l</span><span class="p">)]</span> <span class="c1">; newly-introduced "administrative" variable</span>
+        <span class="p">[</span><span class="nf">a2</span> <span class="p">(</span><span class="nf">third</span> <span class="nv">l</span><span class="p">)])</span>
+    <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">a3</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">a1</span> <span class="nv">a2</span><span class="p">)])</span>
+      <span class="p">(</span><span class="nb">*</span> <span class="nv">a0</span> <span class="nv">a3</span><span class="p">))))</span>
+</code></pre></div></div>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>Transform the following function, <code class="language-plaintext highlighter-rouge">baz</code>, into <code class="language-plaintext highlighter-rouge">baz+</code>, a version of the function that satisfies the following constraint: every function’s argument can only be a variable / constant.</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">baz</span> <span class="nv">x</span> <span class="nv">l</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">list-set</span> <span class="nv">l</span> <span class="nv">x</span> <span class="p">(</span><span class="nb">+</span> <span class="p">(</span><span class="nb">list-ref</span> <span class="nv">l</span> <span class="nv">x</span><span class="p">)</span> <span class="mi">10</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">baz+</span> <span class="nv">x</span> <span class="nv">l</span><span class="p">)</span>
+  <span class="ss">'todo</span><span class="p">)</span> <span class="c1">;; introduce new lets, think carefully about evaluation order</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="the-stack">The Stack</h2>
+
+<p><strong>(IMPORTANT!)</strong> Here is one big high-level lesson to take away from today’s lecture: the computer uses a <em>stack</em> to <em>remember where to return</em> during the execution of a function. This is an advanced concept, because it appeals (to some degree) to how the machine executes functions at the assembler level.</p>
+
+<p>Say, for example, we have an expression such as:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(f (g x y) (h z))
+</code></pre></div></div>
+
+<p>While we are doing the call to <code class="language-plaintext highlighter-rouge">(g x y)</code>, we know we are <em>awaiting</em> its return value <code class="language-plaintext highlighter-rouge">v</code>, so that we may continue by calculating <code class="language-plaintext highlighter-rouge">(h z)</code>, and then finally applying <code class="language-plaintext highlighter-rouge">f</code> to the results of both evaluations.</p>
+
+<p>The idea is this: at every point in time, we need to have some memory of “where to go next.” When we’re evaluating <code class="language-plaintext highlighter-rouge">(g x y)</code>, we know that what we’re going to do next is (a) store the result and then (b) continue to <code class="language-plaintext highlighter-rouge">(h z)</code> and then (c) use the two results to call <code class="language-plaintext highlighter-rouge">f</code>, followed by (d) whatever we’re doing with the result of the call to <code class="language-plaintext highlighter-rouge">f</code>.</p>
+
+<p>The computer uses a <em>stack</em> (last in, first out queue) to do this: whenever we call a function, the computer’s stack remembers where to return. For example, during the call to <code class="language-plaintext highlighter-rouge">(g x y)</code>, the stack–a special, designated portion of memory–encodes the information necessary to return from the call to <code class="language-plaintext highlighter-rouge">g</code> and continue the execution of the program.</p>
+
+<p>This lesson is true across languages. For example, in this C code here, https://godbolt.org/z/zPPnK6rcG, we see the fibonacci function is compiled to use the <code class="language-plaintext highlighter-rouge">call</code> instruction in assembly. The call instruction pushes a “return point” on the computer’s stack, and then jumps to the beginning of the function’s body. By default, every time we call the function, it pushes a stack frame. Thus, functions with deep recursions will potentially use a lot of stack space.</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">fac</span> <span class="nv">x</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">x</span>
+    <span class="p">[</span><span class="nf">0</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">n</span> <span class="p">(</span><span class="nb">*</span> <span class="nv">n</span> <span class="p">(</span><span class="nf">fac</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)))]))</span>
+</code></pre></div></div>
+
+<p>Let’s consider <code class="language-plaintext highlighter-rouge">(fac 4)</code>, it will look like:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(fac 4) = (match 4 [0 1] [n (* n (fac (- 4 1)))])
+        = (* 4 (fac (- 4 1)))
+        = (* 4 (fac 3))
+        = (* 4 (match 3 [0 1] [n (* n (fac (- 3 1)))]))
+        = (* 4 (* 3 (fac (- 3 1))))
+        = (* 4 (* 3 (fac 2)))
+        = (* 4 (* 3 (match 2 [0 1] [n (* n (fac (- 2 1)))])))
+        = (* 4 (* 3 (* 2 (fac (- 2 1)))))
+        = (* 4 (* 3 (* 2 (fac 1))))
+        = (* 4 (* 3 (* 2 (match 1 [0 1] [n (* n (fac (- 1 1)))]))))
+        = (* 4 (* 3 (* 2 (* 1 (fac (- 1 1))))))
+        = (* 4 (* 3 (* 2 (* 1 (fac 0)))))
+        = (* 4 (* 3 (* 2 (* 1 (match 0 [0 1] [n (* n (fac (- 0 1)))])))))
+        = (* 4 (* 3 (* 2 (* 1 1))))
+        = (* 4 (* 3 (* 2 1)))
+        = (* 4 (* 3 2))
+        = (* 4 6)
+        = 24
+</code></pre></div></div>
+
+<p>Notice how the expressions grow horizontally as the computation proceeds. This reflects the fact that as the recursion deepens, we keep pushing stack frames. Ultimately, the recursion bottoms out and returns 1: the stack consists of a long chain of <code class="language-plaintext highlighter-rouge">*</code>s, which are waiting to multiply up the partial results as the stack unwinds back down to the original return point (the caller of <code class="language-plaintext highlighter-rouge">(fac 4)</code>).</p>
+
+<p>The key thing to understand is this: generally (there is an exception we’ll discuss in a minute), when you call a function, you are <em>saving</em> a return point on the stack. This will genuinely cost memory: if you have a large operation with a lot of deep recursions, that could start to be quite expensive. In fact, this was considered a major contributor to why functional languages (LISP, etc.) were seen as slow: in a functional language, you use recursion in place of iteration. Loops are fast, and generally use <code class="language-plaintext highlighter-rouge">jump</code> or <code class="language-plaintext highlighter-rouge">goto</code> instructions: no matter how many elements the loop processes, it doesn’t have any effect on the stack.</p>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>Compared to the input, <code class="language-plaintext highlighter-rouge">n</code>, what will the maximum stack depth of the following function be (give a worst-case bound, i.e., big-O):</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">example</span> <span class="nv">l</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&lt;</span> <span class="nv">l</span> <span class="mi">1</span><span class="p">)</span>
+      <span class="mi">1</span>
+      <span class="p">(</span><span class="nf">example</span> <span class="p">(</span><span class="nb">/</span> <span class="nv">l</span> <span class="mi">2</span><span class="p">))))</span>
+</code></pre></div></div>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>Consider the following code:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(g (+ 1 (f x)) 5)
+</code></pre></div></div>
+
+<p>Assume that we are evaluating the call <code class="language-plaintext highlighter-rouge">(f x)</code>. Describe, in plain English, what the stack will look like. Be as descriptive as possible, and try (if possible) to give enough information that we would know how to do the rest of the execution without seeing the term itself.</p>
+
+<hr />
+
+<h2 id="tail-position-and-tail-calls">Tail Position and Tail Calls</h2>
+
+<p>We will now define a term that is ubiquitous in computing. With respect to some parent expression, a subexpression is in “tail position” when it is the last thing to be evaluated. For example, let’s look at this function:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">f+</span> <span class="nv">x</span> <span class="nv">a</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">x</span>
+    <span class="p">[</span><span class="nf">0</span> <span class="nv">a</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">n</span> <span class="p">(</span><span class="nf">f+</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="nb">*</span> <span class="nv">x</span> <span class="nv">a</span><span class="p">))]))</span>
+</code></pre></div></div>
+
+<p>With respect to the execution of the function <code class="language-plaintext highlighter-rouge">f+</code>, the call to <code class="language-plaintext highlighter-rouge">f+</code> is in tail position. Why is that the case? It’s because after returning from the <em>call</em> <code class="language-plaintext highlighter-rouge">f+</code>, there is <em>nothing</em> left for the execution of <code class="language-plaintext highlighter-rouge">f+</code> to do other than to immediately return.</p>
+
+<p>The call to <code class="language-plaintext highlighter-rouge">f+</code> in the above function is a special type of call. It is a <em>tail</em> call, since it’s a <em>call</em> which is in tail position. Tail calls are handled in a special way. We’ll discuss more in a second. For now, let’s see some more examples of tail calls.</p>
+
+<p>With respect to the <code class="language-plaintext highlighter-rouge">if</code> form, which calls are in tail position?</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">#;</span>
+<span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">equal?</span> <span class="p">(</span><span class="nb">add1</span> <span class="mi">0</span><span class="p">)</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">f</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">g</span> <span class="mi">3</span><span class="p">))</span>
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <p>The calls to <code class="language-plaintext highlighter-rouge">equal?</code> and <code class="language-plaintext highlighter-rouge">add1</code> are NOT in tail position. After returning from either, computation must continue: a tail call’s return value must be the return value of the entire expression.</p>
+  </li>
+  <li>
+    <p>Both the call to <code class="language-plaintext highlighter-rouge">(f 2)</code> and <code class="language-plaintext highlighter-rouge">(g 3)</code> are tail calls: because the return values for <em>either</em> of them is the return value for the whole <code class="language-plaintext highlighter-rouge">if</code>.</p>
+  </li>
+</ul>
+
+<p>Now, more practice: which of the following calls (if any) is a tail call?</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">#;</span>
+<span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">x</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">z</span> <span class="nv">z</span><span class="p">)])</span>
+  <span class="p">(</span><span class="nb">*</span> <span class="nv">x</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p>Answer: the call <code class="language-plaintext highlighter-rouge">(* x (+ x 1))</code> is the return value of the <em>entire let form</em>. However, the <code class="language-plaintext highlighter-rouge">(+ x 1)</code> and <code class="language-plaintext highlighter-rouge">(+ z z)</code> are <em>not</em> tail calls.</p>
+
+<p>To make this more clear, let’s rewrite the code to make the evaluation order explicit:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">#;</span>
+<span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">x</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">z</span> <span class="nv">z</span><span class="p">)])</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">a0</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)])</span>
+    <span class="p">(</span><span class="nb">*</span> <span class="nv">x</span> <span class="nv">a0</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p>We can see now how <code class="language-plaintext highlighter-rouge">*</code> is the very last call in the <code class="language-plaintext highlighter-rouge">let</code> form.</p>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>Consider <em>all</em> possible calls in the code below, which calls are in tail position (we call these “tail calls”)?</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">#;</span>
+<span class="p">(</span><span class="k">cond</span> <span class="p">[(</span><span class="nb">equal?</span> <span class="nv">x</span> <span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="nb">add1</span> <span class="nv">x</span><span class="p">)]</span>
+      <span class="p">[(</span><span class="nf">f</span> <span class="nv">x</span><span class="p">)</span> <span class="p">(</span><span class="nb">sub1</span> <span class="nv">x</span><span class="p">)]</span>
+      <span class="p">[</span><span class="nf">else</span> <span class="p">(</span><span class="nf">g</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">))])</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="tail-call-optimization-tco-and-tail-recursive-functions">Tail Call Optimization (TCO) and Tail Recursive Functions</h2>
+
+<p>Tail calls are optimized by the compiler. To understand why, let’s consider the function we looked at before:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">f+</span> <span class="nv">x</span> <span class="nv">a</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">x</span>
+    <span class="p">[</span><span class="nf">0</span> <span class="nv">a</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">n</span> <span class="p">(</span><span class="nf">f+</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="nb">*</span> <span class="nv">x</span> <span class="nv">a</span><span class="p">))]))</span>
+</code></pre></div></div>
+
+<p>Consider the call to <code class="language-plaintext highlighter-rouge">f+</code> in this function. The call is a tail call: from the perspective of the whole function <code class="language-plaintext highlighter-rouge">f+</code>, the return value of the inner call to <code class="language-plaintext highlighter-rouge">f+</code> is the return value from the <em>whole</em> function <code class="language-plaintext highlighter-rouge">f+</code>. If you don’t understand this, stop and read it again carefully: the return value from the <em>recursive call</em> to <code class="language-plaintext highlighter-rouge">f+</code> <em>is</em> the return value of the entire function.</p>
+
+<p>Because of this, using the stack would be inefficient: the <em>only</em> thing the stack is doing–in a tail call–is to wait for the return value and then “copy along” the return value from <code class="language-plaintext highlighter-rouge">f+</code> so that it becomes <em>our</em> (the function currently being called, <code class="language-plaintext highlighter-rouge">f+</code> in the example) return value. Instead of pushing a stack frame–just to then copy over the result–tail call optimization says this:</p>
+
+<p><strong>“Tail Call Optimization (TCO):”</strong> TCO is an optimization wherein a tail call is replaced by a <em>goto</em>. Instead of saving a return point on the stack–only to then copy our callee’s return value along–we will simply <em>not</em> save a return point on the stack, and will instead <em>jump</em> to the beginning of the function being called, leaving the stack alone. Now, the proximate return point will be <em>our</em> caller, and when that function eventually returns, it will return to <em>our</em> caller.</p>
+
+<p>In many functional languages–including Racket–tail calls are <em>guaranteed</em> to be optimized: no tail call in Racket will <em>ever</em> push a stack frame. To be even more specific about it, the function above:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">f+</span> <span class="nv">x</span> <span class="nv">a</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">x</span>
+    <span class="p">[</span><span class="nf">0</span> <span class="nv">a</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">n</span> <span class="p">(</span><span class="nf">f+</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="nb">*</span> <span class="nv">x</span> <span class="nv">a</span><span class="p">))]))</span>
+</code></pre></div></div>
+
+<p>will not push <em>any</em> stack frames. This is because–unlike the original factorial–the recursive call to <code class="language-plaintext highlighter-rouge">f+</code> acts more like a goto. In fact–in terms of its effect on the stack–the code above is essentially:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">acc</span> <span class="o">=</span> <span class="n">a</span>
+<span class="nf">while </span><span class="p">(</span><span class="n">x</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
+  <span class="n">x</span> <span class="p">:</span><span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="mi">1</span>
+  <span class="n">a</span> <span class="p">:</span><span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">a</span>
+</code></pre></div></div>
+
+<p>We will not discuss how while loops are compiled, but the essence is this: at the end of the loop body, you go back up to the loop header (the check for <code class="language-plaintext highlighter-rouge">x != 0</code>).</p>
+
+<p>Code that avoids pushing stack frames can be <em>significantly</em> faster; deep recursion is bad for performance for several reasons:</p>
+
+<ul>
+  <li>
+    <p>(a) The stack is generally finite in size–it is actually possible to run out of stack space (a “stack overflow”), but there are ways around this.</p>
+  </li>
+  <li>
+    <p>(b) If we push many frames onto the stack and then pop them off, we may evict useful data from the cache. When the recursion unwinds, that data will have been evicted and will need to be reloaded (assuming it is still needed).</p>
+  </li>
+</ul>
+
+<p>Thus, it is reasonable to say:</p>
+
+<blockquote>
+  <p>“When functional programmers say <em>loops</em>, they mean <em>tail-recursive functions</em>.”</p>
+</blockquote>
+
+<p>We call a function “tail recursive” when <em>every</em> recursive call is a tail call. Because every tail call (without exception) does not push (or pop) any stack frames, tail calls are effectively “free” with respect to stack usage (in terms of the assembly, they are <code class="language-plaintext highlighter-rouge">goto</code>s or <code class="language-plaintext highlighter-rouge">jmp</code> instructions rather than <em>calls</em>, which save a return address).</p>
+
+<p>To be more specific, let’s look at another function:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">list-length-direct</span> <span class="nv">l</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">l</span>
+    <span class="p">[</span><span class="o">'</span><span class="p">()</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">hd</span> <span class="o">,</span><span class="nv">tl</span> <span class="o">...</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="mi">1</span> <span class="p">(</span><span class="nf">list-length-direct</span> <span class="nv">tl</span><span class="p">))]))</span>
+</code></pre></div></div>
+
+<p>This function is <em>not</em> tail recursive. It uses normal, direct-style recursion. With respect to the size <code class="language-plaintext highlighter-rouge">n</code> of the list <code class="language-plaintext highlighter-rouge">l</code>, the stack usage of <code class="language-plaintext highlighter-rouge">list-length-direct</code> is O(n).</p>
+
+<p>By contrast, the following function uses O(1) stack space:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">list-length-acc</span> <span class="nv">l</span> <span class="nv">acc</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">l</span>
+    <span class="p">[</span><span class="o">'</span><span class="p">()</span> <span class="nv">acc</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">hd</span> <span class="o">,</span><span class="nv">tl</span> <span class="o">...</span><span class="p">)</span> <span class="p">(</span><span class="nf">list-length-acc</span> <span class="nv">tl</span> <span class="p">(</span><span class="nb">+</span> <span class="mi">1</span> <span class="nv">acc</span><span class="p">))]))</span> <span class="c1">;; list-length-acc is a tail call.</span>
+</code></pre></div></div>
+
+<p>Compared to the direct-style implementation…</p>
+
+<ul>
+  <li>
+    <p>The tail-recursive version <code class="language-plaintext highlighter-rouge">(list-length-acc l acc)</code> shifts the addition to <em>before</em> the call, by using an extra argument to represent the “accumulator.”</p>
+  </li>
+  <li>
+    <p>The direct-version builds up a large chain of <code class="language-plaintext highlighter-rouge">(+ 1 ...)</code> stack frames, waiting until the recursion finally bottoms out to “unwind” the stack, finally doing all of the <code class="language-plaintext highlighter-rouge">(+ 1 ...)</code>s.</p>
+  </li>
+</ul>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>Which of the following is tail recursive?</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">h+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">equal?</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">+</span> <span class="mi">1</span> <span class="p">(</span><span class="nf">h+</span> <span class="nv">y</span> <span class="nv">x</span><span class="p">))</span>
+      <span class="p">(</span><span class="nf">h+</span> <span class="nv">y</span> <span class="nv">x</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">g+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">cond</span> <span class="p">[(</span><span class="nf">x</span> <span class="nv">y</span><span class="p">)</span> <span class="p">(</span><span class="nf">g+</span> <span class="nv">y</span> <span class="nv">x</span><span class="p">)]</span>
+        <span class="p">[</span><span class="nf">else</span> <span class="nv">y</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>Consider the following direct-style implementation of <code class="language-plaintext highlighter-rouge">(list-sum l)</code>:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">list-sum</span> <span class="nv">l</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">l</span>
+    <span class="p">[</span><span class="o">'</span><span class="p">()</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">hd</span> <span class="o">,</span><span class="nv">tl</span> <span class="o">...</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">hd</span> <span class="p">(</span><span class="nf">list-sum</span> <span class="nv">tl</span><span class="p">))]))</span>
+</code></pre></div></div>
+
+<p>Please write <code class="language-plaintext highlighter-rouge">(list-sum-tail l acc)</code>, which takes an additional argument as an accumulator.</p>
+
+<p>NOTE: In general, we <em>don’t</em> want to expose the extra accumulator argument–it exposes an implementation detail to the caller of the function (they have to pass in 0 everywhere). But I am making it explicit to show the trick: make sure you make the recursive call in tail position, update the accumulator <em>before</em> (as an argument to) the call.</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">list-sum-tail</span> <span class="nv">l</span> <span class="nv">acc</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">l</span>
+    <span class="p">[</span><span class="o">'</span><span class="p">()</span> <span class="ss">'todo</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">hd</span> <span class="o">,</span><span class="nv">tl</span> <span class="o">...</span><span class="p">)</span> <span class="ss">'todo</span><span class="p">]))</span>
+</code></pre></div></div>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '26) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src=https://kmicinski.com//cis352-s26/bower_components/jquery/dist/jquery.min.js></script>
+<script src=https://kmicinski.com//cis352-s26/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js></script>
+
+
+  </body>
+
+</html>
