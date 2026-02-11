@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <title>Project 2: Transitive Closure</title>
-  <meta name="description" content="Due: Wednesday, March 1st, 11:59PM.">
+  <meta name="description" content="Due: Thursday, February 26, 11:59PMLate deadline (-5%): March 1, 11:59PM">
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -88,7 +88,8 @@
   </header>
 
   <div class="post-content writeup-content" itemprop="articleBody">
-    <p><strong>Due</strong>: Wednesday, March 1st, 11:59PM.</p>
+    <p><strong>Due</strong>: Thursday, February 26, 11:59PM
+<strong>Late deadline (-5%)</strong>: March 1, 11:59PM</p>
 
 <p>Available on http://autograde.org. Use your credentials to login.</p>
 
@@ -480,150 +481,6 @@ git push
 
 <p>Once you have done a git commit and push, go to the autograder and
 select for your project to be graded.</p>
-
-<h1 id="starter-code">Starter Code</h1>
-
-<p>For those of you not currently enrolled in the class</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>;; Honor Pledge (bottom too) FILL IN NAME:
-;;
-;; I _____ submit this assignment as my own work
-#lang racket
-(provide (all-defined-out))
-
-;;
-;; CIS352 (Fall 22) Project 2 -- Network Connectivity
-;; 
-
-;; To see the demo, invoke using:
-;;     racket connectivity.rkt &lt;input-file&gt;.net
-;;     racket connectivity.rkt &lt;input-file&gt;.net "CONNECTED &lt;from&gt; &lt;to&gt;"
-
-;; Lines are pared into an intermediate representation satisfying the
-;; line? predicate.
-(define (line? l)
-  (match l
-    [`(node ,(? string? node-name)) #t]
-    [`(link ,(? string? from-node) ,(? string? to-node)) #t]
-    [_ #f]))
-
-;; The input format is a list of line?s
-(define (input-format? lst)
-  (and (list? lst)
-       (andmap line? lst)))
-
-;; A graph? is a hash table whose keys are strings and whose values
-;; are sets of strings.
-(define (graph? gr) (and (hash? gr)
-                         (immutable? gr)
-                         (andmap string? (hash-keys gr))
-                         (andmap (lambda (key) (andmap string? (set-&gt;list (hash-ref gr key))))
-                                 (hash-keys gr))))
-
-
-;; 
-;; BEGIN PROJECT BELOW
-;; 
-
-;; TODO
-;; Parse a line of text input. Lines will have the following format:
-;;     NODE &lt;node-name&gt;
-;;     LINK &lt;node-name&gt; &lt;node-name&gt;
-;; 
-;; Hint: use string-split and match, make sure to produce something
-;; that adheres to `line?`.
-(define/contract (parse-line l)
-  (-&gt; string? line?)
-  ;; TODO TODO TODO 
-  'todo)
-
-;; starter code
-;; read a file by mapping over its lines  
-(define/contract (read-file f)
-  (-&gt; string? input-format?)
-  (map parse-line (file-&gt;lines f)))
-
-;; TODO 
-;; Input is a list of line? commands. Write a recursive function which
-;; builds up a hash.
-;;
-;; - If it's a `node` command, add a link from a node to itself.
-;; - If it's a `link` command, add a directional link as specified.
-;;
-;; Hint: use (hash), (set n), hash-set, set-add, hash-ref, and similar.
-(define/contract (build-init-graph input)
-  (-&gt; input-format? graph?)
-  ;; TODO TODO TODO 
-  (hash))
-
-;; TODO
-;; Check whether or not there is a forward line from n0 to n1 in
-;; graph.
-;; 
-;; Hint: use set-member? and hash-ref
-(define (forward-link? graph n0 n1)
-  'todo)
-
-;; TODO
-;; Add a directed link (from,to) to the graph graph, return the new graph with 
-;; the additional link.
-;;
-;; Hint: use hash-set, hash-ref, and set-add.
-(define (add-link graph from to)
-  'todo)
-
-;; TODO
-;; Perform the transitive closure of the graph. This is the most challenging 
-;; operation in the project, so we recommend putting it off until the end.
-;; 
-;; To perform the transitive closure of the graph, iteratively add links
-;; whenever you find a matching (x,y) and (y,z). This can be done in one of 
-;; two broad ways: (a) chaotic iteration or (b) semi-naive evaluation. 
-;; Read the project description for more details and hints at a solution.
-;; 
-;; My solution uses `foldl`, `hash-keys`, `set-&gt;list`, `hash-ref`, and 
-;; `add-link`. It is always possible to use a recursive helper function instead
-;; of a foldl, but it makes the code much easier to understand in my opinion.
-(define (transitive-closure graph)
-  'todo)
-
-
-;;
-;; END PROJECT CODE, DO NOT TOUCH BELOW
-;;
-
-;; Print a DB
-(define (print-db db)
-  (for ([key (sort (hash-keys db) string&lt;?)])
-    (displayln (format "Key ~a:" key))
-    (displayln (string-append "    " (string-join (sort (set-&gt;list (hash-ref db key)) string&lt;?) ", ")))))
-
-(define (demo file query)
-  (define ir (read-file file))
-  (define initial-db (build-init-graph ir))
-  (displayln "The input is:")
-  (print-db initial-db)
-  (displayln "Now running transitive closure...")
-  (define final-db (transitive-closure initial-db))
-  (displayln "Transitive closure:")
-  (print-db final-db)
-  (unless (equal? query "")
-    (match (string-split query)
-      [`("CONNECTED" ,n0 ,n1)
-        (if (forward-link? final-db n0 n1)
-          (displayln "CONNECTED")
-          (displayln "DISCONNECTED"))])))
-
-(match-define (cons file query)
-  (command-line
-   #:program "connectivity.rkt"
-   #:args ([filename ""]  [query ""])
-   (cons filename query)))
-
-;; if called with a single argument, this racket program will execute
-;; the demo.
-(if (not (equal? file "")) (demo file query) (void))
-</code></pre></div></div>
 
   </div>
 

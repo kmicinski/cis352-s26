@@ -5,8 +5,8 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 08 Feb 2026 16:15:09 -0500</pubDate>
-    <lastBuildDate>Sun, 08 Feb 2026 16:15:09 -0500</lastBuildDate>
+    <pubDate>Wed, 11 Feb 2026 17:18:59 -0500</pubDate>
+    <lastBuildDate>Wed, 11 Feb 2026 17:18:59 -0500</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -1417,7 +1417,8 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
     
       <item>
         <title>Project 2: Transitive Closure</title>
-        <description>&lt;p&gt;&lt;strong&gt;Due&lt;/strong&gt;: Wednesday, March 1st, 11:59PM.&lt;/p&gt;
+        <description>&lt;p&gt;&lt;strong&gt;Due&lt;/strong&gt;: Thursday, February 26, 11:59PM
+&lt;strong&gt;Late deadline (-5%)&lt;/strong&gt;: March 1, 11:59PM&lt;/p&gt;
 
 &lt;p&gt;Available on http://autograde.org. Use your credentials to login.&lt;/p&gt;
 
@@ -1809,150 +1810,6 @@ git push
 
 &lt;p&gt;Once you have done a git commit and push, go to the autograder and
 select for your project to be graded.&lt;/p&gt;
-
-&lt;h1 id=&quot;starter-code&quot;&gt;Starter Code&lt;/h1&gt;
-
-&lt;p&gt;For those of you not currently enrolled in the class&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;;; Honor Pledge (bottom too) FILL IN NAME:
-;;
-;; I _____ submit this assignment as my own work
-#lang racket
-(provide (all-defined-out))
-
-;;
-;; CIS352 (Fall 22) Project 2 -- Network Connectivity
-;; 
-
-;; To see the demo, invoke using:
-;;     racket connectivity.rkt &amp;lt;input-file&amp;gt;.net
-;;     racket connectivity.rkt &amp;lt;input-file&amp;gt;.net &quot;CONNECTED &amp;lt;from&amp;gt; &amp;lt;to&amp;gt;&quot;
-
-;; Lines are pared into an intermediate representation satisfying the
-;; line? predicate.
-(define (line? l)
-  (match l
-    [`(node ,(? string? node-name)) #t]
-    [`(link ,(? string? from-node) ,(? string? to-node)) #t]
-    [_ #f]))
-
-;; The input format is a list of line?s
-(define (input-format? lst)
-  (and (list? lst)
-       (andmap line? lst)))
-
-;; A graph? is a hash table whose keys are strings and whose values
-;; are sets of strings.
-(define (graph? gr) (and (hash? gr)
-                         (immutable? gr)
-                         (andmap string? (hash-keys gr))
-                         (andmap (lambda (key) (andmap string? (set-&amp;gt;list (hash-ref gr key))))
-                                 (hash-keys gr))))
-
-
-;; 
-;; BEGIN PROJECT BELOW
-;; 
-
-;; TODO
-;; Parse a line of text input. Lines will have the following format:
-;;     NODE &amp;lt;node-name&amp;gt;
-;;     LINK &amp;lt;node-name&amp;gt; &amp;lt;node-name&amp;gt;
-;; 
-;; Hint: use string-split and match, make sure to produce something
-;; that adheres to `line?`.
-(define/contract (parse-line l)
-  (-&amp;gt; string? line?)
-  ;; TODO TODO TODO 
-  &apos;todo)
-
-;; starter code
-;; read a file by mapping over its lines  
-(define/contract (read-file f)
-  (-&amp;gt; string? input-format?)
-  (map parse-line (file-&amp;gt;lines f)))
-
-;; TODO 
-;; Input is a list of line? commands. Write a recursive function which
-;; builds up a hash.
-;;
-;; - If it&apos;s a `node` command, add a link from a node to itself.
-;; - If it&apos;s a `link` command, add a directional link as specified.
-;;
-;; Hint: use (hash), (set n), hash-set, set-add, hash-ref, and similar.
-(define/contract (build-init-graph input)
-  (-&amp;gt; input-format? graph?)
-  ;; TODO TODO TODO 
-  (hash))
-
-;; TODO
-;; Check whether or not there is a forward line from n0 to n1 in
-;; graph.
-;; 
-;; Hint: use set-member? and hash-ref
-(define (forward-link? graph n0 n1)
-  &apos;todo)
-
-;; TODO
-;; Add a directed link (from,to) to the graph graph, return the new graph with 
-;; the additional link.
-;;
-;; Hint: use hash-set, hash-ref, and set-add.
-(define (add-link graph from to)
-  &apos;todo)
-
-;; TODO
-;; Perform the transitive closure of the graph. This is the most challenging 
-;; operation in the project, so we recommend putting it off until the end.
-;; 
-;; To perform the transitive closure of the graph, iteratively add links
-;; whenever you find a matching (x,y) and (y,z). This can be done in one of 
-;; two broad ways: (a) chaotic iteration or (b) semi-naive evaluation. 
-;; Read the project description for more details and hints at a solution.
-;; 
-;; My solution uses `foldl`, `hash-keys`, `set-&amp;gt;list`, `hash-ref`, and 
-;; `add-link`. It is always possible to use a recursive helper function instead
-;; of a foldl, but it makes the code much easier to understand in my opinion.
-(define (transitive-closure graph)
-  &apos;todo)
-
-
-;;
-;; END PROJECT CODE, DO NOT TOUCH BELOW
-;;
-
-;; Print a DB
-(define (print-db db)
-  (for ([key (sort (hash-keys db) string&amp;lt;?)])
-    (displayln (format &quot;Key ~a:&quot; key))
-    (displayln (string-append &quot;    &quot; (string-join (sort (set-&amp;gt;list (hash-ref db key)) string&amp;lt;?) &quot;, &quot;)))))
-
-(define (demo file query)
-  (define ir (read-file file))
-  (define initial-db (build-init-graph ir))
-  (displayln &quot;The input is:&quot;)
-  (print-db initial-db)
-  (displayln &quot;Now running transitive closure...&quot;)
-  (define final-db (transitive-closure initial-db))
-  (displayln &quot;Transitive closure:&quot;)
-  (print-db final-db)
-  (unless (equal? query &quot;&quot;)
-    (match (string-split query)
-      [`(&quot;CONNECTED&quot; ,n0 ,n1)
-        (if (forward-link? final-db n0 n1)
-          (displayln &quot;CONNECTED&quot;)
-          (displayln &quot;DISCONNECTED&quot;))])))
-
-(match-define (cons file query)
-  (command-line
-   #:program &quot;connectivity.rkt&quot;
-   #:args ([filename &quot;&quot;]  [query &quot;&quot;])
-   (cons filename query)))
-
-;; if called with a single argument, this racket program will execute
-;; the demo.
-(if (not (equal? file &quot;&quot;)) (demo file query) (void))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
         <pubDate>Sun, 02 Oct 2022 00:00:00 -0400</pubDate>
         <link>https://kmicinski.com/cis352-s26/projects/2</link>
