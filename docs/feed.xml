@@ -5,8 +5,8 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 11 Feb 2026 17:22:47 -0500</pubDate>
-    <lastBuildDate>Wed, 11 Feb 2026 17:22:47 -0500</lastBuildDate>
+    <pubDate>Wed, 11 Feb 2026 17:24:32 -0500</pubDate>
+    <lastBuildDate>Wed, 11 Feb 2026 17:24:32 -0500</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -1448,10 +1448,8 @@ networking is of interest to you.&lt;/p&gt;
 
 &lt;h3 id=&quot;academic-integrity&quot;&gt;Academic Integrity&lt;/h3&gt;
 
-&lt;p&gt;The coding on this project is to be completed by you alone, without
-help from any other students. You are encouraged to discuss the
-project specification at a high level, but should not discuss
-specifics or show students your solution code.&lt;/p&gt;
+&lt;p&gt;See syllabus for academic integrity / AI policy. AI usage is allowed,
+please document (prompts, etc.) in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ai-usage.txt&lt;/code&gt;.&lt;/p&gt;
 
 &lt;h2 id=&quot;input-format&quot;&gt;Input Format&lt;/h2&gt;
 
