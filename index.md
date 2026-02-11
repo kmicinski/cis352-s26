@@ -370,7 +370,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-		  Natural Deduction (Introduction) and Transitive Closure (Homework 2)
+		  Finish up / review previous topics -- Homework 2 Discussion
         </div>
         <ul class="resources-list">
           <li>

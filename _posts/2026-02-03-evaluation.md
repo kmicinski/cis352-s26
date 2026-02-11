@@ -79,7 +79,14 @@ We can see: even though the code crashes, "here!" is never printed! Now we might
 
 Now we ask: why is the code not even reached? The answer in this case is that the match statements are in the wrong order: the first subsumes the second. If we truly wanted to see that, we could rearrange to print "here!" (or something else) at the beginning of that branch.
 
-When your code is broken, reachability hypotheses are one of the best tools at your disposal, because they allow you to gradually adjust the printing. As long as you can keep rerunning quickly, this can be an effective debugging technique. Of course, this style merely emulates step-based debugging (e.g., gdb), but: (a) many languages lack good debuggers and (b) sometimes running a debugger is not practical (such as in production environments where you can only emit logs).
+When your code is broken, reachability hypotheses are one of the best
+tools at your disposal, because they allow you to gradually adjust the
+printing. As long as you can keep rerunning quickly, this can be an
+effective debugging technique. Of course, this style merely emulates
+step-based debugging (e.g., gdb), but: (a) many languages lack good
+debuggers and (b) sometimes running a debugger is not practical (such
+as in high-performance multithreading applications, or times where you
+can only emit logging statements).
 
 Building intuition about control flow is closely related to printf-style debugging: when we encounter bugs in our code, incorrect control flow is often the culprit.
 
