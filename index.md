@@ -401,8 +401,16 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Exam 1 Review
         </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/stack-smashing.pdf">Stack Smashing (Short Lecture Slides)</a>
+          </li>
+        </ul>
       </div>
+	  
     </li>
+
     <!-- Session: 2/19 Exam 1 -->
     <li class="session-item">
       <div class="date-col">2/19</div>
@@ -418,7 +426,7 @@ layout: mainpage
 
 <!-- WEEK 7 -->
 <div class="week-header">
-  <h2><i class="fa-solid fa-calendar-week"></i> Week 7: Natural Deduction and Lambda Calculus</h2>
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 7: Natural Deduction and Interpreters</h2>
 </div>
 <div class="week-schedule">
   <ul>
@@ -428,7 +436,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Natural Deduction and Proof Trees
+          Natural Deduction, Proof Trees, and Interpreters Intro
         </div>
         <ul class="resources-list">
           <li>
@@ -464,7 +472,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Lambda Calculus and Operational Semantics Introduction
+          Big-Step Interpreters
         </div>
         <ul class="resources-list">
           <li>
@@ -484,7 +492,7 @@ layout: mainpage
 
 <!-- WEEK 8 -->
 <div class="week-header">
-  <h2><i class="fa-solid fa-calendar-week"></i> Week 8: Lambda Calculus Mechanics</h2>
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 8: Lambda Calculus</h2>
 </div>
 <div class="week-schedule">
   <ul>
@@ -494,7 +502,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Lambda Calculus: Reduction Rules
+          Lambda Calculus (Introduction)
         </div>
         <ul class="resources-list">
           <li>
@@ -529,7 +537,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Reduction Strategies (Call-by-Value, Call-by-Name, Call-by-Need) + Denotational Semantics Introduction
+          Lambda Calculus: Reduction Rules / Strategies Intro
         </div>
         <ul class="resources-list">
           <li>
