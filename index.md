@@ -441,11 +441,11 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=RqA-m_QMJYc&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG&amp;index=20">Lecture Video</a>
+            <a href="https://www.youtube.com/watch?v=neCrsTf8h7Y&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Natural Deduction)</a>
           </li>
           <li>
-            <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambda-intro.pdf">Lecture Slides</a>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=vhOH2GmuYrQ&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Interpreting IfArith)</a>
           </li>
         </ul>
       </div>
@@ -477,11 +477,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=Paxvaq0Q-S0&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG&amp;index=21">Lecture Video</a>
-          </li>
-          <li>
-            <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambda-reductions.pdf">Lecture Slides</a>
+            <a href="https://www.youtube.com/watch?v=Qq5Bzpsoi7k&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Small Step Semantics of IfArith)</a>
           </li>
         </ul>
       </div>
@@ -507,11 +503,11 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=Paxvaq0Q-S0&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG&amp;index=21">Lecture Video</a>
+            <a href="https://www.youtube.com/watch?v=RqA-m_QMJYc&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Lambda Calculus Introduction)</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambda-reductions.pdf">Lecture Slides</a>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambda-intro.pdf">Lecture Slides</a>
           </li>
         </ul>
       </div>
@@ -542,11 +538,19 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=GNkQrqAGB-o&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG&amp;index=22">Lecture Video</a>
+            <a href="https://www.youtube.com/watch?v=Paxvaq0Q-S0&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Reductions and Substitution)</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=GNkQrqAGB-o&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Reduction Strategies)</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/reduction-strategies.pdf">Lecture Slides</a>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambda-reductions.pdf">Lecture Slides (Reductions)</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/reduction-strategies.pdf">Lecture Slides (Strategies)</a>
           </li>
         </ul>
       </div>
