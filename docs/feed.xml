@@ -5,9 +5,233 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 23 Feb 2026 16:58:46 -0500</pubDate>
-    <lastBuildDate>Mon, 23 Feb 2026 16:58:46 -0500</lastBuildDate>
+    <pubDate>Tue, 03 Mar 2026 12:19:26 -0500</pubDate>
+    <lastBuildDate>Tue, 03 Mar 2026 12:19:26 -0500</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>The Untyped λ-Calculus</title>
+        <description>&lt;h2 id=&quot;topics&quot;&gt;Topics&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The Untyped λ-Calculus&lt;/li&gt;
+  &lt;li&gt;β-reduction&lt;/li&gt;
+  &lt;li&gt;λ-calculus Semantics and Normal Forms&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;the-untyped-λ-calculus&quot;&gt;The Untyped λ-Calculus&lt;/h2&gt;
+
+&lt;p&gt;Today we will learn about one of the most central aspects of the course: Alonzo Church’s untyped λ-calculus. The λ-calculus is not at all like the integral calculus. Instead, the λ-calculus is a computationally “complete” system consisting of an extremely minimal number of syntax and semantic rules.&lt;/p&gt;
+
+&lt;p&gt;The syntax of the λ-calculus includes just three forms. We define untyped λ-calculus expressions in the following manner:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;e ∈ Expr ::=   (read: &quot;The set Expr, of expressions consists of...&quot;)
+          | x             ← Variable references
+          | (λ (x) e)     ← λ abstractions
+          | (e e)         ← Application
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;That is the syntax of the λ-calculus. We will spend a long time studying the “semantics” of the λ calculus: the untyped λ-calculus has a fairly “nondeterministic” semantics defined in terms of rewriting rules—to turn the λ calculus into a programming language (such as Racket / Haskell / etc.), we will need to make some more decisions (we will cover this in later classes).&lt;/p&gt;
+
+&lt;p&gt;For now, let’s see some examples of λ-calculus terms:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;λx. x&lt;/code&gt;, which I would write as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) x)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;λx. λy. x&lt;/code&gt;, which I would write as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) (λ (y) x))&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;λx. x y&lt;/code&gt;, which I would write as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) (x y))&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Notice that Racket’s syntax completely disambiguates what is going on, hence we will stick with the Scheme-style λ, compared to the more traditional λ-calculus notation.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;Which of the following (possibly multiple) is in the lambda calculus?&lt;/p&gt;
+
+  &lt;ul&gt;
+    &lt;li&gt;(A) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) y)&lt;/code&gt;&lt;/li&gt;
+    &lt;li&gt;(B) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x y) x)&lt;/code&gt;&lt;/li&gt;
+    &lt;li&gt;(C) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) (λ (y) (λ (z) (z x))))&lt;/code&gt;&lt;/li&gt;
+    &lt;li&gt;(D) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((λ (x) e) 1)&lt;/code&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;β-reduction&quot;&gt;β-reduction&lt;/h2&gt;
+
+&lt;p&gt;β-reduction is the most fundamental operation in the λ calculus. It simply means the following:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((λ (x) e-b) e-a) β⟹ e-b [x ↦ e-a]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In other words: any expression &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e-f e-a)&lt;/code&gt; is a candidate for β-reduction whenever &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e-f&lt;/code&gt; is of the form &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) e-b)&lt;/code&gt;. We call expressions of this form &lt;em&gt;redexes&lt;/em&gt; for “reducible expressions.”&lt;/p&gt;
+
+&lt;p&gt;The “meaning” of a λ-calculus term is given by all of the possible different reductions (so far we have talked only about β) we can do to it. Some cases are easy, let’s see our first example of β reduction:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((λ (x) x) y) β⟹ x [x ↦ y] ≡ y
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Notice how in this case, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;y&lt;/code&gt; is the argument. But we couldn’t write this in Racket:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((λ (x) x) y)   ← Syntax error: y is unbound variable
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;β-reduction, and the untyped λ-calculus in general, doesn’t care that the variable is unbound. β-reduction just says: “to apply a function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) e-b)&lt;/code&gt; to an argument expression &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e-a&lt;/code&gt;, substitute &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e-a&lt;/code&gt; in the body.”&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;Perform β-reduction on the term &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((λ (x) (x (x y))) z)&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;Perform β-reduction on the term &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((λ (x) (λ (y) (y x))) (λ (z) z))&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;Perform β-reduction on the term &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((λ (x) (x x)) (λ (x) (x x)))&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;substitution-tricky-we-will-skip-for-now&quot;&gt;Substitution: Tricky, we will skip for now&lt;/h3&gt;
+
+&lt;p&gt;One note: we are being colloquial about substitution. In fact, substitution is a bit tricky, and it requires some care. We will discuss these nuances in a future lecture, where we will cover some other reduction rules and technical details. For now, it is sufficient to say that you can intuit substitution as “plug and chug” from grade-school algebra / calculus.&lt;/p&gt;
+
+&lt;h3 id=&quot;reducing-deep-into-a-term&quot;&gt;Reducing deep into a term&lt;/h3&gt;
+
+&lt;p&gt;Sometimes, the redex will not be obvious. In fact, in general, a term may have multiple redexes.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;Give a term that contains &lt;em&gt;two&lt;/em&gt; redexes, i.e., two subexpressions such that the expression could have β-reduction performed upon it.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;In the untyped λ calculus, we typically construe β reduction to be &lt;em&gt;any possible&lt;/em&gt; beta reduction deep down within the term. Ultimately we will see that this is not what we want for programming, but for now we will develop it.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;The following term has two possible β-reductions:&lt;/p&gt;
+
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((λ (x) y)
+ ((λ (z) (z z)) (λ (a) (a a))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;Please perform both possible β reductions, what is the result?&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;λ-calculus-semantics-and-normal-forms&quot;&gt;λ-calculus Semantics and Normal Forms&lt;/h2&gt;
+
+&lt;p&gt;We will see that, surprisingly, the λ-calculus is Turing complete. This is surprising because, essentially, β-reduction is the &lt;em&gt;only&lt;/em&gt; computational rule in the whole system. There will be some other reduction rules (α and η), which will have their own place, but β is the main computational rule.&lt;/p&gt;
+
+&lt;p&gt;The λ-calculus is ruthlessly tiny, essentially the “assembly language” of functional programming, stripping down functional programming &lt;em&gt;just&lt;/em&gt; to function calls.&lt;/p&gt;
+
+&lt;p&gt;The “semantics” of the untyped λ-calculus is defined by reduction rules. We have seen one already: the β rule. We can see each β-reduction as one “step” of computation in the λ-calculus. Most interesting programs will take—in general—multiple steps of β-reduction to reduce to a &lt;em&gt;normal form&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Definition (Normal Form):&lt;/strong&gt; The term “normal form” refers to a class of expressions which cannot be reduced any further according to some metric. For example, in β-normal form, there can be &lt;em&gt;no&lt;/em&gt; unreduced β-reductions &lt;em&gt;anywhere&lt;/em&gt; in the term.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;Which of the following are in β-normal form:&lt;/p&gt;
+
+  &lt;ul&gt;
+    &lt;li&gt;(A) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) (λ (y) (x (λ (z) y))))&lt;/code&gt;&lt;/li&gt;
+    &lt;li&gt;(B) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) ((λ (z) x) x))&lt;/code&gt;&lt;/li&gt;
+    &lt;li&gt;(C) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(z (λ (x) (x x)))&lt;/code&gt;&lt;/li&gt;
+    &lt;li&gt;(D) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) (x ((λ (y) y) x)))&lt;/code&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;Fact:&lt;/strong&gt; it is impossible, in general, to take an arbitrary λ-calculus expression and determine whether a β-normal form exists.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Explanation:&lt;/em&gt; Equivalent to the halting problem.&lt;/p&gt;
+
+&lt;p&gt;So far, our lecture has focused on the definition of the λ-calculus as a &lt;em&gt;term rewriting&lt;/em&gt; system. In fact, this is precisely what the λ-calculus is: a formulation of functions as terms, where we can use β to drive computation via rewriting / substitution.&lt;/p&gt;
+
+&lt;p&gt;When we imagine &lt;em&gt;computing&lt;/em&gt; with the λ-calculus, we imagine running &lt;em&gt;many&lt;/em&gt; steps of β reduction, gradually reducing the term into a &lt;em&gt;value&lt;/em&gt; (i.e., result). Thus, we can see normal forms as &lt;em&gt;values&lt;/em&gt;, the results of fully-reducing an expression.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;Fully-reduce the following term to β-normal form:&lt;/p&gt;
+
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(((λ (x) (λ (y) (x y))) (λ (x) x)) (λ (b) a))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;Show each step of each β-reduction.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;As we will see, the “meaning” of a λ-calculus term is a large, non-deterministic tree of all possible ways in which it could potentially be reduced. Some of these will yield normal forms, and some of them will not.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;Which of the following is true about the following term:&lt;/p&gt;
+
+  &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((λ (x) z) ((λ (x) (x x)) (λ (x) (x x))))&lt;/code&gt;&lt;/p&gt;
+
+  &lt;ul&gt;
+    &lt;li&gt;(A) The term reduces forever&lt;/li&gt;
+    &lt;li&gt;(B) The term reduces to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;z&lt;/code&gt;&lt;/li&gt;
+    &lt;li&gt;(C) Both (A) and (B)&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;summary-day-one-of-the-λ-calculus&quot;&gt;Summary: Day one of the λ-calculus&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;A &lt;em&gt;calculus&lt;/em&gt; refers to a system for manipulating and rewriting terms. The differential and integral calculus is a system for rewriting terms via symbolic differentiation/integration.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;The untyped λ-calculus is a system of computing with terms that aims for absolute minimalism.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Only three forms: variables, application, and λ-abstraction.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;The single computational rule is given by β, we will learn more reduction rules soon but β is the main (compute-relevant) one.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;The “meaning” of a term in the λ-calculus is given by a reduction relation (in this case we have learned only of β-reduction): the idea is that the term will be reduced multiple times until it reaches some “normal form.”&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;A normal form is when you can’t reduce any further, by some metric. We learned one normal form today: β-normal form, in which there is no more β-reduction possible.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;In the untyped λ-calculus, a given term may have a multitude of different possible redexes (reducible subexpressions). The untyped λ-calculus does not tell us which of those redexes must be applied, and so the meaning of a term in the λ-calculus may have some ambiguity: all different possible ways of reducing the term.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;This leaves us with an obvious question: will all ways of reducing the term reach the same conclusion / normal form? It turns out the answer is Yes*, under some circumstances, which we will learn about in the next lectures. In short: the Church-Rosser theorem tells us that if a term &lt;em&gt;does&lt;/em&gt; have a normal form, it will be unique up to variable renaming.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Church wasn’t trying to model hardware. He was trying to:&lt;/p&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Characterize effective calculability.&lt;/li&gt;
+      &lt;li&gt;Provide a logical foundation for mathematics.&lt;/li&gt;
+      &lt;li&gt;β-reduction was a mathematical equality principle, not an execution model.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Tue, 03 Mar 2026 00:00:00 -0500</pubDate>
+        <link>https://kmicinski.com/cis352-s26/lambda</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/lambda</guid>
+        
+        
+      </item>
     
       <item>
         <title>Evaluation Order</title>
