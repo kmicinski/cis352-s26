@@ -2,6 +2,13 @@ pub mod sexp;
 pub mod tree;
 pub mod check;
 pub mod bigstep;
+pub mod formula;
+pub mod types;
+pub mod g3ip;
+pub mod propnd;
+pub mod stlc;
+pub mod systemf;
+pub mod smallstep;
 
 use wasm_bindgen::prelude::*;
 
@@ -25,9 +32,31 @@ pub fn check_proof(sexp_str: &str, theory: &str) -> String {
         }
     };
 
+    let available = "big-step, small-step, g3ip, propnd, stlc, systemf";
+
     let result = match theory {
         "big-step" | "bigstep" | "" => {
             let th = bigstep::BigStepTheory;
+            check::check_tree(&node, &th)
+        }
+        "small-step" | "smallstep" => {
+            let th = smallstep::SmallStepTheory;
+            check::check_tree(&node, &th)
+        }
+        "g3ip" | "G3ip" | "sequent" => {
+            let th = g3ip::G3ipTheory;
+            check::check_tree(&node, &th)
+        }
+        "propnd" | "prop-nd" | "natural-deduction" => {
+            let th = propnd::PropNDTheory;
+            check::check_tree(&node, &th)
+        }
+        "stlc" | "STLC" | "simply-typed" => {
+            let th = stlc::STLCTheory;
+            check::check_tree(&node, &th)
+        }
+        "systemf" | "system-f" | "SystemF" => {
+            let th = systemf::SystemFTheory;
             check::check_tree(&node, &th)
         }
         _ => check::CheckResult {
@@ -36,7 +65,7 @@ pub fn check_proof(sexp_str: &str, theory: &str) -> String {
             diagnostics: vec![check::Diagnostic {
                 level: check::Level::Error,
                 path: vec![],
-                message: format!("Unknown theory '{}'. Available: big-step", theory),
+                message: format!("Unknown theory '{}'. Available: {}", theory, available),
             }],
         },
     };
@@ -63,8 +92,16 @@ pub fn parse_judgement(s: &str) -> String {
     }
 }
 
-/// List available theories. Returns JSON array of strings.
+/// List available theories. Returns JSON array of {id, name} objects.
 #[wasm_bindgen]
 pub fn list_theories() -> String {
-    serde_json::to_string(&["big-step"]).unwrap()
+    serde_json::to_string(&serde_json::json!([
+        {"id": "big-step", "name": "Big-Step Operational Semantics"},
+        {"id": "small-step", "name": "Small-Step Operational Semantics"},
+        {"id": "g3ip", "name": "G3ip Sequent Calculus"},
+        {"id": "propnd", "name": "Propositional Natural Deduction"},
+        {"id": "stlc", "name": "Simply-Typed Lambda Calculus"},
+        {"id": "systemf", "name": "System F"},
+    ]))
+    .unwrap()
 }

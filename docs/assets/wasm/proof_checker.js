@@ -1,5 +1,3 @@
-/* @ts-self-types="./proof_checker.d.ts" */
-
 /**
  * Check a proof tree S-expression against a named theory.
  * Returns JSON: { valid, complete, diagnostics: [{level, path, message}] }
@@ -25,7 +23,7 @@ export function check_proof(sexp_str, theory) {
 }
 
 /**
- * List available theories. Returns JSON array of strings.
+ * List available theories. Returns JSON array of {id, name} objects.
  * @returns {string}
  */
 export function list_theories() {

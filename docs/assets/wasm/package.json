@@ -4,11 +4,9 @@
   "version": "0.1.0",
   "files": [
     "proof_checker_bg.wasm",
-    "proof_checker.js",
-    "proof_checker.d.ts"
+    "proof_checker.js"
   ],
   "main": "proof_checker.js",
-  "types": "proof_checker.d.ts",
   "sideEffects": [
     "./snippets/*"
   ]
