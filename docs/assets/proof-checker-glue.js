@@ -274,6 +274,7 @@ var ProofChecker = (function () {
 
   var _theoryRuleNames = {
     'big-step':   ['Int', 'Var', 'Lam', 'Add', 'Neg', 'App', 'If0-True', 'If0-False', 'Let'],
+    'small-step': ['Add', 'Neg', 'Beta', 'Add-L', 'Add-R', 'Neg-Step', 'App-L', 'App-R', 'If0-True', 'If0-False', 'If0-Step', 'Let-Step', 'Let'],
     'g3ip':       ['Ax', '\u22A5L', '\u22A4R', '\u2227R', '\u2227L', '\u2228R\u2081', '\u2228R\u2082', '\u2228L', '\u2192R', '\u2192L'],
     'propnd':     ['Ax', '\u2192I', '\u2192E', '\u2227I', '\u2227E\u2081', '\u2227E\u2082', '\u2228I\u2081', '\u2228I\u2082', '\u2228E', '\u22A5E', '\u00ACI', '\u00ACE'],
     'fond':       ['Ax', '\u2192I', '\u2192E', '\u2227I', '\u2227E\u2081', '\u2227E\u2082', '\u2228I\u2081', '\u2228I\u2082', '\u2228E', '\u22A5E', '\u00ACI', '\u00ACE', '\u2200I', '\u2200E', '\u2203I', '\u2203E'],

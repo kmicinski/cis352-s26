@@ -30,17 +30,17 @@ impl fmt::Display for Formula {
                 }
             }
             Formula::And(a, b) => {
-                let ls = paren_if_lower(a, 2);
-                let rs = paren_if_lower(b, 2);
+                let ls = paren_if_lower(a, 3);
+                let rs = paren_if_lower(b, 3);
                 write!(f, "{} \u{2227} {}", ls, rs)
             }
             Formula::Or(a, b) => {
-                let ls = paren_if_lower(a, 1);
-                let rs = paren_if_lower(b, 1);
+                let ls = paren_if_lower(a, 2);
+                let rs = paren_if_lower(b, 2);
                 write!(f, "{} \u{2228} {}", ls, rs)
             }
             Formula::Imp(a, b) => {
-                let ls = paren_if_lower(a, 0);
+                let ls = paren_if_lower(a, 2);
                 write!(f, "{} \u{2192} {}", ls, b)
             }
             Formula::Forall(x, body) => write!(f, "\u{2200}{}.{}", x, body),
@@ -52,11 +52,11 @@ impl fmt::Display for Formula {
 fn precedence(f: &Formula) -> u8 {
     match f {
         Formula::Forall(_, _) | Formula::Exists(_, _) => 0,
-        Formula::Imp(_, _) => 0,
-        Formula::Or(_, _) => 1,
-        Formula::And(_, _) => 2,
-        Formula::Not(_) => 3,
-        _ => 4,
+        Formula::Imp(_, _) => 1,
+        Formula::Or(_, _) => 2,
+        Formula::And(_, _) => 3,
+        Formula::Not(_) => 4,
+        _ => 5,
     }
 }
 
@@ -237,12 +237,13 @@ fn parse_quantifier_or_imp(tokens: &[FToken], pos: &mut usize) -> Result<Formula
     }
 }
 
-// → is right-associative, lowest precedence
+// → is right-associative
 fn parse_imp(tokens: &[FToken], pos: &mut usize) -> Result<Formula, String> {
     let left = parse_or(tokens, pos)?;
     if *pos < tokens.len() && tokens[*pos] == FToken::Imp {
         *pos += 1;
-        let right = parse_imp(tokens, pos)?; // right-associative
+        // Allow quantifiers on the RHS of →: P → ∀x.Q(x)
+        let right = parse_quantifier_or_imp(tokens, pos)?;
         Ok(Formula::Imp(Box::new(left), Box::new(right)))
     } else {
         Ok(left)

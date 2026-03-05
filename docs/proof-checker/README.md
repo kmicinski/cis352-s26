@@ -21,7 +21,7 @@ proof-checker/          Rust crate, compiled to WASM
     stlc.rs             Simply-typed lambda calculus theory
     systemf.rs          System F theory (extends stlc with type abstraction/application)
   tests/
-    integration_tests.rs  55 tests: one per playground example + error cases + WASM API
+    integration_tests.rs  85 tests: one per playground example + larger proofs + error cases + WASM API
 ```
 
 ## The Theory Trait (`check.rs`)
@@ -120,5 +120,5 @@ Usage in a page:
 ## Testing
 
 - **145 unit tests** across all modules (parsers, rule checkers, premise generators)
-- **55 integration tests** covering every playground example for all 7 theories, error cases, and WASM API endpoints
+- **85 integration tests** covering every playground example for all 7 theories, complex proofs, error cases, and WASM API endpoints
 - Every example shown in the playground has a corresponding regression test
