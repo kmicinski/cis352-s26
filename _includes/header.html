@@ -2,7 +2,7 @@
 
   <div class="wrapper">
 
-    <a class="site-title" href={{ "/" | absolute_url }}>{{ site.title }}</a>
+    <a class="site-title" href="{{ "/" | absolute_url }}">{{ site.title }}</a>
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid">
@@ -12,13 +12,16 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link" href={{ "#schedule" | absolute_url }}>Schedule</a>
+          <a class="nav-link" href="{{ "#schedule" | absolute_url }}">Schedule</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href={{ "/syllabus" | absolute_url }}>Syllabus</a>
+          <a class="nav-link" href="{{ "/syllabus" | absolute_url }}">Syllabus</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ "/playground" | absolute_url }}">Proof Playground</a>
         </li>
       </ul>
     </div>

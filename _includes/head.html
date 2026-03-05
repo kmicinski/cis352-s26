@@ -11,4 +11,10 @@
   <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
   <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ "/feed.xml" | prepend: site.baseurl | prepend: site.url }}">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  {% if page.proof_tree %}
+  <link rel="stylesheet" href="{{ '/assets/proof-tree.css' | relative_url }}">
+  <script src="{{ '/assets/proof-tree.js' | relative_url }}"></script>
+  <link rel="stylesheet" href="{{ '/assets/proof-checker.css' | relative_url }}">
+  <script src="{{ '/assets/proof-checker-glue.js' | relative_url }}"></script>
+  {% endif %}
 </head>

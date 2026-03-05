@@ -488,7 +488,7 @@ layout: mainpage
 
 <!-- WEEK 8 -->
 <div class="week-header">
-  <h2><i class="fa-solid fa-calendar-week"></i> Week 8: Lambda Calculus</h2>
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 8: Lambda Calculus and Interpreters</h2>
 </div>
 <div class="week-schedule">
   <ul>
@@ -502,12 +502,16 @@ layout: mainpage
         </div>
         <ul class="resources-list">
           <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/lambda">NEW Lecture Notes</a>
+          </li>
+          <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://www.youtube.com/watch?v=RqA-m_QMJYc&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Lambda Calculus Introduction)</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambda-intro.pdf">Lecture Slides</a>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambda-intro.pdf">(Optional) Lecture Slides</a>
           </li>
         </ul>
       </div>
@@ -533,7 +537,32 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Lambda Calculus: Reduction Rules / Strategies Intro
+          Closure-Creating Interpreters
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/closures">Lecture Notes</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 9 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 9: Lambda Calculus: Reductions and Church Encoding</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 3/17 -->
+    <li class="session-item">
+      <div class="date-col">3/17</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Lambda Calculus Reduction Rules and Substitution
         </div>
         <ul class="resources-list">
           <li>
@@ -555,22 +584,13 @@ layout: mainpage
         </ul>
       </div>
     </li>
-  </ul>
-</div>
-
-<!-- WEEK 9 -->
-<div class="week-header">
-  <h2><i class="fa-solid fa-calendar-week"></i> Week 9: Programming in the Untyped Lambda Calculus</h2>
-</div>
-<div class="week-schedule">
-  <ul>
-    <!-- Session: 3/17 -->
+    <!-- Session: 3/19 -->
     <li class="session-item">
-      <div class="date-col">3/17</div>
+      <div class="date-col">3/19</div>
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Church Numerals and Church Encoding
+          Church Numerals, Church Encoding, and the Y Combinator
         </div>
         <ul class="resources-list">
           <li>
@@ -589,25 +609,13 @@ layout: mainpage
             <i class="fa-solid fa-file-lines notes-icon"></i>
             <a href="https://kmicinski.com/cis352-s26/assets/slides/p4.pdf">Lecture Slides (Encoding)</a>
           </li>
-        </ul>
-      </div>
-    </li>
-    <!-- Session: 3/19 -->
-    <li class="session-item">
-      <div class="date-col">3/19</div>
-      <div class="session-col">
-        <div class="session-title">
-          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Recursion via letrec and the Y/U Combinator
-        </div>
-        <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=GJi4H2UMaRU&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=27">Lecture Video</a>
+            <a href="https://www.youtube.com/watch?v=GJi4H2UMaRU&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=27">Lecture Video (Y Combinator)</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/y-comb.pdf">Lecture Slides</a>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/y-comb.pdf">Lecture Slides (Y Combinator)</a>
           </li>
         </ul>
       </div>
