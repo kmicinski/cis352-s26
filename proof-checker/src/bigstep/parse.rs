@@ -1,9 +1,19 @@
 use super::ast::*;
 use std::collections::BTreeMap;
 
+/// Normalize ASCII shorthands to their Unicode equivalents.
+/// `|->` → `↦`, `|-` → `⊢`, `==>` → `⇓`, `!=` → `≠`
+pub fn normalize_unicode(s: &str) -> String {
+    s.replace("|->", "↦")
+        .replace("|-", "⊢")
+        .replace("==>", "⇓")
+        .replace("!=", "≠")
+}
+
 /// Parse a judgement string: "ρ ⊢ e ⇓ v" or "{x ↦ 3} ⊢ (- x) ⇓ -3"
+/// Also accepts ASCII: "{x |-> 3} |- (- x) ==> -3"
 pub fn parse_judgement(s: &str) -> Result<Judgement, String> {
-    let s = s.trim();
+    let s = &normalize_unicode(s.trim());
 
     // Split on ⊢ (first occurrence)
     let turnstile_pos = s
@@ -27,8 +37,9 @@ pub fn parse_judgement(s: &str) -> Result<Judgement, String> {
 }
 
 /// Parse an environment string: "{}", "{x ↦ 3}", "{x ↦ 5, y ↦ 3}"
+/// Also accepts ASCII: "{x |-> 3}"
 pub fn parse_env(s: &str) -> Result<Env, String> {
-    let s = s.trim();
+    let s = &normalize_unicode(s.trim());
     if s == "{}" {
         return Ok(BTreeMap::new());
     }
@@ -380,7 +391,7 @@ pub enum SideCondition {
 
 /// Try to parse a side condition string
 pub fn parse_side_condition(s: &str) -> Option<SideCondition> {
-    let s = s.trim();
+    let s = &normalize_unicode(s.trim());
 
     // i ≠ 0
     if s.contains('≠') {
@@ -809,5 +820,34 @@ mod tests {
         assert_eq!(parse_side_int("-3").unwrap(), -3);
         assert_eq!(parse_side_int("(-1)").unwrap(), -1);
         assert_eq!(parse_side_int("−3").unwrap(), -3);
+    }
+
+    // ── ASCII shorthand tests ──────────────────────────────────────
+
+    #[test]
+    fn test_ascii_judgement() {
+        let j = parse_judgement("{} |- 3 ==> 3").unwrap();
+        assert!(j.env.is_empty());
+        assert_eq!(j.expr, Expr::Int(3));
+        assert_eq!(j.value, Value::Int(3));
+    }
+
+    #[test]
+    fn test_ascii_env() {
+        let j = parse_judgement("{x |-> 3} |- (- x) ==> -3").unwrap();
+        assert_eq!(j.env.get("x"), Some(&Value::Int(3)));
+        assert_eq!(j.expr, Expr::Neg(Box::new(Expr::Var("x".to_string()))));
+        assert_eq!(j.value, Value::Int(-3));
+    }
+
+    #[test]
+    fn test_ascii_nonzero() {
+        let sc = parse_side_condition("3 != 0").unwrap();
+        match sc {
+            SideCondition::Nonzero { val_str } => {
+                assert_eq!(val_str, "3");
+            }
+            _ => panic!("Expected Nonzero"),
+        }
     }
 }

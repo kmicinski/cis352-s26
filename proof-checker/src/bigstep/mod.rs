@@ -42,8 +42,8 @@ impl Theory for BigStepTheory {
     }
 
     fn is_judgement(&self, s: &str) -> bool {
-        // A judgement contains ⊢ and ⇓
-        s.contains('⊢') && s.contains('⇓')
+        // A judgement contains ⊢ and ⇓ (or their ASCII equivalents |- and ==>)
+        (s.contains('⊢') || s.contains("|-")) && (s.contains('⇓') || s.contains("==>"))
     }
 
     fn applicable_rules(&self, conclusion: &str) -> Vec<(&str, bool, Option<String>)> {
