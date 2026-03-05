@@ -864,11 +864,11 @@ proof_tree: true
         onGeneratePremises: loadCfg.onGeneratePremises,
         onCheckApplicability: loadCfg.onCheckApplicability,
         onCommit: autoCheckOnCommit,
-        onChange: function(tree) {
+        onChange: function(tree, isCommit) {
           var s = ProofTree.toSexp(tree);
           sexpInput.value = s;
           history.replaceState(null, '', '#proof=' + encodeURIComponent(s));
-          hideCheckResult();
+          if (!isCommit) hideCheckResult();
         }
       });
       sexpInput.value = sexp;
@@ -893,11 +893,11 @@ proof_tree: true
       onGeneratePremises: newCfg.onGeneratePremises,
       onCheckApplicability: newCfg.onCheckApplicability,
       onCommit: autoCheckOnCommit,
-      onChange: function(tree) {
+      onChange: function(tree, isCommit) {
         var s = ProofTree.toSexp(tree);
         sexpInput.value = s;
         history.replaceState(null, '', '#proof=' + encodeURIComponent(s));
-        hideCheckResult();
+        if (!isCommit) hideCheckResult();
       }
     });
     resetBtn.style.display = '';
@@ -1054,11 +1054,12 @@ proof_tree: true
       theoryRules: resetCfg.theoryRules,
       onGeneratePremises: resetCfg.onGeneratePremises,
       onCheckApplicability: resetCfg.onCheckApplicability,
-      onChange: function(tree) {
+      onCommit: autoCheckOnCommit,
+      onChange: function(tree, isCommit) {
         var s = ProofTree.toSexp(tree);
         sexpInput.value = s;
         history.replaceState(null, '', '#proof=' + encodeURIComponent(s));
-        hideCheckResult();
+        if (!isCommit) hideCheckResult();
       }
     });
     var s = currentEditor.getSexp();

@@ -1356,17 +1356,20 @@ var ProofTree = (function() {
             if (rerenderViewport) rerenderViewport.style.overflow = '';
             canvasEl.innerHTML = '';
             renderProofNode(proofTree, canvasEl, []);
-            onChange(proofTree);
+            onChange(proofTree, _isCommit);
             if (vp) {
                 setTimeout(function() { vp.autoFit(); }, 0);
             }
         }
 
         // Rerender + fire onCommit (for explicit user actions like Enter)
+        var _isCommit = false;
         function commitAndRerender() {
+            _isCommit = true;
             rerender();
+            _isCommit = false;
             if (onCommit) {
-                setTimeout(function() { onCommit(proofTree); }, 50);
+                onCommit(proofTree);
             }
         }
 
