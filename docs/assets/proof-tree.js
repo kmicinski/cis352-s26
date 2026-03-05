@@ -70,6 +70,9 @@ var ProofTree = (function() {
         s = s.replace(/\\rangle/g, '\u27E9');
         s = s.replace(/\|->/g, '\u21A6');
         s = s.replace(/\|-/g, '\u22A2');
+        s = s.replace(/==>/g, '\u21D3');
+        s = s.replace(/-->/g, '\u27F6');
+        s = s.replace(/!=/g, '\u2260');
         s = s.replace(/<->/g, '\u2194');
         s = s.replace(/->/g, '\u2192');
         s = s.replace(/\/\\/g, '\u2227');
@@ -1386,6 +1389,11 @@ var ProofTree = (function() {
                     '<span class="pt-lh-row"><kbd>&lt;-&gt;</kbd> <span class="pt-lh-arrow">\u279C</span> \u2194</span>' +
                     '<span class="pt-lh-row"><kbd>|-</kbd> <span class="pt-lh-arrow">\u279C</span> \u22A2</span>' +
                     '<span class="pt-lh-row"><kbd>|-&gt;</kbd> <span class="pt-lh-arrow">\u279C</span> \u21A6</span>' +
+                  '</div>' +
+                  '<div class="pt-lh-col">' +
+                    '<span class="pt-lh-row"><kbd>==&gt;</kbd> <span class="pt-lh-arrow">\u279C</span> \u21D3</span>' +
+                    '<span class="pt-lh-row"><kbd>--&gt;</kbd> <span class="pt-lh-arrow">\u279C</span> \u27F6</span>' +
+                    '<span class="pt-lh-row"><kbd>!=</kbd> <span class="pt-lh-arrow">\u279C</span> \u2260</span>' +
                   '</div>' +
                   '<div class="pt-lh-col">' +
                     '<span class="pt-lh-row"><kbd>/\\</kbd> <span class="pt-lh-arrow">\u279C</span> \u2227</span>' +
