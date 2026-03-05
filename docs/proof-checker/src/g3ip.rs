@@ -819,4 +819,98 @@ mod tests {
         let result = G3ipTheory.generate_premises("\u{2227}R", "P \u{21D2} P \u{2192} Q");
         assert!(result.is_err());
     }
+
+    // ── applicable_rules regression tests ────────────────────────
+
+    #[test]
+    fn test_applicable_ax() {
+        let rules = G3ipTheory.applicable_rules("P \u{21D2} P");
+        let ax = rules.iter().find(|r| r.0 == "Ax").unwrap();
+        assert!(ax.1, "Ax should be applicable when atom P is in antecedent");
+    }
+
+    #[test]
+    fn test_applicable_ax_not_in_ctx() {
+        let rules = G3ipTheory.applicable_rules("P \u{21D2} Q");
+        let ax = rules.iter().find(|r| r.0 == "Ax").unwrap();
+        assert!(!ax.1, "Ax should NOT be applicable when Q is not in antecedent");
+    }
+
+    #[test]
+    fn test_applicable_and_r() {
+        let rules = G3ipTheory.applicable_rules("P \u{21D2} P \u{2227} Q");
+        let and_r = rules.iter().find(|r| r.0 == "\u{2227}R").unwrap();
+        assert!(and_r.1, "∧R should be applicable when succedent is conjunction");
+    }
+
+    #[test]
+    fn test_applicable_and_r_not() {
+        let rules = G3ipTheory.applicable_rules("P \u{21D2} P");
+        let and_r = rules.iter().find(|r| r.0 == "\u{2227}R").unwrap();
+        assert!(!and_r.1, "∧R should NOT be applicable when succedent is atom");
+    }
+
+    #[test]
+    fn test_applicable_and_l() {
+        let rules = G3ipTheory.applicable_rules("P \u{2227} Q \u{21D2} R");
+        let and_l = rules.iter().find(|r| r.0 == "\u{2227}L").unwrap();
+        assert!(and_l.1, "∧L should be applicable when conjunction in antecedent");
+    }
+
+    #[test]
+    fn test_applicable_imp_r() {
+        let rules = G3ipTheory.applicable_rules("\u{21D2} P \u{2192} Q");
+        let imp_r = rules.iter().find(|r| r.0 == "\u{2192}R").unwrap();
+        assert!(imp_r.1, "→R should be applicable when succedent is implication");
+    }
+
+    #[test]
+    fn test_applicable_imp_l() {
+        let rules = G3ipTheory.applicable_rules("P \u{2192} Q \u{21D2} R");
+        let imp_l = rules.iter().find(|r| r.0 == "\u{2192}L").unwrap();
+        assert!(imp_l.1, "→L should be applicable when implication in antecedent");
+    }
+
+    #[test]
+    fn test_applicable_or_r() {
+        let rules = G3ipTheory.applicable_rules("P \u{21D2} P \u{2228} Q");
+        let or_r1 = rules.iter().find(|r| r.0 == "\u{2228}R\u{2081}").unwrap();
+        let or_r2 = rules.iter().find(|r| r.0 == "\u{2228}R\u{2082}").unwrap();
+        assert!(or_r1.1, "∨R₁ should be applicable when succedent is disjunction");
+        assert!(or_r2.1, "∨R₂ should be applicable when succedent is disjunction");
+    }
+
+    #[test]
+    fn test_applicable_or_l() {
+        let rules = G3ipTheory.applicable_rules("P \u{2228} Q \u{21D2} R");
+        let or_l = rules.iter().find(|r| r.0 == "\u{2228}L").unwrap();
+        assert!(or_l.1, "∨L should be applicable when disjunction in antecedent");
+    }
+
+    #[test]
+    fn test_applicable_bot_l() {
+        let rules = G3ipTheory.applicable_rules("\u{22A5} \u{21D2} P");
+        let bot_l = rules.iter().find(|r| r.0 == "\u{22A5}L").unwrap();
+        assert!(bot_l.1, "⊥L should be applicable when ⊥ in antecedent");
+    }
+
+    #[test]
+    fn test_applicable_top_r() {
+        let rules = G3ipTheory.applicable_rules("P \u{21D2} \u{22A4}");
+        let top_r = rules.iter().find(|r| r.0 == "\u{22A4}R").unwrap();
+        assert!(top_r.1, "⊤R should be applicable when succedent is ⊤");
+    }
+
+    #[test]
+    fn test_applicable_returns_correct_count() {
+        let rules = G3ipTheory.applicable_rules("P \u{21D2} P");
+        assert_eq!(rules.len(), 10, "G3ip should return 10 rules");
+    }
+
+    #[test]
+    fn test_applicable_unparseable_fallback() {
+        let rules = G3ipTheory.applicable_rules("not a valid sequent");
+        // Should fall back to all rules enabled
+        assert!(rules.iter().all(|r| r.1), "all rules should be enabled for unparseable input");
+    }
 }

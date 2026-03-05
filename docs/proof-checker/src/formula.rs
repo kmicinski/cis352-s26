@@ -13,6 +13,8 @@ pub enum Formula {
     And(Box<Formula>, Box<Formula>),
     Or(Box<Formula>, Box<Formula>),
     Imp(Box<Formula>, Box<Formula>),
+    Forall(String, Box<Formula>),
+    Exists(String, Box<Formula>),
 }
 
 impl fmt::Display for Formula {
@@ -41,12 +43,15 @@ impl fmt::Display for Formula {
                 let ls = paren_if_lower(a, 0);
                 write!(f, "{} \u{2192} {}", ls, b)
             }
+            Formula::Forall(x, body) => write!(f, "\u{2200}{}.{}", x, body),
+            Formula::Exists(x, body) => write!(f, "\u{2203}{}.{}", x, body),
         }
     }
 }
 
 fn precedence(f: &Formula) -> u8 {
     match f {
+        Formula::Forall(_, _) | Formula::Exists(_, _) => 0,
         Formula::Imp(_, _) => 0,
         Formula::Or(_, _) => 1,
         Formula::And(_, _) => 2,
@@ -75,12 +80,16 @@ pub struct Sequent {
 #[derive(Debug, Clone, PartialEq)]
 enum FToken {
     Atom(String),
+    Var(String),
     Bot,
     Top,
     Not,
     And,
     Or,
     Imp,
+    Forall,
+    Exists,
+    Dot,
     LParen,
     RParen,
 }
@@ -106,6 +115,9 @@ fn tokenize(s: &str) -> Result<Vec<FToken>, String> {
             '\u{2227}' => { tokens.push(FToken::And); i += 1; } // ∧
             '\u{2228}' => { tokens.push(FToken::Or); i += 1; }  // ∨
             '\u{2192}' => { tokens.push(FToken::Imp); i += 1; } // →
+            '\u{2200}' => { tokens.push(FToken::Forall); i += 1; } // ∀
+            '\u{2203}' => { tokens.push(FToken::Exists); i += 1; } // ∃
+            '.' => { tokens.push(FToken::Dot); i += 1; }
             '-' if i + 1 < chars.len() && chars[i + 1] == '>' => {
                 tokens.push(FToken::Imp);
                 i += 2;
@@ -137,7 +149,34 @@ fn tokenize(s: &str) -> Result<Vec<FToken>, String> {
                         break;
                     }
                 }
+                // Allow parenthesized arguments: P(x), Q(x, y)
+                if i < chars.len() && chars[i] == '(' {
+                    name.push('(');
+                    i += 1;
+                    let mut depth = 1;
+                    while i < chars.len() && depth > 0 {
+                        if chars[i] == '(' { depth += 1; }
+                        if chars[i] == ')' { depth -= 1; }
+                        name.push(chars[i]);
+                        i += 1;
+                    }
+                }
                 tokens.push(FToken::Atom(name));
+            }
+            c if c.is_alphabetic() && c.is_lowercase() => {
+                let mut name = String::new();
+                name.push(c);
+                i += 1;
+                while i < chars.len() {
+                    let nc = chars[i];
+                    if nc.is_alphanumeric() || nc == '\'' || nc == '_' {
+                        name.push(nc);
+                        i += 1;
+                    } else {
+                        break;
+                    }
+                }
+                tokens.push(FToken::Var(name));
             }
             c => {
                 return Err(format!("Unexpected character '{}' in formula", c));
@@ -158,11 +197,44 @@ pub fn parse_formula(s: &str) -> Result<Formula, String> {
     }
     let tokens = tokenize(s)?;
     let mut pos = 0;
-    let f = parse_imp(&tokens, &mut pos)?;
+    let f = parse_quantifier_or_imp(&tokens, &mut pos)?;
     if pos < tokens.len() {
         return Err(format!("Unexpected token {:?} after formula", tokens[pos]));
     }
     Ok(f)
+}
+
+// Quantifiers bind the entire remaining formula (lowest precedence)
+fn parse_quantifier_or_imp(tokens: &[FToken], pos: &mut usize) -> Result<Formula, String> {
+    if *pos < tokens.len() {
+        match &tokens[*pos] {
+            FToken::Forall => {
+                *pos += 1;
+                let var = match tokens.get(*pos) {
+                    Some(FToken::Var(v)) => { let v = v.clone(); *pos += 1; v }
+                    Some(FToken::Atom(v)) => { let v = v.clone(); *pos += 1; v }
+                    _ => return Err("Expected variable after \u{2200}".to_string()),
+                };
+                if tokens.get(*pos) == Some(&FToken::Dot) { *pos += 1; }
+                let body = parse_quantifier_or_imp(tokens, pos)?;
+                Ok(Formula::Forall(var, Box::new(body)))
+            }
+            FToken::Exists => {
+                *pos += 1;
+                let var = match tokens.get(*pos) {
+                    Some(FToken::Var(v)) => { let v = v.clone(); *pos += 1; v }
+                    Some(FToken::Atom(v)) => { let v = v.clone(); *pos += 1; v }
+                    _ => return Err("Expected variable after \u{2203}".to_string()),
+                };
+                if tokens.get(*pos) == Some(&FToken::Dot) { *pos += 1; }
+                let body = parse_quantifier_or_imp(tokens, pos)?;
+                Ok(Formula::Exists(var, Box::new(body)))
+            }
+            _ => parse_imp(tokens, pos),
+        }
+    } else {
+        parse_imp(tokens, pos)
+    }
 }
 
 // → is right-associative, lowest precedence
@@ -210,7 +282,7 @@ fn parse_unary(tokens: &[FToken], pos: &mut usize) -> Result<Formula, String> {
     }
 }
 
-// Atoms, ⊥, ⊤, parenthesized formulas
+// Atoms, variables, ⊥, ⊤, parenthesized formulas
 fn parse_primary(tokens: &[FToken], pos: &mut usize) -> Result<Formula, String> {
     if *pos >= tokens.len() {
         return Err("Unexpected end of formula".to_string());
@@ -221,11 +293,17 @@ fn parse_primary(tokens: &[FToken], pos: &mut usize) -> Result<Formula, String> 
             *pos += 1;
             Ok(f)
         }
+        FToken::Var(s) => {
+            // Standalone variable in formula position — treat as atom
+            let f = Formula::Atom(s.clone());
+            *pos += 1;
+            Ok(f)
+        }
         FToken::Bot => { *pos += 1; Ok(Formula::Bot) }
         FToken::Top => { *pos += 1; Ok(Formula::Top) }
         FToken::LParen => {
             *pos += 1;
-            let f = parse_imp(tokens, pos)?;
+            let f = parse_quantifier_or_imp(tokens, pos)?;
             if *pos >= tokens.len() || tokens[*pos] != FToken::RParen {
                 return Err("Missing closing parenthesis".to_string());
             }
@@ -360,6 +438,66 @@ pub fn format_formula_list(formulas: &[Formula]) -> String {
             .collect::<Vec<_>>()
             .join(", ")
     }
+}
+
+/// Substitute a variable name within a formula (for first-order quantifier rules).
+/// Replaces free occurrences of `var` in atom strings and descends under connectives.
+/// Stops at quantifiers that bind the same variable.
+pub fn subst(formula: &Formula, var: &str, replacement: &str) -> Formula {
+    match formula {
+        Formula::Atom(s) => {
+            // Replace whole-word occurrences of var inside the atom string
+            Formula::Atom(subst_in_atom(s, var, replacement))
+        }
+        Formula::Bot => Formula::Bot,
+        Formula::Top => Formula::Top,
+        Formula::Not(a) => Formula::Not(Box::new(subst(a, var, replacement))),
+        Formula::And(a, b) => Formula::And(
+            Box::new(subst(a, var, replacement)),
+            Box::new(subst(b, var, replacement)),
+        ),
+        Formula::Or(a, b) => Formula::Or(
+            Box::new(subst(a, var, replacement)),
+            Box::new(subst(b, var, replacement)),
+        ),
+        Formula::Imp(a, b) => Formula::Imp(
+            Box::new(subst(a, var, replacement)),
+            Box::new(subst(b, var, replacement)),
+        ),
+        Formula::Forall(x, body) => {
+            if x == var { formula.clone() } // bound — don't substitute
+            else { Formula::Forall(x.clone(), Box::new(subst(body, var, replacement))) }
+        }
+        Formula::Exists(x, body) => {
+            if x == var { formula.clone() }
+            else { Formula::Exists(x.clone(), Box::new(subst(body, var, replacement))) }
+        }
+    }
+}
+
+/// Replace whole-word occurrences of `var` in an atom string.
+fn subst_in_atom(atom: &str, var: &str, replacement: &str) -> String {
+    let mut result = String::new();
+    let chars: Vec<char> = atom.chars().collect();
+    let var_chars: Vec<char> = var.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        if i + var_chars.len() <= chars.len()
+            && chars[i..i + var_chars.len()] == var_chars[..]
+        {
+            let before_ok = i == 0 || !chars[i - 1].is_alphanumeric();
+            let after_ok = i + var_chars.len() >= chars.len()
+                || !chars[i + var_chars.len()].is_alphanumeric();
+            if before_ok && after_ok {
+                result.push_str(replacement);
+                i += var_chars.len();
+                continue;
+            }
+        }
+        result.push(chars[i]);
+        i += 1;
+    }
+    result
 }
 
 /// Format a sequent (antecedent list + succedent) as a string.

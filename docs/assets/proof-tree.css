@@ -5,6 +5,28 @@
  * without any other stylesheet. Override variables to theme.
  */
 
+/* ── Beautiful ⇓ rendering ────────────────────────── */
+
+/* Proof tree nodes: ⇓ wrapped in .pt-darr spans by JS */
+.pt-darr {
+    font-family: 'Palatino', 'Palatino Linotype', 'Book Antiqua', 'Georgia', 'Times New Roman', serif;
+    font-size: 1.15em;
+    vertical-align: -0.03em;
+    letter-spacing: 0.02em;
+}
+
+/* Prose text: use serif font for ⇓ via unicode-range */
+@font-face {
+    font-family: 'Darr';
+    src: local('Palatino'), local('Palatino Linotype'), local('Book Antiqua'),
+         local('Georgia'), local('Times New Roman');
+    unicode-range: U+21D3;
+}
+
+body {
+    font-family: 'Darr', 'Open Sans', sans-serif;
+}
+
 :root {
     --pt-primary: #4f46e5;
     --pt-danger: #ef4444;
@@ -132,11 +154,8 @@
     min-width: 30px;
 }
 
-/* ── Rule labels: absolutely positioned outside the line ── */
+/* ── Rule labels: inline flex children beside the line ── */
 .proof-rule-label {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
     font-size: 0.8rem;
     font-variant: small-caps;
     letter-spacing: 0.04em;
@@ -146,14 +165,15 @@
     padding: 2px 4px;
     border-radius: 3px;
     transition: color 0.12s, background 0.12s;
+    flex-shrink: 0;
 }
 
 .proof-rule-left {
-    right: calc(100% + 8px);
+    margin-right: 6px;
 }
 
 .proof-rule-right {
-    left: calc(100% + 8px);
+    margin-left: 6px;
 }
 
 .proof-rule-label:hover {
@@ -161,13 +181,22 @@
     background: rgba(79, 70, 229, 0.06);
 }
 
-/* Empty labels: faint italic placeholder always visible */
+/* Empty labels: faint italic placeholder */
 .proof-rule-placeholder {
     color: var(--pt-gray-300);
     font-style: italic;
     font-variant: normal;
     font-size: 0.72rem;
     letter-spacing: 0;
+}
+
+/* Left placeholder hidden until node is hovered (rarely used) */
+.proof-rule-left.proof-rule-placeholder {
+    display: none;
+}
+
+.proof-node:hover > .proof-inference .proof-rule-left.proof-rule-placeholder {
+    display: inline;
 }
 
 .proof-rule-placeholder:hover {
@@ -436,10 +465,9 @@
 
 /* ── Rule autocomplete dropdown ──────────────────── */
 .proof-rule-ac-wrap {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    left: calc(100% + 8px);
+    position: relative;
+    flex-shrink: 0;
+    margin-left: 6px;
     z-index: 20;
     white-space: nowrap;
 }

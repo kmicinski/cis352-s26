@@ -203,4 +203,59 @@ mod tests {
         let result = SmallStepTheory.generate_premises("Unknown", "e \u{27F6} e'");
         assert!(result.is_err());
     }
+
+    // ── applicable_rules regression tests ────────────────────────
+
+    #[test]
+    fn test_applicable_add_rules() {
+        let rules = SmallStepTheory.applicable_rules("(+ 3 5) \u{27F6} 8");
+        let add = rules.iter().find(|r| r.0 == "Add").unwrap();
+        let add_l = rules.iter().find(|r| r.0 == "Add-L").unwrap();
+        let add_r = rules.iter().find(|r| r.0 == "Add-R").unwrap();
+        assert!(add.1, "Add should apply to (+ ...)");
+        assert!(add_l.1, "Add-L should apply to (+ ...)");
+        assert!(add_r.1, "Add-R should apply to (+ ...)");
+    }
+
+    #[test]
+    fn test_applicable_beta() {
+        let rules = SmallStepTheory.applicable_rules("((\u{03BB} (x) x) 5) \u{27F6} 5");
+        let beta = rules.iter().find(|r| r.0 == "Beta").unwrap();
+        assert!(beta.1, "Beta should apply to application");
+    }
+
+    #[test]
+    fn test_applicable_neg() {
+        let rules = SmallStepTheory.applicable_rules("(- 3) \u{27F6} -3");
+        let neg = rules.iter().find(|r| r.0 == "Neg").unwrap();
+        let neg_step = rules.iter().find(|r| r.0 == "Neg-Step").unwrap();
+        assert!(neg.1, "Neg should apply to (- ...)");
+        assert!(neg_step.1, "Neg-Step should apply to (- ...)");
+    }
+
+    #[test]
+    fn test_applicable_if0() {
+        let rules = SmallStepTheory.applicable_rules("(if0 0 1 2) \u{27F6} 1");
+        let if0_t = rules.iter().find(|r| r.0 == "If0-True").unwrap();
+        let if0_f = rules.iter().find(|r| r.0 == "If0-False").unwrap();
+        let if0_s = rules.iter().find(|r| r.0 == "If0-Step").unwrap();
+        assert!(if0_t.1);
+        assert!(if0_f.1);
+        assert!(if0_s.1);
+    }
+
+    #[test]
+    fn test_applicable_wrong_form() {
+        let rules = SmallStepTheory.applicable_rules("(+ 3 5) \u{27F6} 8");
+        let beta = rules.iter().find(|r| r.0 == "Beta").unwrap();
+        let neg = rules.iter().find(|r| r.0 == "Neg").unwrap();
+        assert!(!beta.1, "Beta should NOT apply to (+ ...)");
+        assert!(!neg.1, "Neg should NOT apply to (+ ...)");
+    }
+
+    #[test]
+    fn test_applicable_returns_13_rules() {
+        let rules = SmallStepTheory.applicable_rules("(+ 3 5) \u{27F6} 8");
+        assert_eq!(rules.len(), 13, "SmallStep should return 13 rules");
+    }
 }

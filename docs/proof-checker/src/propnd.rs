@@ -909,4 +909,79 @@ mod tests {
         let result = PropNDTheory.generate_premises("AndI", "\u{22A2} P \u{2192} Q");
         assert!(result.is_err());
     }
+
+    // ── applicable_rules regression tests ────────────────────────
+
+    #[test]
+    fn test_applicable_ax_in_ctx() {
+        let rules = PropNDTheory.applicable_rules("P \u{22A2} P");
+        let ax = rules.iter().find(|r| r.0 == "Ax").unwrap();
+        assert!(ax.1, "Ax should be applicable when conclusion is in context");
+    }
+
+    #[test]
+    fn test_applicable_ax_not_in_ctx() {
+        let rules = PropNDTheory.applicable_rules("P \u{22A2} Q");
+        let ax = rules.iter().find(|r| r.0 == "Ax").unwrap();
+        assert!(!ax.1, "Ax should NOT be applicable when Q not in context");
+    }
+
+    #[test]
+    fn test_applicable_imp_i() {
+        let rules = PropNDTheory.applicable_rules("\u{22A2} P \u{2192} Q");
+        let imp_i = rules.iter().find(|r| r.0 == "\u{2192}I").unwrap();
+        assert!(imp_i.1, "→I should be applicable when conclusion is implication");
+    }
+
+    #[test]
+    fn test_applicable_and_i() {
+        let rules = PropNDTheory.applicable_rules("\u{22A2} P \u{2227} Q");
+        let and_i = rules.iter().find(|r| r.0 == "\u{2227}I").unwrap();
+        assert!(and_i.1, "∧I should be applicable when conclusion is conjunction");
+    }
+
+    #[test]
+    fn test_applicable_or_i() {
+        let rules = PropNDTheory.applicable_rules("\u{22A2} P \u{2228} Q");
+        let or_i1 = rules.iter().find(|r| r.0 == "\u{2228}I\u{2081}").unwrap();
+        let or_i2 = rules.iter().find(|r| r.0 == "\u{2228}I\u{2082}").unwrap();
+        assert!(or_i1.1);
+        assert!(or_i2.1);
+    }
+
+    #[test]
+    fn test_applicable_not_i() {
+        let rules = PropNDTheory.applicable_rules("\u{22A2} \u{00AC}P");
+        let not_i = rules.iter().find(|r| r.0 == "\u{00AC}I").unwrap();
+        assert!(not_i.1, "¬I should be applicable when conclusion is negation");
+    }
+
+    #[test]
+    fn test_applicable_not_e() {
+        let rules = PropNDTheory.applicable_rules("\u{22A2} \u{22A5}");
+        let not_e = rules.iter().find(|r| r.0 == "\u{00AC}E").unwrap();
+        assert!(not_e.1, "¬E should be applicable when conclusion is ⊥");
+    }
+
+    #[test]
+    fn test_applicable_elim_always() {
+        // Elimination rules should always be applicable
+        let rules = PropNDTheory.applicable_rules("\u{22A2} P");
+        let imp_e = rules.iter().find(|r| r.0 == "\u{2192}E").unwrap();
+        let and_e1 = rules.iter().find(|r| r.0 == "\u{2227}E\u{2081}").unwrap();
+        let and_e2 = rules.iter().find(|r| r.0 == "\u{2227}E\u{2082}").unwrap();
+        let or_e = rules.iter().find(|r| r.0 == "\u{2228}E").unwrap();
+        let bot_e = rules.iter().find(|r| r.0 == "\u{22A5}E").unwrap();
+        assert!(imp_e.1);
+        assert!(and_e1.1);
+        assert!(and_e2.1);
+        assert!(or_e.1);
+        assert!(bot_e.1);
+    }
+
+    #[test]
+    fn test_applicable_returns_12_rules() {
+        let rules = PropNDTheory.applicable_rules("P \u{22A2} P");
+        assert_eq!(rules.len(), 12, "PropND should return 12 rules");
+    }
 }

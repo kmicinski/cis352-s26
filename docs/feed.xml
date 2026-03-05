@@ -3,10 +3,10 @@
   <channel>
     <title>CIS352</title>
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
-    <link>http://localhost:4000/cis352-s26/</link>
-    <atom:link href="http://localhost:4000/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 05 Mar 2026 01:08:41 -0500</pubDate>
-    <lastBuildDate>Thu, 05 Mar 2026 01:08:41 -0500</lastBuildDate>
+    <link>https://kmicinski.com/cis352-s26/</link>
+    <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Thu, 05 Mar 2026 01:54:05 -0500</pubDate>
+    <lastBuildDate>Thu, 05 Mar 2026 01:54:05 -0500</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -132,8 +132,10 @@ details .solution-body {
 &lt;/style&gt;
 
 &lt;script&gt;
-function openInPlayground(sexp) {
-  window.open(&apos;/cis352-s26/playground#proof=&apos; + encodeURIComponent(sexp), &apos;_blank&apos;);
+function openInPlayground(sexp, theory) {
+  var hash = &apos;#proof=&apos; + encodeURIComponent(sexp);
+  if (theory) hash += &apos;&amp;theory=&apos; + encodeURIComponent(theory);
+  window.open(&apos;/cis352-s26/playground&apos; + hash, &apos;_blank&apos;);
 }
 
 var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
@@ -281,7 +283,7 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
 &lt;summary&gt;Show solution&lt;/summary&gt;
 &lt;div class=&quot;solution-body&quot;&gt;
 &lt;div id=&quot;exercise1-solution&quot;&gt;&lt;/div&gt;
-&lt;button class=&quot;cl-btn&quot; onclick=&quot;openInPlayground(window._ex1sexp)&quot; style=&quot;margin-top:10px;&quot;&gt;Open in Playground&lt;/button&gt;
+&lt;button class=&quot;cl-btn&quot; onclick=&quot;openInPlayground(window._ex1sexp, &apos;big-step&apos;)&quot; style=&quot;margin-top:10px;&quot;&gt;Open in Playground&lt;/button&gt;
 &lt;/div&gt;
 &lt;script&gt;
 (function() {
@@ -291,7 +293,7 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
   details.addEventListener(&apos;toggle&apos;, function() {
     if (details.open &amp;&amp; !rendered) {
       rendered = true;
-      ProofTree.renderReadonly(window._ex1sexp, document.getElementById(&apos;exercise1-solution&apos;), { zoom: false });
+      ProofTree.renderReadonly(window._ex1sexp, document.getElementById(&apos;exercise1-solution&apos;));
     }
   });
 })();
@@ -327,7 +329,7 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
 &lt;summary&gt;Show solution&lt;/summary&gt;
 &lt;div class=&quot;solution-body&quot;&gt;
 &lt;div id=&quot;exercise2-solution&quot;&gt;&lt;/div&gt;
-&lt;button class=&quot;cl-btn&quot; onclick=&quot;openInPlayground(window._ex2sexp)&quot; style=&quot;margin-top:10px;&quot;&gt;Open in Playground&lt;/button&gt;
+&lt;button class=&quot;cl-btn&quot; onclick=&quot;openInPlayground(window._ex2sexp, &apos;big-step&apos;)&quot; style=&quot;margin-top:10px;&quot;&gt;Open in Playground&lt;/button&gt;
 &lt;/div&gt;
 &lt;script&gt;
 (function() {
@@ -337,7 +339,7 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
   details.addEventListener(&apos;toggle&apos;, function() {
     if (details.open &amp;&amp; !rendered) {
       rendered = true;
-      ProofTree.renderReadonly(window._ex2sexp, document.getElementById(&apos;exercise2-solution&apos;), { zoom: false });
+      ProofTree.renderReadonly(window._ex2sexp, document.getElementById(&apos;exercise2-solution&apos;));
     }
   });
 })();
@@ -475,7 +477,7 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
 &lt;summary&gt;Show solution&lt;/summary&gt;
 &lt;div class=&quot;solution-body&quot;&gt;
 &lt;div id=&quot;exercise3-solution&quot;&gt;&lt;/div&gt;
-&lt;button class=&quot;cl-btn&quot; onclick=&quot;openInPlayground(window._ex3sexp)&quot; style=&quot;margin-top:10px;&quot;&gt;Open in Playground&lt;/button&gt;
+&lt;button class=&quot;cl-btn&quot; onclick=&quot;openInPlayground(window._ex3sexp, &apos;big-step&apos;)&quot; style=&quot;margin-top:10px;&quot;&gt;Open in Playground&lt;/button&gt;
 &lt;/div&gt;
 &lt;script&gt;
 (function() {
@@ -485,7 +487,7 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
   details.addEventListener(&apos;toggle&apos;, function() {
     if (details.open &amp;&amp; !rendered) {
       rendered = true;
-      ProofTree.renderReadonly(window._ex3sexp, document.getElementById(&apos;exercise3-solution&apos;), { zoom: false });
+      ProofTree.renderReadonly(window._ex3sexp, document.getElementById(&apos;exercise3-solution&apos;));
     }
   });
 })();
@@ -593,7 +595,7 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
 &lt;summary&gt;Show solution&lt;/summary&gt;
 &lt;div class=&quot;solution-body&quot;&gt;
 &lt;div id=&quot;optA-solution&quot;&gt;&lt;/div&gt;
-&lt;button class=&quot;cl-btn&quot; onclick=&quot;openInPlayground(window._optAsexp)&quot; style=&quot;margin-top:10px;&quot;&gt;Open in Playground&lt;/button&gt;
+&lt;button class=&quot;cl-btn&quot; onclick=&quot;openInPlayground(window._optAsexp, &apos;big-step&apos;)&quot; style=&quot;margin-top:10px;&quot;&gt;Open in Playground&lt;/button&gt;
 &lt;/div&gt;
 &lt;script&gt;
 (function() {
@@ -603,7 +605,7 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
   details.addEventListener(&apos;toggle&apos;, function() {
     if (details.open &amp;&amp; !rendered) {
       rendered = true;
-      ProofTree.renderReadonly(window._optAsexp, document.getElementById(&apos;optA-solution&apos;), { zoom: false });
+      ProofTree.renderReadonly(window._optAsexp, document.getElementById(&apos;optA-solution&apos;));
     }
   });
 })();
@@ -635,7 +637,7 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
 &lt;summary&gt;Show solution&lt;/summary&gt;
 &lt;div class=&quot;solution-body&quot;&gt;
 &lt;div id=&quot;optB-solution&quot;&gt;&lt;/div&gt;
-&lt;button class=&quot;cl-btn&quot; onclick=&quot;openInPlayground(window._optBsexp)&quot; style=&quot;margin-top:10px;&quot;&gt;Open in Playground&lt;/button&gt;
+&lt;button class=&quot;cl-btn&quot; onclick=&quot;openInPlayground(window._optBsexp, &apos;big-step&apos;)&quot; style=&quot;margin-top:10px;&quot;&gt;Open in Playground&lt;/button&gt;
 &lt;/div&gt;
 &lt;script&gt;
 (function() {
@@ -645,7 +647,7 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
   details.addEventListener(&apos;toggle&apos;, function() {
     if (details.open &amp;&amp; !rendered) {
       rendered = true;
-      ProofTree.renderReadonly(window._optBsexp, document.getElementById(&apos;optB-solution&apos;), { zoom: false });
+      ProofTree.renderReadonly(window._optBsexp, document.getElementById(&apos;optB-solution&apos;));
     }
   });
 })();
@@ -807,7 +809,7 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
 
   document.getElementById(&apos;cert-playground-btn&apos;).addEventListener(&apos;click&apos;, function() {
     var input = document.getElementById(&apos;cert-input&apos;).value.trim();
-    if (input) openInPlayground(input);
+    if (input) openInPlayground(input, &apos;big-step&apos;);
   });
 })();
 &lt;/script&gt;
@@ -832,8 +834,8 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
 &lt;/ul&gt;
 </description>
         <pubDate>Wed, 04 Mar 2026 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/cis352-s26/closures</link>
-        <guid isPermaLink="true">http://localhost:4000/cis352-s26/closures</guid>
+        <link>https://kmicinski.com/cis352-s26/closures</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/closures</guid>
         
         
       </item>
@@ -1056,8 +1058,8 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
 &lt;/ul&gt;
 </description>
         <pubDate>Tue, 03 Mar 2026 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/cis352-s26/lambda</link>
-        <guid isPermaLink="true">http://localhost:4000/cis352-s26/lambda</guid>
+        <link>https://kmicinski.com/cis352-s26/lambda</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/lambda</guid>
         
         
       </item>
@@ -1526,8 +1528,8 @@ can only emit logging statements).&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
         <pubDate>Tue, 03 Feb 2026 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/cis352-s26/evaluation-order</link>
-        <guid isPermaLink="true">http://localhost:4000/cis352-s26/evaluation-order</guid>
+        <link>https://kmicinski.com/cis352-s26/evaluation-order</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/evaluation-order</guid>
         
         
       </item>
@@ -2071,8 +2073,8 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
 &lt;/ul&gt;
 </description>
         <pubDate>Mon, 02 Feb 2026 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/cis352-s26/algebra</link>
-        <guid isPermaLink="true">http://localhost:4000/cis352-s26/algebra</guid>
+        <link>https://kmicinski.com/cis352-s26/algebra</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/algebra</guid>
         
         
       </item>
@@ -2462,8 +2464,8 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
         <pubDate>Sun, 01 Feb 2026 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/cis352-s26/patterns</link>
-        <guid isPermaLink="true">http://localhost:4000/cis352-s26/patterns</guid>
+        <link>https://kmicinski.com/cis352-s26/patterns</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/patterns</guid>
         
         
       </item>
@@ -2863,8 +2865,8 @@ git push
 select for your project to be graded.&lt;/p&gt;
 </description>
         <pubDate>Sun, 02 Oct 2022 00:00:00 -0400</pubDate>
-        <link>http://localhost:4000/cis352-s26/projects/2</link>
-        <guid isPermaLink="true">http://localhost:4000/cis352-s26/projects/2</guid>
+        <link>https://kmicinski.com/cis352-s26/projects/2</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/projects/2</guid>
         
         
         <category>assignment</category>
@@ -2880,8 +2882,8 @@ select for your project to be graded.&lt;/p&gt;
 &lt;p&gt;&lt;a href=&quot;https://www.youtube.com/watch?v=ApIXt_Exf7g&quot;&gt;Project Video&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Sat, 17 Sep 2022 00:00:00 -0400</pubDate>
-        <link>http://localhost:4000/cis352-s26/projects/1</link>
-        <guid isPermaLink="true">http://localhost:4000/cis352-s26/projects/1</guid>
+        <link>https://kmicinski.com/cis352-s26/projects/1</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/projects/1</guid>
         
         
         <category>assignment</category>

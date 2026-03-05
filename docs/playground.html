@@ -9,9 +9,9 @@
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="http://localhost:4000/cis352-s26/css/main.css">
-  <link rel="canonical" href="http://localhost:4000/cis352-s26/playground">
-  <link rel="alternate" type="application/rss+xml" title="CIS352" href="http://localhost:4000/cis352-s26/feed.xml">
+  <link rel="stylesheet" href="https://kmicinski.com/cis352-s26/css/main.css">
+  <link rel="canonical" href="https://kmicinski.com/cis352-s26/playground">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="https://kmicinski.com/cis352-s26/feed.xml">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   
   <link rel="stylesheet" href="/cis352-s26/assets/proof-tree.css">
@@ -27,7 +27,7 @@
 
   <div class="wrapper">
 
-    <a class="site-title" href="http://localhost:4000/cis352-s26/">CIS352</a>
+    <a class="site-title" href="https://kmicinski.com//cis352-s26/">CIS352</a>
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid">
@@ -37,16 +37,16 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link" href="http://localhost:4000/cis352-s26/#schedule">Schedule</a>
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/#schedule">Schedule</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="http://localhost:4000/cis352-s26/syllabus">Syllabus</a>
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/syllabus">Syllabus</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="https://autograde.org">Autograde</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="http://localhost:4000/cis352-s26/playground">Proof Playground</a>
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/playground">Proof Playground</a>
         </li>
       </ul>
     </div>
@@ -72,15 +72,15 @@
     <!--        -->
     <!--      -->
     <!--        -->
-    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/playground">Proof Tree Playground</a> -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/playground">Proof Tree Playground</a> -->
     <!--        -->
     <!--      -->
     <!--        -->
-    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/schedule/">Schedule</a> -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/schedule/">Schedule</a> -->
     <!--        -->
     <!--      -->
     <!--        -->
-    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/syllabus/">Syllabus</a> -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/syllabus/">Syllabus</a> -->
     <!--        -->
     <!--      -->
     <!--        -->
@@ -465,9 +465,9 @@
   <select id="pg-theory" class="pg-select">
     <option value="">Freestyle (no checking)</option>
     <option value="big-step">Big-Step Semantics</option>
-    <option value="small-step">Small-Step Semantics</option>
     <option value="g3ip">G3ip Sequent Calculus</option>
     <option value="propnd">Natural Deduction</option>
+    <option value="fond">First-Order ND</option>
     <option value="stlc">Simply-Typed Lambda Calculus</option>
     <option value="systemf">System F</option>
   </select>
@@ -536,7 +536,6 @@
       { label: 'Sequent: P \u2227 Q \u21D2 Q \u2227 P', key: 'g3-swap' },
       { label: 'ND: P, P \u2192 Q \u22A2 Q', key: 'nd-mp' },
       { label: 'STLC: \u22A2 (\u03BB (x : int) x) : int \u2192 int', key: 'stlc-id' },
-      { label: 'Small-Step: ((+ 1 2)) \u27F6 3', key: 'ss-add' },
     ],
     'big-step': [
       { label: 'Add: {} \u22A2 (+ 3 5) \u21D3 8', key: 'bs-add' },
@@ -544,13 +543,6 @@
       { label: 'App: {} \u22A2 ((\u03BB (x) (+ x 1)) 5) \u21D3 6', key: 'bs-app' },
       { label: 'If0: {} \u22A2 (if0 (+ 1 (- 1)) 42 0) \u21D3 42', key: 'bs-if0' },
       { label: 'Let+Closure: {} \u22A2 (let ([x 10]) ((\u03BB (y) (+ x y)) 7)) \u21D3 17', key: 'bs-let' },
-    ],
-    'small-step': [
-      { label: 'Add: (+ 3 5) \u27F6 8', key: 'ss-add' },
-      { label: 'Add nested: (+ (+ 1 2) 5) \u27F6* 8', key: 'ss-add-nested' },
-      { label: 'Beta: ((\u03BB (x) x) 5) \u27F6 5', key: 'ss-beta' },
-      { label: 'Neg: (- (+ 1 2)) \u27F6* -3', key: 'ss-neg' },
-      { label: 'If0-True: (if0 0 1 2) \u27F6 1', key: 'ss-if0' },
     ],
     'g3ip': [
       { label: 'Identity: P \u21D2 P', key: 'g3-id' },
@@ -577,6 +569,15 @@
       { label: 'Poly id: \u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) : \u2200\u03B1. \u03B1 \u2192 \u03B1', key: 'sf-poly-id' },
       { label: 'Type app: \u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) [int] : int \u2192 int', key: 'sf-tyapp' },
       { label: 'Const: \u22A2 (\u039B\u03B1. \u039B\u03B2. \u03BB (x : \u03B1) (\u03BB (y : \u03B2) x)) : \u2200\u03B1. \u2200\u03B2. \u03B1 \u2192 \u03B2 \u2192 \u03B1', key: 'sf-const' },
+      { label: 'Apply id: \u22A2 ((\u039B\u03B1. \u03BB (x : \u03B1) x) [int] 5) : int', key: 'sf-apply-id' },
+      { label: 'Neg: \u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) (- 1)) : \u2200\u03B1. \u03B1 \u2192 int', key: 'sf-neg' },
+    ],
+    'fond': [
+      { label: '\u2200I: \u22A2 \u2200x.(P(x) \u2192 P(x))', key: 'fo-forall-i' },
+      { label: '\u2200E: \u2200x.P(x) \u22A2 P(a)', key: 'fo-forall-e' },
+      { label: '\u2203I: P(a) \u22A2 \u2203x.P(x)', key: 'fo-exists-i' },
+      { label: '\u2203E: \u2203x.P(x), \u2200x.(P(x) \u2192 Q) \u22A2 Q', key: 'fo-exists-e' },
+      { label: 'Mixed: \u2200x.(P(x) \u2192 Q(x)), P(a) \u22A2 Q(a)', key: 'fo-mixed' },
     ],
   };
 
@@ -601,13 +602,13 @@
     'g3-id': '((Ax :right) --- "P \u21D2 P")',
     'g3-swap': '(("\u2227R" :right) (("\u2227L" :right) ((Ax :right) --- "P, Q \u21D2 Q") --- "P \u2227 Q \u21D2 Q") (("\u2227L" :right) ((Ax :right) --- "P, Q \u21D2 P") --- "P \u2227 Q \u21D2 P") --- "P \u2227 Q \u21D2 Q \u2227 P")',
     'g3-or-comm': '(("\u2228L" :right) (("\u2228R\u2082" :right) ((Ax :right) --- "P \u21D2 P") --- "P \u21D2 Q \u2228 P") (("\u2228R\u2081" :right) ((Ax :right) --- "Q \u21D2 Q") --- "Q \u21D2 Q \u2228 P") --- "P \u2228 Q \u21D2 Q \u2228 P")',
-    'g3-mp': '(("\u2192L" :right) ((Ax :right) --- "P \u21D2 P") ((Ax :right) --- "Q \u21D2 Q") --- "P, P \u2192 Q \u21D2 Q")',
+    'g3-mp': '(("\u2192L" :right) ((Ax :right) --- "P, P \u2192 Q \u21D2 P") ((Ax :right) --- "Q, P \u21D2 Q") --- "P, P \u2192 Q \u21D2 Q")',
     'g3-imp-id': '(("\u2192R" :right) ((Ax :right) --- "P \u21D2 P") --- "\u21D2 P \u2192 P")',
 
     // Propositional natural deduction
     'nd-mp': '(("\u2192E" :right) ((Ax :right) --- "P, P \u2192 Q \u22A2 P \u2192 Q") ((Ax :right) --- "P, P \u2192 Q \u22A2 P") --- "P, P \u2192 Q \u22A2 Q")',
     'nd-and-i': '(("\u2227I" :right) ((Ax :right) --- "P, Q \u22A2 P") ((Ax :right) --- "P, Q \u22A2 Q") --- "P, Q \u22A2 P \u2227 Q")',
-    'nd-or-e': '(("\u2228E" :right) ((Ax :right) --- "P \u2228 Q, P \u2192 R, Q \u2192 R \u22A2 P \u2228 Q") (("\u2192E" :right) ((Ax :right) --- "P, P \u2192 R, Q \u2192 R \u22A2 P \u2192 R") ((Ax :right) --- "P, P \u2192 R, Q \u2192 R \u22A2 P") --- "P, P \u2192 R, Q \u2192 R \u22A2 R") (("\u2192E" :right) ((Ax :right) --- "Q, P \u2192 R, Q \u2192 R \u22A2 Q \u2192 R") ((Ax :right) --- "Q, P \u2192 R, Q \u2192 R \u22A2 Q") --- "Q, P \u2192 R, Q \u2192 R \u22A2 R") --- "P \u2228 Q, P \u2192 R, Q \u2192 R \u22A2 R")',
+    'nd-or-e': '(("\u2228E" :right) ((Ax :right) --- "P \u2228 Q, P \u2192 R, Q \u2192 R \u22A2 P \u2228 Q") (("\u2192E" :right) ((Ax :right) --- "P \u2228 Q, P \u2192 R, Q \u2192 R, P \u22A2 P \u2192 R") ((Ax :right) --- "P \u2228 Q, P \u2192 R, Q \u2192 R, P \u22A2 P") --- "P \u2228 Q, P \u2192 R, Q \u2192 R, P \u22A2 R") (("\u2192E" :right) ((Ax :right) --- "P \u2228 Q, P \u2192 R, Q \u2192 R, Q \u22A2 Q \u2192 R") ((Ax :right) --- "P \u2228 Q, P \u2192 R, Q \u2192 R, Q \u22A2 Q") --- "P \u2228 Q, P \u2192 R, Q \u2192 R, Q \u22A2 R") --- "P \u2228 Q, P \u2192 R, Q \u2192 R \u22A2 R")',
     'nd-imp-id': '(("\u2192I" :right) ((Ax :right) --- "P \u22A2 P") --- "\u22A2 P \u2192 P")',
     'nd-contra': '(("\u00ACI" :right) (("\u00ACE" :right) ((Ax :right) --- "P, P \u2192 Q, \u00ACQ \u22A2 \u00ACQ") (("\u2192E" :right) ((Ax :right) --- "P, P \u2192 Q, \u00ACQ \u22A2 P \u2192 Q") ((Ax :right) --- "P, P \u2192 Q, \u00ACQ \u22A2 P") --- "P, P \u2192 Q, \u00ACQ \u22A2 Q") --- "P, P \u2192 Q, \u00ACQ \u22A2 \u22A5") --- "P \u2192 Q, \u00ACQ \u22A2 \u00ACP")',
 
@@ -622,6 +623,15 @@
     'sf-poly-id': '(("T-TyLam" :right) (("T-Lam" :right) (("T-Var" :right) --- "x : \u03B1 \u22A2 x : \u03B1") --- "\u22A2 (\u03BB (x : \u03B1) x) : \u03B1 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) : \u2200\u03B1. \u03B1 \u2192 \u03B1")',
     'sf-tyapp': '(("T-TyApp" :right) (("T-TyLam" :right) (("T-Lam" :right) (("T-Var" :right) --- "x : \u03B1 \u22A2 x : \u03B1") --- "\u22A2 (\u03BB (x : \u03B1) x) : \u03B1 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) : \u2200\u03B1. \u03B1 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) [int] : int \u2192 int")',
     'sf-const': '(("T-TyLam" :right) (("T-TyLam" :right) (("T-Lam" :right) (("T-Lam" :right) (("T-Var" :right) --- "x : \u03B1, y : \u03B2 \u22A2 x : \u03B1") --- "x : \u03B1 \u22A2 (\u03BB (y : \u03B2) x) : \u03B2 \u2192 \u03B1") --- "\u22A2 (\u03BB (x : \u03B1) (\u03BB (y : \u03B2) x)) : \u03B1 \u2192 \u03B2 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B2. \u03BB (x : \u03B1) (\u03BB (y : \u03B2) x)) : \u2200\u03B2. \u03B1 \u2192 \u03B2 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u039B\u03B2. \u03BB (x : \u03B1) (\u03BB (y : \u03B2) x)) : \u2200\u03B1. \u2200\u03B2. \u03B1 \u2192 \u03B2 \u2192 \u03B1")',
+    'sf-apply-id': '(("T-App" :right) (("T-TyApp" :right) (("T-TyLam" :right) (("T-Lam" :right) (("T-Var" :right) --- "x : \u03B1 \u22A2 x : \u03B1") --- "\u22A2 (\u03BB (x : \u03B1) x) : \u03B1 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) : \u2200\u03B1. \u03B1 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) [int] : int \u2192 int") (("T-Int" :right) --- "\u22A2 5 : int") --- "\u22A2 ((\u039B\u03B1. \u03BB (x : \u03B1) x) [int] 5) : int")',
+    'sf-neg': '(("T-TyLam" :right) (("T-Lam" :right) (("T-Neg" :right) (("T-Int" :right) --- "x : \u03B1 \u22A2 1 : int") --- "x : \u03B1 \u22A2 (- 1) : int") --- "\u22A2 (\u03BB (x : \u03B1) (- 1)) : \u03B1 \u2192 int") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) (- 1)) : \u2200\u03B1. \u03B1 \u2192 int")',
+
+    // First-order natural deduction
+    'fo-forall-i': '(("\u2200I" :right) (("\u2192I" :right) ((Ax :right) --- "P(x) \u22A2 P(x)") --- "\u22A2 P(x) \u2192 P(x)") --- "\u22A2 \u2200x.P(x) \u2192 P(x)")',
+    'fo-forall-e': '(("\u2200E" :right) ((Ax :right) --- "\u2200x.P(x) \u22A2 \u2200x.P(x)") --- "\u2200x.P(x) \u22A2 P(a)")',
+    'fo-exists-i': '(("\u2203I" :right) ((Ax :right) --- "P(a) \u22A2 P(a)") --- "P(a) \u22A2 \u2203x.P(x)")',
+    'fo-exists-e': '(("\u2203E" :right) ((Ax :right) --- "\u2203x.P(x), \u2200x.P(x) \u2192 Q \u22A2 \u2203x.P(x)") (("\u2192E" :right) (("\u2200E" :right) ((Ax :right) --- "\u2203x.P(x), \u2200x.P(x) \u2192 Q, P(x) \u22A2 \u2200x.P(x) \u2192 Q") --- "\u2203x.P(x), \u2200x.P(x) \u2192 Q, P(x) \u22A2 P(x) \u2192 Q") ((Ax :right) --- "\u2203x.P(x), \u2200x.P(x) \u2192 Q, P(x) \u22A2 P(x)") --- "\u2203x.P(x), \u2200x.P(x) \u2192 Q, P(x) \u22A2 Q") --- "\u2203x.P(x), \u2200x.P(x) \u2192 Q \u22A2 Q")',
+    'fo-mixed': '(("\u2192E" :right) (("\u2200E" :right) ((Ax :right) --- "\u2200x.P(x) \u2192 Q(x), P(a) \u22A2 \u2200x.P(x) \u2192 Q(x)") --- "\u2200x.P(x) \u2192 Q(x), P(a) \u22A2 P(a) \u2192 Q(a)") ((Ax :right) --- "\u2200x.P(x) \u2192 Q(x), P(a) \u22A2 P(a)") --- "\u2200x.P(x) \u2192 Q(x), P(a) \u22A2 Q(a)")',
   };
 
   // ── Per-theory rules reference ────────────────────
@@ -645,25 +655,6 @@
         { name: 'If0-True', premises: ['\u03C1 \u22A2 e\u2081 \u21D3 0', '\u03C1 \u22A2 e\u2082 \u21D3 v'], conclusion: '\u03C1 \u22A2 (if0 e\u2081 e\u2082 e\u2083) \u21D3 v' },
         { name: 'If0-False', premises: ['\u03C1 \u22A2 e\u2081 \u21D3 v\u2081', '\u03C1 \u22A2 e\u2083 \u21D3 v'], conclusion: '\u03C1 \u22A2 (if0 e\u2081 e\u2082 e\u2083) \u21D3 v', condition: 'v\u2081 \u2260 0' },
         { name: 'Let', premises: ['\u03C1 \u22A2 e\u2081 \u21D3 v\u2081', '\u03C1[x\u21A6v\u2081] \u22A2 e\u2082 \u21D3 v'], conclusion: '\u03C1 \u22A2 (let ([x e\u2081]) e\u2082) \u21D3 v' },
-      ]
-    },
-    'small-step': {
-      title: 'Small-Step Semantics',
-      judgement: 'e \u27F6 e\u2032',
-      rules: [
-        { name: 'Beta', premises: [], conclusion: '((\u03BB (x) e) v) \u27F6 e[x := v]' },
-        { name: 'App-L', premises: ['e\u2081 \u27F6 e\u2081\u2032'], conclusion: '(e\u2081 e\u2082) \u27F6 (e\u2081\u2032 e\u2082)' },
-        { name: 'App-R', premises: ['e\u2082 \u27F6 e\u2082\u2032'], conclusion: '(v e\u2082) \u27F6 (v e\u2082\u2032)' },
-        { name: 'Add-L', premises: ['e\u2081 \u27F6 e\u2081\u2032'], conclusion: '(+ e\u2081 e\u2082) \u27F6 (+ e\u2081\u2032 e\u2082)' },
-        { name: 'Add-R', premises: ['e\u2082 \u27F6 e\u2082\u2032'], conclusion: '(+ v e\u2082) \u27F6 (+ v e\u2082\u2032)' },
-        { name: 'Add', premises: [], conclusion: '(+ n\u2081 n\u2082) \u27F6 n\u2083', condition: 'n\u2083 = n\u2081 + n\u2082' },
-        { name: 'Neg-Step', premises: ['e \u27F6 e\u2032'], conclusion: '(- e) \u27F6 (- e\u2032)' },
-        { name: 'Neg', premises: [], conclusion: '(- n) \u27F6 \u2212n' },
-        { name: 'If0-Step', premises: ['e \u27F6 e\u2032'], conclusion: '(if0 e e\u2082 e\u2083) \u27F6 (if0 e\u2032 e\u2082 e\u2083)' },
-        { name: 'If0-True', premises: [], conclusion: '(if0 0 e\u2082 e\u2083) \u27F6 e\u2082' },
-        { name: 'If0-False', premises: [], conclusion: '(if0 n e\u2082 e\u2083) \u27F6 e\u2083', condition: 'n \u2260 0' },
-        { name: 'Let-Step', premises: ['e \u27F6 e\u2032'], conclusion: '(let ([x e]) e\u2082) \u27F6 (let ([x e\u2032]) e\u2082)' },
-        { name: 'Let', premises: [], conclusion: '(let ([x v]) e) \u27F6 e[x := v]' },
       ]
     },
     'g3ip': {
@@ -698,6 +689,28 @@
         { name: '\u22A5E', premises: ['\u0393 \u22A2 \u22A5'], conclusion: '\u0393 \u22A2 A' },
         { name: '\u00ACI', premises: ['\u0393, A \u22A2 \u22A5'], conclusion: '\u0393 \u22A2 \u00ACA' },
         { name: '\u00ACE', premises: ['\u0393 \u22A2 \u00ACA', '\u0393 \u22A2 A'], conclusion: '\u0393 \u22A2 \u22A5' },
+      ]
+    },
+    'fond': {
+      title: 'First-Order Natural Deduction',
+      judgement: '\u0393 \u22A2 A',
+      rules: [
+        { name: 'Ax', premises: [], conclusion: '\u0393 \u22A2 A', condition: 'A \u2208 \u0393' },
+        { name: '\u2192I', premises: ['\u0393, A \u22A2 B'], conclusion: '\u0393 \u22A2 A \u2192 B' },
+        { name: '\u2192E', premises: ['\u0393 \u22A2 A \u2192 B', '\u0393 \u22A2 A'], conclusion: '\u0393 \u22A2 B' },
+        { name: '\u2227I', premises: ['\u0393 \u22A2 A', '\u0393 \u22A2 B'], conclusion: '\u0393 \u22A2 A \u2227 B' },
+        { name: '\u2227E\u2081', premises: ['\u0393 \u22A2 A \u2227 B'], conclusion: '\u0393 \u22A2 A' },
+        { name: '\u2227E\u2082', premises: ['\u0393 \u22A2 A \u2227 B'], conclusion: '\u0393 \u22A2 B' },
+        { name: '\u2228I\u2081', premises: ['\u0393 \u22A2 A'], conclusion: '\u0393 \u22A2 A \u2228 B' },
+        { name: '\u2228I\u2082', premises: ['\u0393 \u22A2 B'], conclusion: '\u0393 \u22A2 A \u2228 B' },
+        { name: '\u2228E', premises: ['\u0393 \u22A2 A \u2228 B', '\u0393, A \u22A2 C', '\u0393, B \u22A2 C'], conclusion: '\u0393 \u22A2 C' },
+        { name: '\u22A5E', premises: ['\u0393 \u22A2 \u22A5'], conclusion: '\u0393 \u22A2 A' },
+        { name: '\u00ACI', premises: ['\u0393, A \u22A2 \u22A5'], conclusion: '\u0393 \u22A2 \u00ACA' },
+        { name: '\u00ACE', premises: ['\u0393 \u22A2 \u00ACA', '\u0393 \u22A2 A'], conclusion: '\u0393 \u22A2 \u22A5' },
+        { name: '\u2200I', premises: ['\u0393 \u22A2 \u03C6'], conclusion: '\u0393 \u22A2 \u2200x.\u03C6', condition: 'x not free in \u0393' },
+        { name: '\u2200E', premises: ['\u0393 \u22A2 \u2200x.\u03C6'], conclusion: '\u0393 \u22A2 \u03C6[t/x]' },
+        { name: '\u2203I', premises: ['\u0393 \u22A2 \u03C6[t/x]'], conclusion: '\u0393 \u22A2 \u2203x.\u03C6' },
+        { name: '\u2203E', premises: ['\u0393 \u22A2 \u2203x.\u03C6', '\u0393, \u03C6 \u22A2 C'], conclusion: '\u0393 \u22A2 C', condition: 'x not free in \u0393, C' },
       ]
     },
     'stlc': {
@@ -829,7 +842,16 @@
 
   theorySelect.addEventListener('change', function() {
     updateExamples();
-    if (currentEditor) {
+    var theory = theorySelect.value;
+    // When switching theories, load the simplest example for that theory
+    var examples = theoryExamples[theory];
+    if (examples && examples.length > 0 && exampleData[examples[0].key]) {
+      loadProof(exampleData[examples[0].key]);
+    } else if (theory) {
+      // No examples: start a new blank proof with the theory config
+      newProof();
+    } else if (currentEditor) {
+      // Freestyle: just update the config without resetting
       var cfg = getTheoryConfig();
       currentEditor.setTheoryRules(cfg.theoryRules, cfg.onGeneratePremises, cfg.onCheckApplicability);
     }
@@ -974,7 +996,7 @@
 
   // ── Examples dropdown ───────────────────────────
   var _exampleTheoryMap = {
-    'bs-': 'big-step', 'ss-': 'small-step', 'g3-': 'g3ip',
+    'bs-': 'big-step', 'g3-': 'g3ip',
     'nd-': 'propnd', 'stlc-': 'stlc', 'sf-': 'systemf',
   };
 
@@ -1057,10 +1079,18 @@
 
   // ── Load from URL hash on page load ─────────────
   if (window.location.hash) {
-    var match = window.location.hash.match(/^#proof=(.+)/);
-    if (match) {
-      var sexp = decodeURIComponent(match[1]);
-      setTimeout(function() { loadProof(sexp); }, 100);
+    var hashStr = window.location.hash.substring(1);
+    var hashParts = {};
+    hashStr.split('&').forEach(function(part) {
+      var eq = part.indexOf('=');
+      if (eq >= 0) hashParts[part.substring(0, eq)] = decodeURIComponent(part.substring(eq + 1));
+    });
+    if (hashParts.theory) {
+      theorySelect.value = hashParts.theory;
+      updateExamples();
+    }
+    if (hashParts.proof) {
+      setTimeout(function() { loadProof(hashParts.proof); }, 100);
     }
   }
 })();

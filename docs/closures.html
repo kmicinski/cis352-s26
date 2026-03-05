@@ -220,8 +220,10 @@ details .solution-body {
 </style>
 
 <script>
-function openInPlayground(sexp) {
-  window.open('/cis352-s26/playground#proof=' + encodeURIComponent(sexp), '_blank');
+function openInPlayground(sexp, theory) {
+  var hash = '#proof=' + encodeURIComponent(sexp);
+  if (theory) hash += '&theory=' + encodeURIComponent(theory);
+  window.open('/cis352-s26/playground' + hash, '_blank');
 }
 
 var _bsConfig = ProofChecker.theoryConfig('big-step');
@@ -369,7 +371,7 @@ var _bsConfig = ProofChecker.theoryConfig('big-step');
 <summary>Show solution</summary>
 <div class="solution-body">
 <div id="exercise1-solution"></div>
-<button class="cl-btn" onclick="openInPlayground(window._ex1sexp)" style="margin-top:10px;">Open in Playground</button>
+<button class="cl-btn" onclick="openInPlayground(window._ex1sexp, 'big-step')" style="margin-top:10px;">Open in Playground</button>
 </div>
 <script>
 (function() {
@@ -379,7 +381,7 @@ var _bsConfig = ProofChecker.theoryConfig('big-step');
   details.addEventListener('toggle', function() {
     if (details.open && !rendered) {
       rendered = true;
-      ProofTree.renderReadonly(window._ex1sexp, document.getElementById('exercise1-solution'), { zoom: false });
+      ProofTree.renderReadonly(window._ex1sexp, document.getElementById('exercise1-solution'));
     }
   });
 })();
@@ -415,7 +417,7 @@ var _bsConfig = ProofChecker.theoryConfig('big-step');
 <summary>Show solution</summary>
 <div class="solution-body">
 <div id="exercise2-solution"></div>
-<button class="cl-btn" onclick="openInPlayground(window._ex2sexp)" style="margin-top:10px;">Open in Playground</button>
+<button class="cl-btn" onclick="openInPlayground(window._ex2sexp, 'big-step')" style="margin-top:10px;">Open in Playground</button>
 </div>
 <script>
 (function() {
@@ -425,7 +427,7 @@ var _bsConfig = ProofChecker.theoryConfig('big-step');
   details.addEventListener('toggle', function() {
     if (details.open && !rendered) {
       rendered = true;
-      ProofTree.renderReadonly(window._ex2sexp, document.getElementById('exercise2-solution'), { zoom: false });
+      ProofTree.renderReadonly(window._ex2sexp, document.getElementById('exercise2-solution'));
     }
   });
 })();
@@ -563,7 +565,7 @@ var _bsConfig = ProofChecker.theoryConfig('big-step');
 <summary>Show solution</summary>
 <div class="solution-body">
 <div id="exercise3-solution"></div>
-<button class="cl-btn" onclick="openInPlayground(window._ex3sexp)" style="margin-top:10px;">Open in Playground</button>
+<button class="cl-btn" onclick="openInPlayground(window._ex3sexp, 'big-step')" style="margin-top:10px;">Open in Playground</button>
 </div>
 <script>
 (function() {
@@ -573,7 +575,7 @@ var _bsConfig = ProofChecker.theoryConfig('big-step');
   details.addEventListener('toggle', function() {
     if (details.open && !rendered) {
       rendered = true;
-      ProofTree.renderReadonly(window._ex3sexp, document.getElementById('exercise3-solution'), { zoom: false });
+      ProofTree.renderReadonly(window._ex3sexp, document.getElementById('exercise3-solution'));
     }
   });
 })();
@@ -681,7 +683,7 @@ var _bsConfig = ProofChecker.theoryConfig('big-step');
 <summary>Show solution</summary>
 <div class="solution-body">
 <div id="optA-solution"></div>
-<button class="cl-btn" onclick="openInPlayground(window._optAsexp)" style="margin-top:10px;">Open in Playground</button>
+<button class="cl-btn" onclick="openInPlayground(window._optAsexp, 'big-step')" style="margin-top:10px;">Open in Playground</button>
 </div>
 <script>
 (function() {
@@ -691,7 +693,7 @@ var _bsConfig = ProofChecker.theoryConfig('big-step');
   details.addEventListener('toggle', function() {
     if (details.open && !rendered) {
       rendered = true;
-      ProofTree.renderReadonly(window._optAsexp, document.getElementById('optA-solution'), { zoom: false });
+      ProofTree.renderReadonly(window._optAsexp, document.getElementById('optA-solution'));
     }
   });
 })();
@@ -723,7 +725,7 @@ var _bsConfig = ProofChecker.theoryConfig('big-step');
 <summary>Show solution</summary>
 <div class="solution-body">
 <div id="optB-solution"></div>
-<button class="cl-btn" onclick="openInPlayground(window._optBsexp)" style="margin-top:10px;">Open in Playground</button>
+<button class="cl-btn" onclick="openInPlayground(window._optBsexp, 'big-step')" style="margin-top:10px;">Open in Playground</button>
 </div>
 <script>
 (function() {
@@ -733,7 +735,7 @@ var _bsConfig = ProofChecker.theoryConfig('big-step');
   details.addEventListener('toggle', function() {
     if (details.open && !rendered) {
       rendered = true;
-      ProofTree.renderReadonly(window._optBsexp, document.getElementById('optB-solution'), { zoom: false });
+      ProofTree.renderReadonly(window._optBsexp, document.getElementById('optB-solution'));
     }
   });
 })();
@@ -895,7 +897,7 @@ var _bsConfig = ProofChecker.theoryConfig('big-step');
 
   document.getElementById('cert-playground-btn').addEventListener('click', function() {
     var input = document.getElementById('cert-input').value.trim();
-    if (input) openInPlayground(input);
+    if (input) openInPlayground(input, 'big-step');
   });
 })();
 </script>

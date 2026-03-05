@@ -13,6 +13,22 @@ var ProofTree = (function() {
 
     // ── Formula pretty-printing ──────────────────────────
 
+    // Render formula text into a DOM element, wrapping ⇓ in a styled span
+    function setFormulaDOM(el, raw) {
+        var text = prettyFormula(raw);
+        el.textContent = '';
+        var parts = text.split('⇓');
+        for (var i = 0; i < parts.length; i++) {
+            if (i > 0) {
+                var arrow = document.createElement('span');
+                arrow.className = 'pt-darr';
+                arrow.textContent = '⇓';
+                el.appendChild(arrow);
+            }
+            if (parts[i]) el.appendChild(document.createTextNode(parts[i]));
+        }
+    }
+
     function prettyFormula(raw) {
         if (!raw) return '';
         var s = raw;
@@ -400,6 +416,11 @@ var ProofTree = (function() {
                 panY = 0;
             }
             applyTransform();
+            // Auto-hide controls when content fits without zooming
+            var needsZoom = (cw > vw * 0.95 || ch > vh);
+            controls.style.display = needsZoom ? '' : 'none';
+            viewport.style.cursor = needsZoom ? '' : 'default';
+            viewport.style.overflow = needsZoom ? 'hidden' : 'visible';
         }
 
         zoomInBtn.addEventListener('click', function() {
@@ -579,7 +600,7 @@ var ProofTree = (function() {
 
         var conclusionEl = document.createElement('div');
         conclusionEl.className = 'proof-conclusion';
-        conclusionEl.textContent = prettyFormula(node.conclusion);
+        setFormulaDOM(conclusionEl, node.conclusion);
         el.appendChild(conclusionEl);
 
         parentEl.appendChild(el);
@@ -728,6 +749,16 @@ var ProofTree = (function() {
                     if (!query || theoryRules[i].toLowerCase().indexOf(query) !== -1) {
                         currentMatches.push(theoryRules[i]);
                     }
+                }
+                // Sort: applicable rules first, greyed-out rules later
+                if (applicabilityInfo) {
+                    currentMatches.sort(function(a, b) {
+                        var aOff = applicabilityInfo[a] && applicabilityInfo[a].applicable === false;
+                        var bOff = applicabilityInfo[b] && applicabilityInfo[b].applicable === false;
+                        if (aOff && !bOff) return 1;
+                        if (!aOff && bOff) return -1;
+                        return 0;
+                    });
                 }
                 for (var j = 0; j < currentMatches.length; j++) {
                     var item = document.createElement('div');
@@ -966,6 +997,16 @@ var ProofTree = (function() {
                     if (!query || theoryRules[i].toLowerCase().indexOf(query) !== -1) {
                         currentMatches.push(theoryRules[i]);
                     }
+                }
+                // Sort: applicable rules first, greyed-out rules later
+                if (applicabilityInfo) {
+                    currentMatches.sort(function(a, b) {
+                        var aOff = applicabilityInfo[a] && applicabilityInfo[a].applicable === false;
+                        var bOff = applicabilityInfo[b] && applicabilityInfo[b].applicable === false;
+                        if (aOff && !bOff) return 1;
+                        if (!aOff && bOff) return -1;
+                        return 0;
+                    });
                 }
                 for (var j = 0; j < currentMatches.length; j++) {
                     var item = document.createElement('div');
@@ -1236,7 +1277,7 @@ var ProofTree = (function() {
             if (node.conclusion) {
                 var formulaSpan = document.createElement('span');
                 formulaSpan.className = 'proof-formula';
-                formulaSpan.textContent = prettyFormula(node.conclusion);
+                setFormulaDOM(formulaSpan, node.conclusion);
                 (function(pp, f) {
                     f.addEventListener('click', function(e) {
                         e.stopPropagation();

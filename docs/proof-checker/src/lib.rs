@@ -6,6 +6,7 @@ pub mod formula;
 pub mod types;
 pub mod g3ip;
 pub mod propnd;
+pub mod fond;
 pub mod stlc;
 pub mod systemf;
 pub mod smallstep;
@@ -32,7 +33,7 @@ pub fn check_proof(sexp_str: &str, theory: &str) -> String {
         }
     };
 
-    let available = "big-step, small-step, g3ip, propnd, stlc, systemf";
+    let available = "big-step, g3ip, propnd, fond, stlc, systemf";
 
     let result = match theory {
         "big-step" | "bigstep" | "" => {
@@ -49,6 +50,10 @@ pub fn check_proof(sexp_str: &str, theory: &str) -> String {
         }
         "propnd" | "prop-nd" | "natural-deduction" => {
             let th = propnd::PropNDTheory;
+            check::check_tree(&node, &th)
+        }
+        "fond" | "first-order" | "fo-nd" => {
+            let th = fond::FONDTheory;
             check::check_tree(&node, &th)
         }
         "stlc" | "STLC" | "simply-typed" => {
@@ -103,6 +108,7 @@ pub fn generate_premises(conclusion: &str, rule: &str, theory: &str) -> String {
         "small-step" | "smallstep" => smallstep::SmallStepTheory.generate_premises(rule, conclusion),
         "g3ip" | "G3ip" | "sequent" => g3ip::G3ipTheory.generate_premises(rule, conclusion),
         "propnd" | "prop-nd" | "natural-deduction" => propnd::PropNDTheory.generate_premises(rule, conclusion),
+        "fond" | "first-order" | "fo-nd" => fond::FONDTheory.generate_premises(rule, conclusion),
         "stlc" | "STLC" | "simply-typed" => stlc::STLCTheory.generate_premises(rule, conclusion),
         "systemf" | "system-f" | "SystemF" => systemf::SystemFTheory.generate_premises(rule, conclusion),
         _ => Err(format!("Unknown theory '{}'", theory)),
@@ -124,6 +130,7 @@ pub fn applicable_rules(conclusion: &str, theory: &str) -> String {
         "small-step" | "smallstep" => smallstep::SmallStepTheory.applicable_rules(conclusion),
         "g3ip" | "G3ip" | "sequent" => g3ip::G3ipTheory.applicable_rules(conclusion),
         "propnd" | "prop-nd" | "natural-deduction" => propnd::PropNDTheory.applicable_rules(conclusion),
+        "fond" | "first-order" | "fo-nd" => fond::FONDTheory.applicable_rules(conclusion),
         "stlc" | "STLC" | "simply-typed" => stlc::STLCTheory.applicable_rules(conclusion),
         "systemf" | "system-f" | "SystemF" => systemf::SystemFTheory.applicable_rules(conclusion),
         _ => vec![],
@@ -146,9 +153,9 @@ pub fn applicable_rules(conclusion: &str, theory: &str) -> String {
 pub fn list_theories() -> String {
     serde_json::to_string(&serde_json::json!([
         {"id": "big-step", "name": "Big-Step Operational Semantics"},
-        {"id": "small-step", "name": "Small-Step Operational Semantics"},
         {"id": "g3ip", "name": "G3ip Sequent Calculus"},
         {"id": "propnd", "name": "Propositional Natural Deduction"},
+        {"id": "fond", "name": "First-Order Natural Deduction"},
         {"id": "stlc", "name": "Simply-Typed Lambda Calculus"},
         {"id": "systemf", "name": "System F"},
     ]))
