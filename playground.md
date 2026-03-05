@@ -830,6 +830,23 @@ proof_tree: true
   });
   updateExamples(); // init
 
+  // ── Auto-check on commit (Enter key) ───────────
+  function autoCheckOnCommit() {
+    if (!currentEditor) return;
+    var theory = theorySelect.value;
+    if (!theory) return;
+    ProofChecker.init().then(function() {
+      var result = ProofChecker.check(currentEditor, theory);
+      ProofChecker.annotate(canvas, result);
+      showCheckResult(result);
+      if (result.valid) {
+        ProofChecker.flashSuccess(canvas);
+      } else if (!result.complete) {
+        ProofChecker.flashError(canvas);
+      }
+    }).catch(function() {});
+  }
+
   // ── Load proof into editor ──────────────────────
   function loadProof(sexp) {
     if (emptyMsg) { emptyMsg.remove(); emptyMsg = null; }
@@ -846,6 +863,7 @@ proof_tree: true
         theoryRules: loadCfg.theoryRules,
         onGeneratePremises: loadCfg.onGeneratePremises,
         onCheckApplicability: loadCfg.onCheckApplicability,
+        onCommit: autoCheckOnCommit,
         onChange: function(tree) {
           var s = ProofTree.toSexp(tree);
           sexpInput.value = s;
@@ -874,6 +892,7 @@ proof_tree: true
       theoryRules: newCfg.theoryRules,
       onGeneratePremises: newCfg.onGeneratePremises,
       onCheckApplicability: newCfg.onCheckApplicability,
+      onCommit: autoCheckOnCommit,
       onChange: function(tree) {
         var s = ProofTree.toSexp(tree);
         sexpInput.value = s;

@@ -638,6 +638,7 @@ var ProofTree = (function() {
         options = options || {};
         var useZoom = options.zoom !== false;
         var onChange = options.onChange || function() {};
+        var onCommit = options.onCommit || null;
         var theoryRules = options.theoryRules || [];
         var onGeneratePremises = options.onGeneratePremises || null;
         var onCheckApplicability = options.onCheckApplicability || null;
@@ -833,7 +834,7 @@ var ProofTree = (function() {
                 if (!generatedOk && (!node.premises || node.premises.length === 0)) {
                     node.premises = [{ conclusion: '', rule_name: null, rule_label_left: null, premises: [] }];
                 }
-                rerender();
+                commitAndRerender();
             }
 
             // Temporarily allow overflow so dropdown isn't clipped by viewport
@@ -949,17 +950,21 @@ var ProofTree = (function() {
             input.type = 'text';
             input.className = 'proof-formula-edit';
             input.value = node.conclusion;
+            var committed = false;
             input.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
+                    committed = true;
                     node.conclusion = input.value;
-                    rerender();
+                    commitAndRerender();
                 } else if (e.key === 'Escape') {
                     rerender();
                 }
             });
             input.addEventListener('blur', function() {
-                node.conclusion = input.value;
-                rerender();
+                if (!committed) {
+                    node.conclusion = input.value;
+                    rerender();
+                }
             });
             spanEl.replaceWith(input);
             input.focus();
@@ -979,20 +984,28 @@ var ProofTree = (function() {
                 input.className = 'proof-rule-edit';
                 input.value = current;
                 input.placeholder = side === 'left' ? 'label' : 'rule';
-                function commit() {
+                var rlCommitted = false;
+                function commit(isExplicit) {
                     var val = input.value.trim();
                     if (side === 'left') {
                         node.rule_label_left = val || null;
                     } else {
                         node.rule_name = val || null;
                     }
-                    rerender();
+                    if (isExplicit) {
+                        rlCommitted = true;
+                        commitAndRerender();
+                    } else {
+                        rerender();
+                    }
                 }
                 input.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') commit();
+                    if (e.key === 'Enter') commit(true);
                     else if (e.key === 'Escape') rerender();
                 });
-                input.addEventListener('blur', commit);
+                input.addEventListener('blur', function() {
+                    if (!rlCommitted) commit(false);
+                });
                 spanEl.replaceWith(input);
                 input.focus();
                 input.select();
@@ -1094,13 +1107,13 @@ var ProofTree = (function() {
                         node.premises = [{ conclusion: '', rule_name: null, rule_label_left: null, premises: [] }];
                     }
                 }
-                rerender();
+                commitAndRerender();
             }
 
             function commitPlain() {
                 var val = input.value.trim();
                 node.rule_name = val || null;
-                rerender();
+                commitAndRerender();
             }
 
             function updateHighlight() {
@@ -1349,6 +1362,14 @@ var ProofTree = (function() {
             }
         }
 
+        // Rerender + fire onCommit (for explicit user actions like Enter)
+        function commitAndRerender() {
+            rerender();
+            if (onCommit) {
+                setTimeout(function() { onCommit(proofTree); }, 50);
+            }
+        }
+
         // ── Ligature hints panel ───────────────────────────
         var hintsEl = null;
         if (showLigatureHints) {
@@ -1432,6 +1453,7 @@ var ProofTree = (function() {
                 onGeneratePremises = generateFn || null;
                 onCheckApplicability = applicabilityFn || null;
             },
+            setOnCommit: function(fn) { onCommit = fn || null; },
             undo: undo,
             rerender: rerender,
             destroy: function() {

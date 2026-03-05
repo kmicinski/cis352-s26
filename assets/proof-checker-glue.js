@@ -381,6 +381,23 @@ var ProofChecker = (function () {
     }, 500);
   }
 
+  // ── Red flash on error proof ──────────────────────────────────
+
+  function flashError(container) {
+    var overlay = document.createElement('div');
+    overlay.className = 'pt-error-flash';
+    document.body.appendChild(overlay);
+    overlay.offsetHeight;
+    overlay.classList.add('pt-error-flash-active');
+    setTimeout(function () {
+      overlay.classList.remove('pt-error-flash-active');
+      overlay.classList.add('pt-error-flash-out');
+      setTimeout(function () {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }, 600);
+    }, 400);
+  }
+
   // ── Theory config (shared rule lists + helper factories) ─────
 
   var _theoryRuleNames = {
@@ -431,5 +448,6 @@ var ProofChecker = (function () {
     clearAnnotations: clearAnnotations,
     createCheckButton: createCheckButton,
     flashSuccess: flashSuccess,
+    flashError: flashError,
   };
 })();
