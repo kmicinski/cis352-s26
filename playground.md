@@ -390,6 +390,7 @@ proof_tree: true
   <button class="pg-btn pg-btn-sm" id="pg-rules-btn" style="display:none;">Rules</button>
   <button class="pg-btn pg-btn-sm" id="pg-sexp-toggle">S-expression</button>
   <button class="pg-btn pg-btn-sm" id="pg-new-btn">New</button>
+  <button class="pg-btn pg-btn-sm" id="pg-undo-btn" style="display:none;" title="Undo (Ctrl+Z)">Undo</button>
   <button class="pg-btn pg-btn-sm" id="pg-reset-btn" style="display:none;">Reset</button>
   <span class="spacer"></span>
   <button class="pg-btn pg-btn-sm" id="pg-copy-btn">Copy</button>
@@ -854,6 +855,7 @@ proof_tree: true
       });
       sexpInput.value = sexp;
       resetBtn.style.display = '';
+      undoBtn.style.display = '';
       history.replaceState(null, '', '#proof=' + encodeURIComponent(sexp));
     } catch(e) {
       canvas.innerHTML = '<div style="color:#c00;padding:40px;text-align:center;">Error: ' + e.message + '</div>';
@@ -992,6 +994,12 @@ proof_tree: true
 
   // ── New button ──────────────────────────────────
   document.getElementById('pg-new-btn').addEventListener('click', newProof);
+
+  // ── Undo button ────────────────────────────────
+  var undoBtn = document.getElementById('pg-undo-btn');
+  undoBtn.addEventListener('click', function() {
+    if (currentEditor && currentEditor.undo) currentEditor.undo();
+  });
 
   // ── Reset button ────────────────────────────────
   var resetBtn = document.getElementById('pg-reset-btn');

@@ -646,6 +646,26 @@ var ProofTree = (function() {
 
         var pendingAutocompletePath = null;
 
+        // Undo stack — deep-copy tree before each mutation
+        var undoStack = [];
+        var MAX_UNDO = 50;
+
+        function deepCopy(obj) {
+            if (!obj) return obj;
+            return JSON.parse(JSON.stringify(obj));
+        }
+
+        function saveUndo() {
+            undoStack.push(deepCopy(proofTree));
+            if (undoStack.length > MAX_UNDO) undoStack.shift();
+        }
+
+        function undo() {
+            if (undoStack.length === 0) return;
+            proofTree = undoStack.pop();
+            rerender();
+        }
+
         var vp = null;
         var canvasEl;
 
@@ -704,6 +724,7 @@ var ProofTree = (function() {
 
         function applyRule(path, anchorEl) {
             var node = getNodeAtPath(path);
+            saveUndo();
             if (theoryRules.length > 0 && anchorEl) {
                 // Show floating autocomplete without restructuring the tree
                 showFloatingAutocomplete(path, node, anchorEl);
@@ -878,12 +899,14 @@ var ProofTree = (function() {
         }
 
         function addPremise(path) {
+            saveUndo();
             var node = getNodeAtPath(path);
             node.premises.push({ conclusion: '', rule_name: null, rule_label_left: null, premises: [] });
             rerender();
         }
 
         function removePremise(path) {
+            saveUndo();
             var parentPath = path.slice(0, -1);
             var idx = path[path.length - 1];
             var parent = getNodeAtPath(parentPath);
@@ -892,6 +915,7 @@ var ProofTree = (function() {
         }
 
         function clearNode(path) {
+            saveUndo();
             var node = getNodeAtPath(path);
             node.rule_name = null;
             node.rule_label_left = null;
@@ -906,6 +930,7 @@ var ProofTree = (function() {
         }
 
         function editConclusion(path, spanEl) {
+            saveUndo();
             var node = getNodeAtPath(path);
             var input = document.createElement('input');
             input.type = 'text';
@@ -929,6 +954,7 @@ var ProofTree = (function() {
         }
 
         function editRuleLabel(path, side, spanEl) {
+            saveUndo();
             var node = getNodeAtPath(path);
             var current = (side === 'left') ? (node.rule_label_left || '') : (node.rule_name || '');
 
@@ -1050,9 +1076,7 @@ var ProofTree = (function() {
                         }
                     }
                     if (!generatedOk && (!node.premises || node.premises.length === 0)) {
-                        if (!onGeneratePremises) {
-                            node.premises = [{ conclusion: '', rule_name: null, rule_label_left: null, premises: [] }];
-                        }
+                        node.premises = [{ conclusion: '', rule_name: null, rule_label_left: null, premises: [] }];
                     }
                 }
                 rerender();
@@ -1179,19 +1203,17 @@ var ProofTree = (function() {
                 ruleLeft.className = 'proof-rule-label proof-rule-left';
                 if (node.rule_label_left) {
                     ruleLeft.textContent = node.rule_label_left;
-                } else if (!isAxiom) {
+                } else {
                     ruleLeft.textContent = 'label';
                     ruleLeft.classList.add('proof-rule-placeholder');
                 }
-                if (!isAxiom) {
-                    ruleLeft.title = 'Click to add left label';
-                    (function(pp, rl) {
-                        rl.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            editRuleLabel(pp, 'left', rl);
-                        });
-                    })(p, ruleLeft);
-                }
+                ruleLeft.title = 'Click to add left label';
+                (function(pp, rl) {
+                    rl.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        editRuleLabel(pp, 'left', rl);
+                    });
+                })(p, ruleLeft);
                 inferenceEl.appendChild(ruleLeft);
 
                 var lineEl = document.createElement('span');
@@ -1206,15 +1228,13 @@ var ProofTree = (function() {
                     ruleRight.textContent = 'rule';
                     ruleRight.classList.add('proof-rule-placeholder');
                 }
-                if (!isAxiom) {
-                    ruleRight.title = 'Click to name this rule';
-                    (function(pp, rr) {
-                        rr.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            editRuleLabel(pp, 'right', rr);
-                        });
-                    })(p, ruleRight);
-                }
+                ruleRight.title = 'Click to name this rule';
+                (function(pp, rr) {
+                    rr.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        editRuleLabel(pp, 'right', rr);
+                    });
+                })(p, ruleRight);
                 inferenceEl.appendChild(ruleRight);
 
                 // Trigger pending autocomplete
@@ -1367,6 +1387,16 @@ var ProofTree = (function() {
             });
         }
 
+        // Ctrl+Z / Cmd+Z undo handler scoped to this editor's container
+        function onKeyDown(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                undo();
+            }
+        }
+        container.setAttribute('tabindex', '-1');
+        container.addEventListener('keydown', onKeyDown);
+
         // Initial render
         rerender();
 
@@ -1374,6 +1404,7 @@ var ProofTree = (function() {
             getTree: function() { return proofTree; },
             getSexp: function() { return toSexp(proofTree); },
             setTree: function(tree) {
+                undoStack.length = 0;
                 proofTree = (typeof tree === 'string') ? parseSexp(tree) : tree;
                 rerender();
             },
@@ -1382,8 +1413,10 @@ var ProofTree = (function() {
                 onGeneratePremises = generateFn || null;
                 onCheckApplicability = applicabilityFn || null;
             },
+            undo: undo,
             rerender: rerender,
             destroy: function() {
+                container.removeEventListener('keydown', onKeyDown);
                 if (hintsEl && hintsEl.parentNode) {
                     hintsEl.parentNode.removeChild(hintsEl);
                 }
