@@ -1,0 +1,415 @@
+/*
+ * proof-tree.css — Standalone proof tree component styles
+ *
+ * Self-contained: uses --pt-* custom properties so it works
+ * without any other stylesheet. Override variables to theme.
+ */
+
+:root {
+    --pt-primary: #4f46e5;
+    --pt-danger: #ef4444;
+    --pt-warn: #d97706;
+    --pt-gray-100: #f3f4f6;
+    --pt-gray-200: #e5e7eb;
+    --pt-gray-300: #d1d5db;
+    --pt-gray-400: #9ca3af;
+    --pt-gray-700: #374151;
+    --pt-gray-900: #111827;
+    --pt-radius: 8px;
+}
+
+/* ── Viewport / zoom wrapper ───────────────────────── */
+.proof-tree-viewport {
+    overflow: hidden;
+    position: relative;
+    min-height: 80px;
+    cursor: grab;
+    touch-action: none;
+}
+
+.proof-tree-viewport:active {
+    cursor: grabbing;
+}
+
+.proof-tree-canvas {
+    transform-origin: 0 0;
+    display: flex;
+    justify-content: center;
+    padding: 16px 20px;
+    min-height: 60px;
+}
+
+.proof-tree-zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--pt-gray-200);
+    border-radius: var(--pt-radius);
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    z-index: 5;
+    user-select: none;
+}
+
+.proof-tree-zoom-controls button {
+    background: none;
+    border: 1px solid var(--pt-gray-300);
+    border-radius: 4px;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--pt-gray-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    transition: background 0.12s, border-color 0.12s;
+}
+
+.proof-tree-zoom-controls button:hover {
+    background: var(--pt-gray-100);
+    border-color: var(--pt-gray-400);
+}
+
+.proof-tree-zoom-label {
+    min-width: 36px;
+    text-align: center;
+    color: var(--pt-gray-700);
+    font-weight: 500;
+}
+
+/* ── Node: column of premises → line → conclusion ── */
+.proof-node {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 1px;
+}
+
+/* Premises sit in a row; the trailing "+" button lives here too */
+.proof-premises {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 2px;
+}
+
+/* The "+" button that trails the last premise */
+.proof-add-premise {
+    align-self: flex-end;
+    margin-bottom: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    font-size: 0.85rem;
+}
+
+.proof-node:hover > .proof-premises > .proof-add-premise {
+    opacity: 1;
+}
+
+/* ── Inference line row ────────────────────────────── */
+.proof-inference {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-self: stretch;
+    position: relative;
+    margin: 2px 0;
+}
+
+.proof-line {
+    flex: 1;
+    height: 1.5px;
+    background: var(--pt-gray-900);
+    min-width: 30px;
+}
+
+/* ── Rule labels: absolutely positioned outside the line ── */
+.proof-rule-label {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    font-variant: small-caps;
+    letter-spacing: 0.04em;
+    color: var(--pt-gray-700);
+    white-space: nowrap;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: color 0.12s, background 0.12s;
+}
+
+.proof-rule-left {
+    right: calc(100% + 8px);
+}
+
+.proof-rule-right {
+    left: calc(100% + 8px);
+}
+
+.proof-rule-label:hover {
+    color: var(--pt-primary);
+    background: rgba(79, 70, 229, 0.06);
+}
+
+/* Empty labels: faint italic placeholder always visible */
+.proof-rule-placeholder {
+    color: var(--pt-gray-300);
+    font-style: italic;
+    font-variant: normal;
+    font-size: 0.72rem;
+    letter-spacing: 0;
+}
+
+.proof-rule-placeholder:hover {
+    color: var(--pt-primary);
+    background: rgba(79, 70, 229, 0.06);
+}
+
+.proof-readonly .proof-rule-label {
+    cursor: default;
+}
+
+.proof-readonly .proof-rule-label:hover {
+    color: var(--pt-gray-700);
+    background: transparent;
+}
+
+.proof-readonly .proof-rule-placeholder {
+    display: none;
+}
+
+/* ── Action buttons on inference line (absolutely positioned) ── */
+.proof-line-btns {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: -2px;
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.proof-node:hover > .proof-inference > .proof-line-btns {
+    opacity: 1;
+}
+
+/* ── Conclusion formula ────────────────────────────── */
+.proof-conclusion {
+    padding: 3px 4px;
+    text-align: center;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.12s;
+    white-space: nowrap;
+    min-height: 1.4em;
+    margin-top: 1px;
+}
+
+.proof-conclusion:hover {
+    background: rgba(79, 70, 229, 0.07);
+}
+
+.proof-readonly .proof-conclusion {
+    cursor: default;
+    padding: 3px 6px;
+}
+
+.proof-readonly .proof-conclusion:hover {
+    background: transparent;
+}
+
+.proof-formula {
+    cursor: pointer;
+}
+
+/* Empty formula: italic placeholder text */
+.proof-formula-placeholder {
+    color: var(--pt-gray-400);
+    font-style: italic;
+    font-size: 0.88rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.proof-formula-placeholder:hover {
+    color: var(--pt-primary);
+}
+
+/* ── Leaf zone: "apply rule" above the conclusion ─── */
+.proof-leaf-zone {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    min-height: 20px;
+    align-items: center;
+}
+
+.proof-leaf-zone > .proof-action-btn {
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.proof-node:hover > .proof-leaf-zone > .proof-action-btn {
+    opacity: 1;
+}
+
+/* ── Inline editing inputs ─────────────────────────── */
+.proof-formula-edit {
+    border: 1.5px solid var(--pt-primary);
+    border-radius: 3px;
+    padding: 2px 8px;
+    font-size: 0.95rem;
+    outline: none;
+    min-width: 80px;
+    text-align: center;
+    background: white;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.12);
+}
+
+.proof-rule-edit {
+    border: 1.5px solid var(--pt-primary);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-size: 0.8rem;
+    font-variant: small-caps;
+    letter-spacing: 0.04em;
+    outline: none;
+    min-width: 50px;
+    max-width: 120px;
+    background: white;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.12);
+}
+
+/* ── Action buttons ────────────────────────────────── */
+.proof-action-btn {
+    background: none;
+    border: none;
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--pt-gray-400);
+    border-radius: 3px;
+    transition: color 0.12s, background 0.12s;
+    white-space: nowrap;
+}
+
+.proof-action-btn:hover {
+    color: var(--pt-primary);
+    background: rgba(79, 70, 229, 0.08);
+}
+
+.proof-action-remove:hover {
+    color: var(--pt-danger);
+    background: rgba(239, 68, 68, 0.08);
+}
+
+.proof-action-clear:hover {
+    color: var(--pt-warn);
+    background: rgba(217, 119, 6, 0.08);
+}
+
+/* ── Orientation hint ─────────────────────────────── */
+.proof-tree-orientation-hint {
+    display: none;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    color: var(--pt-gray-700);
+    background: var(--pt-gray-100);
+    border: 1px solid var(--pt-gray-200);
+    border-radius: var(--pt-radius);
+    margin-bottom: 8px;
+}
+
+/* ── Mobile / touch ──────────────────────────────── */
+@media (max-width: 640px) {
+    .proof-tree-canvas {
+        padding: 14px 6px;
+    }
+
+    .proof-premises {
+        gap: 6px;
+    }
+
+    .proof-conclusion {
+        font-size: 0.92rem;
+        padding: 6px 10px;
+        min-height: 2em;
+    }
+
+    /* Larger touch targets for action buttons */
+    .proof-action-btn {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        min-height: 32px;
+    }
+
+    /* Always show actions on touch devices */
+    .proof-add-premise,
+    .proof-leaf-zone > .proof-action-btn,
+    .proof-line-btns {
+        opacity: 1 !important;
+    }
+
+    /* Larger inline edit inputs for on-screen keyboards */
+    .proof-formula-edit {
+        font-size: 1rem;
+        padding: 6px 10px;
+        min-width: 100px;
+    }
+
+    .proof-rule-edit {
+        font-size: 0.9rem;
+        padding: 4px 8px;
+        min-width: 60px;
+    }
+
+    /* Compact zoom controls */
+    .proof-tree-zoom-controls {
+        gap: 4px;
+        padding: 3px 6px;
+        bottom: 4px;
+        right: 4px;
+    }
+
+    .proof-tree-zoom-controls button {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .proof-tree-zoom-label {
+        min-width: 32px;
+        font-size: 0.7rem;
+    }
+}
+
+/* Portrait on narrow screens: show orientation hint */
+@media (max-width: 640px) and (orientation: portrait) {
+    .proof-tree-orientation-hint {
+        display: block;
+    }
+}
+
+/* Landscape on narrow screens: hide it */
+@media (max-width: 640px) and (orientation: landscape) {
+    .proof-tree-orientation-hint {
+        display: none;
+    }
+}

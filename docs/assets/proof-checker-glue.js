@@ -1,0 +1,273 @@
+/**
+ * proof-checker-glue.js — Thin wrapper that loads the WASM proof checker
+ * and provides DOM integration for proof tree editors.
+ *
+ * Requires proof-tree.js to be loaded first.
+ *
+ * Usage:
+ *   ProofChecker.init()                         — load WASM (called automatically)
+ *   ProofChecker.check(editor, theory)           — check an editor's tree
+ *   ProofChecker.annotate(container, result)     — apply CSS classes to nodes
+ *   ProofChecker.createCheckButton(container, editor, theory) — full UI
+ */
+var ProofChecker = (function () {
+  'use strict';
+
+  var wasmModule = null;
+  var initPromise = null;
+
+  // ── WASM loading ───────────────────────────────────────────────
+
+  // Capture script src at load time (document.currentScript is null later)
+  var _scriptSrc = (typeof document !== 'undefined' && document.currentScript)
+    ? document.currentScript.src
+    : '';
+
+  function init() {
+    if (initPromise) return initPromise;
+    initPromise = new Promise(function (resolve, reject) {
+      // Resolve WASM JS URL relative to this script's location
+      var base = _scriptSrc ? _scriptSrc.replace(/[^/]*$/, '') : '';
+      var wasmJsUrl = base + 'wasm/proof_checker.js';
+
+      import(wasmJsUrl)
+        .then(function (mod) {
+          // wasm-pack --target web produces an init() default export
+          return mod.default().then(function () {
+            wasmModule = mod;
+            resolve(mod);
+          });
+        })
+        .catch(function (err) {
+          console.error('ProofChecker: failed to load WASM', err);
+          reject(err);
+        });
+    });
+    return initPromise;
+  }
+
+  // ── Check ─────────────────────────────────────────────────────
+
+  function check(editor, theory) {
+    if (!wasmModule) {
+      return {
+        valid: false,
+        complete: false,
+        diagnostics: [
+          { level: 'error', path: [], message: 'WASM module not loaded yet' },
+        ],
+      };
+    }
+    var sexp = editor.getSexp();
+    var jsonStr = wasmModule.check_proof(sexp, theory || 'big-step');
+    return JSON.parse(jsonStr);
+  }
+
+  // ── DOM annotation ────────────────────────────────────────────
+
+  function clearAnnotations(container) {
+    var nodes = container.querySelectorAll(
+      '.pt-check-valid, .pt-check-error, .pt-check-incomplete'
+    );
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].classList.remove(
+        'pt-check-valid',
+        'pt-check-error',
+        'pt-check-incomplete'
+      );
+    }
+    // Remove tooltips
+    var tooltips = container.querySelectorAll('.pt-check-tooltip');
+    for (var j = 0; j < tooltips.length; j++) {
+      tooltips[j].parentNode.removeChild(tooltips[j]);
+    }
+    // Remove summary
+    var summaries = container.querySelectorAll('.pt-check-summary');
+    for (var k = 0; k < summaries.length; k++) {
+      summaries[k].parentNode.removeChild(summaries[k]);
+    }
+  }
+
+  function annotate(container, result) {
+    clearAnnotations(container);
+
+    // Build a map from path → diagnostics
+    var pathMap = {};
+    for (var i = 0; i < result.diagnostics.length; i++) {
+      var d = result.diagnostics[i];
+      var key = d.path.join(',');
+      if (!pathMap[key]) pathMap[key] = [];
+      pathMap[key].push(d);
+    }
+
+    // Walk .proof-node elements in DFS order
+    var allNodes = [];
+    function collectNodes(el, path) {
+      allNodes.push({ el: el, path: path.slice() });
+      // Find direct child .proof-premises, then its children
+      var premisesEl = null;
+      for (var c = 0; c < el.children.length; c++) {
+        if (el.children[c].classList.contains('proof-premises')) {
+          premisesEl = el.children[c];
+          break;
+        }
+      }
+      if (premisesEl) {
+        var childIdx = 0;
+        for (var c = 0; c < premisesEl.children.length; c++) {
+          var child = premisesEl.children[c];
+          if (child.classList.contains('proof-node')) {
+            collectNodes(child, path.concat([childIdx]));
+            childIdx++;
+          }
+        }
+      }
+    }
+
+    // Find the root .proof-node
+    var canvas =
+      container.querySelector('.proof-tree-canvas') || container;
+    var rootNode = canvas.querySelector('.proof-node');
+    if (rootNode) {
+      collectNodes(rootNode, []);
+    }
+
+    // Apply classes
+    for (var n = 0; n < allNodes.length; n++) {
+      var info = allNodes[n];
+      var key = info.path.join(',');
+      var diags = pathMap[key];
+      if (!diags) continue;
+
+      // Determine worst level
+      var hasError = false;
+      var hasIncomplete = false;
+      var hasValid = false;
+      var messages = [];
+      for (var d = 0; d < diags.length; d++) {
+        if (diags[d].level === 'error') hasError = true;
+        else if (diags[d].level === 'incomplete') hasIncomplete = true;
+        else if (diags[d].level === 'valid') hasValid = true;
+        if (diags[d].level !== 'valid') {
+          messages.push(diags[d].message);
+        }
+      }
+
+      if (hasError) {
+        info.el.classList.add('pt-check-error');
+      } else if (hasIncomplete) {
+        info.el.classList.add('pt-check-incomplete');
+      } else if (hasValid) {
+        info.el.classList.add('pt-check-valid');
+      }
+    }
+
+    return result;
+  }
+
+  // ── Summary banner ────────────────────────────────────────────
+
+  function createSummary(container, result) {
+    // Remove old summary
+    var old = container.parentNode.querySelector('.pt-check-summary');
+    if (old) old.parentNode.removeChild(old);
+
+    var summary = document.createElement('div');
+    summary.className = 'pt-check-summary';
+
+    var errorCount = 0;
+    var incompleteCount = 0;
+    for (var i = 0; i < result.diagnostics.length; i++) {
+      if (result.diagnostics[i].level === 'error') errorCount++;
+      else if (result.diagnostics[i].level === 'incomplete') incompleteCount++;
+    }
+
+    if (result.valid) {
+      summary.classList.add('pt-check-summary-valid');
+      summary.innerHTML =
+        '<span class="pt-check-icon">&#10003;</span> Correct!';
+    } else if (errorCount > 0) {
+      summary.classList.add('pt-check-summary-error');
+      var errorMessages = result.diagnostics
+        .filter(function (d) {
+          return d.level === 'error';
+        })
+        .map(function (d) {
+          return d.message;
+        });
+      summary.innerHTML =
+        '<span class="pt-check-icon">&#10007;</span> ' +
+        errorCount +
+        ' error' +
+        (errorCount > 1 ? 's' : '') +
+        ': ' +
+        errorMessages[0];
+      if (errorMessages.length > 1) {
+        summary.innerHTML += ' (and ' + (errorMessages.length - 1) + ' more)';
+      }
+    } else if (incompleteCount > 0) {
+      summary.classList.add('pt-check-summary-incomplete');
+      summary.innerHTML =
+        '<span class="pt-check-icon">&#9679;</span> ' +
+        incompleteCount +
+        ' node' +
+        (incompleteCount > 1 ? 's' : '') +
+        ' not yet filled in';
+    }
+
+    // Insert after the container
+    container.parentNode.insertBefore(summary, container.nextSibling);
+  }
+
+  // ── Check button factory ──────────────────────────────────────
+
+  function createCheckButton(container, editor, theory) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pt-check-btn';
+    btn.textContent = 'Check My Proof';
+
+    btn.addEventListener('click', function () {
+      init().then(function () {
+        var result = check(editor, theory);
+        annotate(container, result);
+        createSummary(container, result);
+      });
+    });
+
+    // Insert button after the editor container
+    container.parentNode.insertBefore(btn, container.nextSibling);
+
+    // Clear annotations when the editor re-renders
+    if (typeof MutationObserver !== 'undefined') {
+      var observer = new MutationObserver(function () {
+        clearAnnotations(container);
+        var oldSummary =
+          container.parentNode.querySelector('.pt-check-summary');
+        if (oldSummary) oldSummary.parentNode.removeChild(oldSummary);
+      });
+      var canvas =
+        container.querySelector('.proof-tree-canvas') || container;
+      observer.observe(canvas, { childList: true, subtree: true });
+    }
+
+    return btn;
+  }
+
+  // ── Auto-init ─────────────────────────────────────────────────
+
+  // Start loading WASM as soon as this script runs
+  if (typeof document !== 'undefined') {
+    init().catch(function () {
+      // Silently fail — will show error when user clicks check
+    });
+  }
+
+  return {
+    init: init,
+    check: check,
+    annotate: annotate,
+    clearAnnotations: clearAnnotations,
+    createCheckButton: createCheckButton,
+  };
+})();

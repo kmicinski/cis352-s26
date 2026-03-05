@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Proof Tree Playground</title>
+  <meta name="description" content="CMSC352--Principles of Programming Languages (Spring '26) at Syracuse">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="http://localhost:4000/cis352-s26/css/main.css">
+  <link rel="canonical" href="http://localhost:4000/cis352-s26/playground">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="http://localhost:4000/cis352-s26/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  
+  <link rel="stylesheet" href="/cis352-s26/assets/proof-tree.css">
+  <script src="/cis352-s26/assets/proof-tree.js"></script>
+  <link rel="stylesheet" href="/cis352-s26/assets/proof-checker.css">
+  <script src="/cis352-s26/assets/proof-checker-glue.js"></script>
+  
+</head>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="http://localhost:4000/cis352-s26/">CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/#schedule">Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/syllabus">Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/playground">Proof Playground</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/playground">Proof Tree Playground</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <style>
+/* ── Full-page immersive layout ──────────────────── */
+.pg-fullpage .wrapper { max-width: none; padding: 0; }
+.pg-fullpage .page-content { padding: 0; }
+.pg-fullpage .site-footer { display: none; }
+.pg-fullpage .site-header { display: none; }
+
+/* ── Floating toolbar ────────────────────────────── */
+#pg-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  opacity: 0;
+  transform: translateY(-100%);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  flex-wrap: wrap;
+}
+#pg-toolbar.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+#pg-toolbar h2 {
+  margin: 0;
+  font-size: 1em;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+#pg-toolbar .spacer { flex: 1; }
+
+/* ── Toolbar buttons ─────────────────────────────── */
+.pg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 14px;
+  font-size: 0.82em;
+  font-weight: 500;
+  font-family: inherit;
+  color: #374151;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.pg-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
+.pg-btn-primary { color: #fff; background: #4f46e5; border-color: #4f46e5; }
+.pg-btn-primary:hover { background: #4338ca; border-color: #4338ca; }
+.pg-btn-sm { padding: 3px 10px; font-size: 0.78em; }
+#pg-examples {
+  padding: 5px 8px;
+  font-size: 0.82em;
+  font-family: inherit;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  max-width: 240px;
+}
+
+/* ── S-expression panel (slide-down) ─────────────── */
+#pg-sexp-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #e5e7eb;
+  padding: 50px 20px 14px;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+#pg-sexp-panel.open {
+  transform: translateY(0);
+}
+#pg-sexp-input {
+  width: 100%;
+  font-family: 'SF Mono','Menlo','Consolas',monospace;
+  font-size: 0.82em;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+#pg-sexp-input:focus { border-color: #4f46e5; }
+#pg-sexp-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center;
+}
+#pg-sexp-actions .pg-hint {
+  font-size: 0.75em;
+  color: #9ca3af;
+  margin-left: auto;
+}
+
+/* ── The proof editor canvas (full viewport) ─────── */
+#pg-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fafafa;
+  overflow: hidden;
+}
+#pg-canvas .proof-tree-viewport {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Empty state ─────────────────────────────────── */
+#pg-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #9ca3af;
+  pointer-events: none;
+}
+#pg-empty h3 {
+  font-size: 1.2em;
+  font-weight: 500;
+  margin: 0 0 8px;
+  color: #6b7280;
+}
+#pg-empty p {
+  font-size: 0.9em;
+  margin: 4px 0;
+}
+
+/* ── Back link ───────────────────────────────────── */
+#pg-back {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 100;
+  font-size: 0.78em;
+  color: #9ca3af;
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+#pg-back:hover { opacity: 1; color: #4f46e5; }
+</style>
+
+<div id="pg-canvas">
+  <div id="pg-empty">
+    <h3>Proof Tree Playground</h3>
+    <p>Move your mouse to the top to load or paste a proof.</p>
+    <p>Click the conclusion below to start editing.</p>
+  </div>
+</div>
+
+<div id="pg-toolbar">
+  <h2>Playground</h2>
+  <select id="pg-examples">
+    <option value="">Load example...</option>
+    <option value="add">Add: {} ⊢ (+ 3 5) ⇓ 8</option>
+    <option value="neg">Neg+Var: {x ↦ 3} ⊢ (- x) ⇓ -3</option>
+    <option value="app">App: {} ⊢ ((λ (x) (+ x 1)) 5) ⇓ 6</option>
+    <option value="if0">If0: {} ⊢ (if0 (+ 1 (- 1)) 42 0) ⇓ 42</option>
+    <option value="let-closure">Let+Closure: {} ⊢ (let ([x 10]) ((λ (y) (+ x y)) 7)) ⇓ 17</option>
+  </select>
+  <button class="pg-btn pg-btn-sm" id="pg-sexp-toggle">S-expression</button>
+  <button class="pg-btn pg-btn-sm" id="pg-new-btn">New</button>
+  <span class="spacer"></span>
+  <button class="pg-btn pg-btn-sm" id="pg-copy-btn">Copy</button>
+  <a href="/cis352-s26/" class="pg-btn pg-btn-sm" style="text-decoration:none;">Back to course</a>
+</div>
+
+<div id="pg-sexp-panel">
+  <textarea id="pg-sexp-input" rows="4" placeholder="Paste an S-expression here and click Load, or edit the proof tree directly..."></textarea>
+  <div id="pg-sexp-actions">
+    <button class="pg-btn pg-btn-primary pg-btn-sm" id="pg-load-btn">Load into editor</button>
+    <button class="pg-btn pg-btn-sm" id="pg-sexp-close">Close</button>
+    <span class="pg-hint">Ctrl/Cmd+Enter to load</span>
+  </div>
+</div>
+
+<p><a id="pg-back" href="/cis352-s26/">← Back to CIS 352</a></p>
+
+<script>
+(function() {
+  // Make page immersive
+  document.body.classList.add('pg-fullpage');
+
+  var canvas = document.getElementById('pg-canvas');
+  var toolbar = document.getElementById('pg-toolbar');
+  var sexpPanel = document.getElementById('pg-sexp-panel');
+  var sexpInput = document.getElementById('pg-sexp-input');
+  var emptyMsg = document.getElementById('pg-empty');
+
+  var currentEditor = null;
+
+  // ── Show toolbar on mouse near top ──────────────
+  var toolbarTimer = null;
+  document.addEventListener('mousemove', function(e) {
+    if (e.clientY < 60 || sexpPanel.classList.contains('open')) {
+      toolbar.classList.add('visible');
+      clearTimeout(toolbarTimer);
+    } else {
+      clearTimeout(toolbarTimer);
+      toolbarTimer = setTimeout(function() {
+        if (!sexpPanel.classList.contains('open')) {
+          toolbar.classList.remove('visible');
+        }
+      }, 1500);
+    }
+  });
+  // Show toolbar on touch at top
+  document.addEventListener('touchstart', function(e) {
+    var touch = e.touches[0];
+    if (touch && touch.clientY < 60) {
+      toolbar.classList.add('visible');
+    }
+  });
+
+  // ── Example proof trees ─────────────────────────
+  var examples = {
+    'add': '((Add :right) ((Int :right) --- "{} ⊢ 3 ⇓ 3") ((Int :right) --- "{} ⊢ 5 ⇓ 5") "v = 3 + 5" --- "{} ⊢ (+ 3 5) ⇓ 8")',
+    'neg': '((Neg :right) ((Var :right) "{x ↦ 3}(x) = 3" --- "{x ↦ 3} ⊢ x ⇓ 3") "v = -3" --- "{x ↦ 3} ⊢ (- x) ⇓ -3")',
+    'app': '((App :right) ((Lam :right) --- "{} ⊢ (λ (x) (+ x 1)) ⇓ ⟨λ (x) (+ x 1) , {}⟩") ((Int :right) --- "{} ⊢ 5 ⇓ 5") ((Add :right) ((Var :right) "{x ↦ 5}(x) = 5" --- "{x ↦ 5} ⊢ x ⇓ 5") ((Int :right) --- "{x ↦ 5} ⊢ 1 ⇓ 1") "v = 5 + 1" --- "{x ↦ 5} ⊢ (+ x 1) ⇓ 6") --- "{} ⊢ ((λ (x) (+ x 1)) 5) ⇓ 6")',
+    'if0': '(("If0-True" :right) ((Add :right) ((Int :right) --- "{} ⊢ 1 ⇓ 1") ((Neg :right) ((Int :right) --- "{} ⊢ 1 ⇓ 1") "v = -1" --- "{} ⊢ (- 1) ⇓ -1") "v = 1 + (-1)" --- "{} ⊢ (+ 1 (- 1)) ⇓ 0") ((Int :right) --- "{} ⊢ 42 ⇓ 42") --- "{} ⊢ (if0 (+ 1 (- 1)) 42 0) ⇓ 42")',
+    'let-closure': '((Let :right) ((Int :right) --- "{} ⊢ 10 ⇓ 10") ((App :right) ((Lam :right) --- "{x ↦ 10} ⊢ (λ (y) (+ x y)) ⇓ ⟨λ (y) (+ x y) , {x ↦ 10}⟩") ((Int :right) --- "{x ↦ 10} ⊢ 7 ⇓ 7") ((Add :right) ((Var :right) "{x ↦ 10, y ↦ 7}(x) = 10" --- "{x ↦ 10, y ↦ 7} ⊢ x ⇓ 10") ((Var :right) "{x ↦ 10, y ↦ 7}(y) = 7" --- "{x ↦ 10, y ↦ 7} ⊢ y ⇓ 7") "v = 10 + 7" --- "{x ↦ 10, y ↦ 7} ⊢ (+ x y) ⇓ 17") --- "{x ↦ 10} ⊢ ((λ (y) (+ x y)) 7) ⇓ 17") --- "{} ⊢ (let ([x 10]) ((λ (y) (+ x y)) 7)) ⇓ 17")'
+  };
+
+  // ── Load proof into editor ──────────────────────
+  function loadProof(sexp) {
+    if (emptyMsg) { emptyMsg.remove(); emptyMsg = null; }
+    if (currentEditor) { currentEditor.destroy(); currentEditor = null; }
+    canvas.innerHTML = '';
+
+    try {
+      currentEditor = ProofTree.createEditor(canvas, {
+        tree: sexp,
+        zoom: true,
+        onChange: function(tree) {
+          var s = ProofTree.toSexp(tree);
+          sexpInput.value = s;
+          history.replaceState(null, '', '#proof=' + encodeURIComponent(s));
+        }
+      });
+      sexpInput.value = sexp;
+      history.replaceState(null, '', '#proof=' + encodeURIComponent(sexp));
+    } catch(e) {
+      canvas.innerHTML = '<div style="color:#c00;padding:40px;text-align:center;">Error: ' + e.message + '</div>';
+    }
+  }
+
+  function newProof() {
+    if (emptyMsg) { emptyMsg.remove(); emptyMsg = null; }
+    if (currentEditor) { currentEditor.destroy(); currentEditor = null; }
+    canvas.innerHTML = '';
+    currentEditor = ProofTree.createEditor(canvas, {
+      zoom: true,
+      onChange: function(tree) {
+        var s = ProofTree.toSexp(tree);
+        sexpInput.value = s;
+        history.replaceState(null, '', '#proof=' + encodeURIComponent(s));
+      }
+    });
+    sexpInput.value = '';
+    history.replaceState(null, '', window.location.pathname);
+  }
+
+  // ── S-expression panel toggle ───────────────────
+  document.getElementById('pg-sexp-toggle').addEventListener('click', function() {
+    sexpPanel.classList.toggle('open');
+    if (sexpPanel.classList.contains('open')) {
+      // Sync current tree to textarea
+      if (currentEditor) {
+        sexpInput.value = currentEditor.getSexp();
+      }
+      setTimeout(function() { sexpInput.focus(); }, 300);
+    }
+  });
+  document.getElementById('pg-sexp-close').addEventListener('click', function() {
+    sexpPanel.classList.remove('open');
+  });
+
+  // ── Load from textarea ──────────────────────────
+  document.getElementById('pg-load-btn').addEventListener('click', function() {
+    var sexp = sexpInput.value.trim();
+    if (sexp) {
+      loadProof(sexp);
+      sexpPanel.classList.remove('open');
+    }
+  });
+  sexpInput.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('pg-load-btn').click();
+    }
+  });
+
+  // ── Examples dropdown ───────────────────────────
+  document.getElementById('pg-examples').addEventListener('change', function() {
+    var key = this.value;
+    if (key && examples[key]) {
+      loadProof(examples[key]);
+      sexpPanel.classList.remove('open');
+    }
+    this.value = '';
+  });
+
+  // ── New button ──────────────────────────────────
+  document.getElementById('pg-new-btn').addEventListener('click', newProof);
+
+  // ── Copy button ─────────────────────────────────
+  document.getElementById('pg-copy-btn').addEventListener('click', function() {
+    var btn = this;
+    var sexp = currentEditor ? currentEditor.getSexp() : '';
+    if (!sexp) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(sexp).then(function() {
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+      });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = sexp;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+    }
+  });
+
+  // ── Load from URL hash on page load ─────────────
+  if (window.location.hash) {
+    var match = window.location.hash.match(/^#proof=(.+)/);
+    if (match) {
+      var sexp = decodeURIComponent(match[1]);
+      setTimeout(function() { loadProof(sexp); }, 100);
+    }
+  }
+})();
+</script>
+
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '26) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src="/cis352-s26/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="/cis352-s26/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js"></script>
+
+
+  </body>
+
+</html>
