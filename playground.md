@@ -376,8 +376,10 @@ proof_tree: true
   <select id="pg-theory" class="pg-select">
     <option value="">Freestyle (no checking)</option>
     <option value="big-step">Big-Step Semantics</option>
+    <option value="small-step">Small-Step Semantics</option>
     <option value="g3ip">G3ip Sequent Calculus</option>
     <option value="propnd">Natural Deduction</option>
+    <option value="fond">First-Order ND</option>
     <option value="stlc">Simply-Typed Lambda Calculus</option>
     <option value="systemf">System F</option>
   </select>
@@ -388,7 +390,7 @@ proof_tree: true
   <button class="pg-btn pg-btn-sm" id="pg-rules-btn" style="display:none;">Rules</button>
   <button class="pg-btn pg-btn-sm" id="pg-sexp-toggle">S-expression</button>
   <button class="pg-btn pg-btn-sm" id="pg-new-btn">New</button>
-  <button class="pg-btn pg-btn-sm pg-btn-danger" id="pg-reset-btn" style="display:none;">&#128465; Reset</button>
+  <button class="pg-btn pg-btn-sm" id="pg-reset-btn" style="display:none;">Reset</button>
   <span class="spacer"></span>
   <button class="pg-btn pg-btn-sm" id="pg-copy-btn">Copy</button>
   <a href="{{ '/' | relative_url }}" class="pg-btn pg-btn-sm" style="text-decoration:none;">Back to course</a>
@@ -453,6 +455,17 @@ proof_tree: true
       { label: 'App: {} \u22A2 ((\u03BB (x) (+ x 1)) 5) \u21D3 6', key: 'bs-app' },
       { label: 'If0: {} \u22A2 (if0 (+ 1 (- 1)) 42 0) \u21D3 42', key: 'bs-if0' },
       { label: 'Let+Closure: {} \u22A2 (let ([x 10]) ((\u03BB (y) (+ x y)) 7)) \u21D3 17', key: 'bs-let' },
+      { label: 'Nested: {} \u22A2 (+ (- 3) (+ 4 5)) \u21D3 6', key: 'bs-nested' },
+      { label: 'If0-False: {} \u22A2 (if0 1 42 (+ 2 3)) \u21D3 5', key: 'bs-if0f' },
+    ],
+    'small-step': [
+      { label: 'Add: (+ 3 5) \u27F6 8', key: 'ss-add' },
+      { label: 'Add-L: (+ (+ 1 2) 5) \u27F6 (+ 3 5)', key: 'ss-add-nested' },
+      { label: 'Beta: ((\u03BB (x) x) 5) \u27F6 5', key: 'ss-beta' },
+      { label: 'Neg-Step: (- (+ 1 2)) \u27F6 (- 3)', key: 'ss-neg' },
+      { label: 'If0-True: (if0 0 1 2) \u27F6 1', key: 'ss-if0' },
+      { label: 'Let-Step: (let ([x (+ 1 2)]) x) \u27F6 ...', key: 'ss-let-step' },
+      { label: 'Let: (let ([x 5]) x) \u27F6 5', key: 'ss-let' },
     ],
     'g3ip': [
       { label: 'Identity: P \u21D2 P', key: 'g3-id' },
@@ -460,6 +473,9 @@ proof_tree: true
       { label: '\u2228-comm: P \u2228 Q \u21D2 Q \u2228 P', key: 'g3-or-comm' },
       { label: 'Modus Ponens: P, P \u2192 Q \u21D2 Q', key: 'g3-mp' },
       { label: '\u2192-intro: \u21D2 P \u2192 P', key: 'g3-imp-id' },
+      { label: 'Hyp. syllogism: \u21D2 (P \u2192 Q) \u2192 (Q \u2192 R) \u2192 P \u2192 R', key: 'g3-hyp-syll' },
+      { label: 'Uncurry: \u21D2 (P \u2192 Q \u2192 R) \u2192 P \u2227 Q \u2192 R', key: 'g3-uncurry' },
+      { label: 'Curry: \u21D2 (P \u2227 Q \u2192 R) \u2192 P \u2192 Q \u2192 R', key: 'g3-curry' },
     ],
     'propnd': [
       { label: 'Modus Ponens: P, P \u2192 Q \u22A2 Q', key: 'nd-mp' },
@@ -467,6 +483,8 @@ proof_tree: true
       { label: '\u2228-elim: P \u2228 Q, P \u2192 R, Q \u2192 R \u22A2 R', key: 'nd-or-e' },
       { label: '\u2192-intro: \u22A2 P \u2192 P', key: 'nd-imp-id' },
       { label: 'Contrapositive idea: P \u2192 Q, \u00ACQ \u22A2 \u00ACP', key: 'nd-contra' },
+      { label: 'K combinator: \u22A2 P \u2192 Q \u2192 P', key: 'nd-k' },
+      { label: '\u2227-comm: P \u2227 Q \u22A2 Q \u2227 P', key: 'nd-and-comm' },
     ],
     'stlc': [
       { label: 'Identity: \u22A2 (\u03BB (x : int) x) : int \u2192 int', key: 'stlc-id' },
@@ -474,11 +492,27 @@ proof_tree: true
       { label: 'Application: \u22A2 ((\u03BB (x : int) x) 5) : int', key: 'stlc-app' },
       { label: 'Add: x : int \u22A2 (+ x 1) : int', key: 'stlc-add' },
       { label: 'Let: \u22A2 (let ([x 5]) (+ x 1)) : int', key: 'stlc-let' },
+      { label: 'Double apply: \u22A2 (\u03BB (f : int \u2192 int) (\u03BB (x : int) (f (f x)))) : ...', key: 'stlc-double' },
+      { label: 'Compose: \u22A2 (\u03BB (f) (\u03BB (g) (\u03BB (x) (f (g x))))) : ...', key: 'stlc-compose' },
+      { label: 'Let double: \u22A2 (let ([double ...]) (double 21)) : int', key: 'stlc-let-double' },
     ],
     'systemf': [
       { label: 'Poly id: \u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) : \u2200\u03B1. \u03B1 \u2192 \u03B1', key: 'sf-poly-id' },
-      { label: 'Type app: \u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) [int] : int \u2192 int', key: 'sf-tyapp' },
+      { label: 'Type app: \u22A2 ((\u039B\u03B1. \u03BB (x : \u03B1) x) [int]) : int \u2192 int', key: 'sf-tyapp' },
       { label: 'Const: \u22A2 (\u039B\u03B1. \u039B\u03B2. \u03BB (x : \u03B1) (\u03BB (y : \u03B2) x)) : \u2200\u03B1. \u2200\u03B2. \u03B1 \u2192 \u03B2 \u2192 \u03B1', key: 'sf-const' },
+      { label: 'Apply id: \u22A2 (((\u039B\u03B1. \u03BB (x : \u03B1) x) [int]) 5) : int', key: 'sf-apply-id' },
+      { label: 'Neg: \u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) (- 1)) : \u2200\u03B1. \u03B1 \u2192 int', key: 'sf-neg' },
+      { label: 'Church true: \u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) (\u03BB (y : \u03B1) x)) : \u2200\u03B1. \u03B1 \u2192 \u03B1 \u2192 \u03B1', key: 'sf-true' },
+      { label: 'Church false: \u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) (\u03BB (y : \u03B1) y)) : \u2200\u03B1. \u03B1 \u2192 \u03B1 \u2192 \u03B1', key: 'sf-false' },
+    ],
+    'fond': [
+      { label: '\u2200I: \u22A2 \u2200x.(P(x) \u2192 P(x))', key: 'fo-forall-i' },
+      { label: '\u2200E: \u2200x.P(x) \u22A2 P(a)', key: 'fo-forall-e' },
+      { label: '\u2203I: P(a) \u22A2 \u2203x.P(x)', key: 'fo-exists-i' },
+      { label: '\u2203E: \u2203x.P(x), \u2200x.(P(x) \u2192 Q) \u22A2 Q', key: 'fo-exists-e' },
+      { label: 'Mixed: \u2200x.(P(x) \u2192 Q(x)), P(a) \u22A2 Q(a)', key: 'fo-mixed' },
+      { label: '\u2200E+\u2192E: \u2200x.P(x), P(a) \u2192 Q \u22A2 Q', key: 'fo-chain' },
+      { label: '\u2200E in \u2192I: \u22A2 (\u2200x.P(x)) \u2192 P(a)', key: 'fo-forall-imp' },
     ],
   };
 
@@ -492,26 +526,36 @@ proof_tree: true
     'bs-if0': '(("If0-True" :right) ((Add :right) ((Int :right) --- "{} \u22A2 1 \u21D3 1") ((Neg :right) ((Int :right) --- "{} \u22A2 1 \u21D3 1") "v = -1" --- "{} \u22A2 (- 1) \u21D3 -1") "v = 1 + (-1)" --- "{} \u22A2 (+ 1 (- 1)) \u21D3 0") ((Int :right) --- "{} \u22A2 42 \u21D3 42") --- "{} \u22A2 (if0 (+ 1 (- 1)) 42 0) \u21D3 42")',
     'bs-let': '((Let :right) ((Int :right) --- "{} \u22A2 10 \u21D3 10") ((App :right) ((Lam :right) --- "{x \u21A6 10} \u22A2 (\u03BB (y) (+ x y)) \u21D3 \u27E8\u03BB (y) (+ x y) , {x \u21A6 10}\u27E9") ((Int :right) --- "{x \u21A6 10} \u22A2 7 \u21D3 7") ((Add :right) ((Var :right) "{x \u21A6 10, y \u21A6 7}(x) = 10" --- "{x \u21A6 10, y \u21A6 7} \u22A2 x \u21D3 10") ((Var :right) "{x \u21A6 10, y \u21A6 7}(y) = 7" --- "{x \u21A6 10, y \u21A6 7} \u22A2 y \u21D3 7") "v = 10 + 7" --- "{x \u21A6 10, y \u21A6 7} \u22A2 (+ x y) \u21D3 17") --- "{x \u21A6 10} \u22A2 ((\u03BB (y) (+ x y)) 7) \u21D3 17") --- "{} \u22A2 (let ([x 10]) ((\u03BB (y) (+ x y)) 7)) \u21D3 17")',
 
+    'bs-nested': '((Add :right) ((Neg :right) ((Int :right) --- "{} \u22A2 3 \u21D3 3") "v = -3" --- "{} \u22A2 (- 3) \u21D3 -3") ((Add :right) ((Int :right) --- "{} \u22A2 4 \u21D3 4") ((Int :right) --- "{} \u22A2 5 \u21D3 5") "v = 4 + 5" --- "{} \u22A2 (+ 4 5) \u21D3 9") "v = (-3) + 9" --- "{} \u22A2 (+ (- 3) (+ 4 5)) \u21D3 6")',
+    'bs-if0f': '(("If0-False" :right) ((Int :right) --- "{} \u22A2 1 \u21D3 1") "1 \u2260 0" ((Add :right) ((Int :right) --- "{} \u22A2 2 \u21D3 2") ((Int :right) --- "{} \u22A2 3 \u21D3 3") "v = 2 + 3" --- "{} \u22A2 (+ 2 3) \u21D3 5") --- "{} \u22A2 (if0 1 42 (+ 2 3)) \u21D3 5")',
+
     // Small-step
     'ss-add': '((Add :right) --- "(+ 3 5) \u27F6 8")',
     'ss-add-nested': '(("Add-L" :right) ((Add :right) --- "(+ 1 2) \u27F6 3") --- "(+ (+ 1 2) 5) \u27F6 (+ 3 5)")',
     'ss-beta': '((Beta :right) --- "((\u03BB (x) x) 5) \u27F6 5")',
     'ss-neg': '(("Neg-Step" :right) ((Add :right) --- "(+ 1 2) \u27F6 3") --- "(- (+ 1 2)) \u27F6 (- 3)")',
     'ss-if0': '(("If0-True" :right) --- "(if0 0 1 2) \u27F6 1")',
+    'ss-let-step': '(("Let-Step" :right) ((Add :right) --- "(+ 1 2) \u27F6 3") --- "(let ([x (+ 1 2)]) x) \u27F6 (let ([x 3]) x)")',
+    'ss-let': '((Let :right) --- "(let ([x 5]) x) \u27F6 5")',
 
     // G3ip sequent calculus
     'g3-id': '((Ax :right) --- "P \u21D2 P")',
     'g3-swap': '(("\u2227R" :right) (("\u2227L" :right) ((Ax :right) --- "P, Q \u21D2 Q") --- "P \u2227 Q \u21D2 Q") (("\u2227L" :right) ((Ax :right) --- "P, Q \u21D2 P") --- "P \u2227 Q \u21D2 P") --- "P \u2227 Q \u21D2 Q \u2227 P")',
     'g3-or-comm': '(("\u2228L" :right) (("\u2228R\u2082" :right) ((Ax :right) --- "P \u21D2 P") --- "P \u21D2 Q \u2228 P") (("\u2228R\u2081" :right) ((Ax :right) --- "Q \u21D2 Q") --- "Q \u21D2 Q \u2228 P") --- "P \u2228 Q \u21D2 Q \u2228 P")',
-    'g3-mp': '(("\u2192L" :right) ((Ax :right) --- "P \u21D2 P") ((Ax :right) --- "Q \u21D2 Q") --- "P, P \u2192 Q \u21D2 Q")',
+    'g3-mp': '(("\u2192L" :right) ((Ax :right) --- "P, P \u2192 Q \u21D2 P") ((Ax :right) --- "Q, P \u21D2 Q") --- "P, P \u2192 Q \u21D2 Q")',
     'g3-imp-id': '(("\u2192R" :right) ((Ax :right) --- "P \u21D2 P") --- "\u21D2 P \u2192 P")',
+    'g3-hyp-syll': '(("\u2192R" :right) (("\u2192R" :right) (("\u2192R" :right) (("\u2192L" :right) ((Ax :right) --- "P, P \u2192 Q, Q \u2192 R \u21D2 P") (("\u2192L" :right) ((Ax :right) --- "Q, P, Q \u2192 R \u21D2 Q") ((Ax :right) --- "R, Q, P \u21D2 R") --- "Q, P, Q \u2192 R \u21D2 R") --- "P, P \u2192 Q, Q \u2192 R \u21D2 R") --- "P \u2192 Q, Q \u2192 R \u21D2 P \u2192 R") --- "P \u2192 Q \u21D2 (Q \u2192 R) \u2192 P \u2192 R") --- "\u21D2 (P \u2192 Q) \u2192 (Q \u2192 R) \u2192 P \u2192 R")',
+    'g3-uncurry': '(("\u2192R" :right) (("\u2192R" :right) (("\u2192L" :right) (("\u2227L" :right) ((Ax :right) --- "P, Q, P \u2192 Q \u2192 R \u21D2 P") --- "P \u2192 Q \u2192 R, P \u2227 Q \u21D2 P") (("\u2192L" :right) (("\u2227L" :right) ((Ax :right) --- "Q \u2192 R, P, Q \u21D2 Q") --- "Q \u2192 R, P \u2227 Q \u21D2 Q") ((Ax :right) --- "R, P \u2227 Q \u21D2 R") --- "Q \u2192 R, P \u2227 Q \u21D2 R") --- "P \u2192 Q \u2192 R, P \u2227 Q \u21D2 R") --- "P \u2192 Q \u2192 R \u21D2 P \u2227 Q \u2192 R") --- "\u21D2 (P \u2192 Q \u2192 R) \u2192 P \u2227 Q \u2192 R")',
+    'g3-curry': '(("\u2192R" :right) (("\u2192R" :right) (("\u2192R" :right) (("\u2192L" :right) (("\u2227R" :right) ((Ax :right) --- "P \u2227 Q \u2192 R, P, Q \u21D2 P") ((Ax :right) --- "P \u2227 Q \u2192 R, P, Q \u21D2 Q") --- "P \u2227 Q \u2192 R, P, Q \u21D2 P \u2227 Q") ((Ax :right) --- "R, P, Q \u21D2 R") --- "P \u2227 Q \u2192 R, P, Q \u21D2 R") --- "P \u2227 Q \u2192 R, P \u21D2 Q \u2192 R") --- "P \u2227 Q \u2192 R \u21D2 P \u2192 Q \u2192 R") --- "\u21D2 (P \u2227 Q \u2192 R) \u2192 P \u2192 Q \u2192 R")',
 
     // Propositional natural deduction
     'nd-mp': '(("\u2192E" :right) ((Ax :right) --- "P, P \u2192 Q \u22A2 P \u2192 Q") ((Ax :right) --- "P, P \u2192 Q \u22A2 P") --- "P, P \u2192 Q \u22A2 Q")',
     'nd-and-i': '(("\u2227I" :right) ((Ax :right) --- "P, Q \u22A2 P") ((Ax :right) --- "P, Q \u22A2 Q") --- "P, Q \u22A2 P \u2227 Q")',
-    'nd-or-e': '(("\u2228E" :right) ((Ax :right) --- "P \u2228 Q, P \u2192 R, Q \u2192 R \u22A2 P \u2228 Q") (("\u2192E" :right) ((Ax :right) --- "P, P \u2192 R, Q \u2192 R \u22A2 P \u2192 R") ((Ax :right) --- "P, P \u2192 R, Q \u2192 R \u22A2 P") --- "P, P \u2192 R, Q \u2192 R \u22A2 R") (("\u2192E" :right) ((Ax :right) --- "Q, P \u2192 R, Q \u2192 R \u22A2 Q \u2192 R") ((Ax :right) --- "Q, P \u2192 R, Q \u2192 R \u22A2 Q") --- "Q, P \u2192 R, Q \u2192 R \u22A2 R") --- "P \u2228 Q, P \u2192 R, Q \u2192 R \u22A2 R")',
+    'nd-or-e': '(("\u2228E" :right) ((Ax :right) --- "P \u2228 Q, P \u2192 R, Q \u2192 R \u22A2 P \u2228 Q") (("\u2192E" :right) ((Ax :right) --- "P \u2228 Q, P \u2192 R, Q \u2192 R, P \u22A2 P \u2192 R") ((Ax :right) --- "P \u2228 Q, P \u2192 R, Q \u2192 R, P \u22A2 P") --- "P \u2228 Q, P \u2192 R, Q \u2192 R, P \u22A2 R") (("\u2192E" :right) ((Ax :right) --- "P \u2228 Q, P \u2192 R, Q \u2192 R, Q \u22A2 Q \u2192 R") ((Ax :right) --- "P \u2228 Q, P \u2192 R, Q \u2192 R, Q \u22A2 Q") --- "P \u2228 Q, P \u2192 R, Q \u2192 R, Q \u22A2 R") --- "P \u2228 Q, P \u2192 R, Q \u2192 R \u22A2 R")',
     'nd-imp-id': '(("\u2192I" :right) ((Ax :right) --- "P \u22A2 P") --- "\u22A2 P \u2192 P")',
     'nd-contra': '(("\u00ACI" :right) (("\u00ACE" :right) ((Ax :right) --- "P, P \u2192 Q, \u00ACQ \u22A2 \u00ACQ") (("\u2192E" :right) ((Ax :right) --- "P, P \u2192 Q, \u00ACQ \u22A2 P \u2192 Q") ((Ax :right) --- "P, P \u2192 Q, \u00ACQ \u22A2 P") --- "P, P \u2192 Q, \u00ACQ \u22A2 Q") --- "P, P \u2192 Q, \u00ACQ \u22A2 \u22A5") --- "P \u2192 Q, \u00ACQ \u22A2 \u00ACP")',
+    'nd-k': '(("\u2192I" :right) (("\u2192I" :right) ((Ax :right) --- "P, Q \u22A2 P") --- "P \u22A2 Q \u2192 P") --- "\u22A2 P \u2192 Q \u2192 P")',
+    'nd-and-comm': '(("\u2227I" :right) (("\u2227E\u2082" :right) ((Ax :right) --- "P \u2227 Q \u22A2 P \u2227 Q") --- "P \u2227 Q \u22A2 Q") (("\u2227E\u2081" :right) ((Ax :right) --- "P \u2227 Q \u22A2 P \u2227 Q") --- "P \u2227 Q \u22A2 P") --- "P \u2227 Q \u22A2 Q \u2227 P")',
 
     // STLC
     'stlc-id': '(("T-Lam" :right) (("T-Var" :right) --- "x : int \u22A2 x : int") --- "\u22A2 (\u03BB (x : int) x) : int \u2192 int")',
@@ -519,11 +563,27 @@ proof_tree: true
     'stlc-app': '(("T-App" :right) (("T-Lam" :right) (("T-Var" :right) --- "x : int \u22A2 x : int") --- "\u22A2 (\u03BB (x : int) x) : int \u2192 int") (("T-Int" :right) --- "\u22A2 5 : int") --- "\u22A2 ((\u03BB (x : int) x) 5) : int")',
     'stlc-add': '(("T-Add" :right) (("T-Var" :right) --- "x : int \u22A2 x : int") (("T-Int" :right) --- "x : int \u22A2 1 : int") --- "x : int \u22A2 (+ x 1) : int")',
     'stlc-let': '(("T-Let" :right) (("T-Int" :right) --- "\u22A2 5 : int") (("T-Add" :right) (("T-Var" :right) --- "x : int \u22A2 x : int") (("T-Int" :right) --- "x : int \u22A2 1 : int") --- "x : int \u22A2 (+ x 1) : int") --- "\u22A2 (let ([x 5]) (+ x 1)) : int")',
+    'stlc-double': '(("T-Lam" :right) (("T-Lam" :right) (("T-App" :right) (("T-Var" :right) --- "f : int \u2192 int, x : int \u22A2 f : int \u2192 int") (("T-App" :right) (("T-Var" :right) --- "f : int \u2192 int, x : int \u22A2 f : int \u2192 int") (("T-Var" :right) --- "f : int \u2192 int, x : int \u22A2 x : int") --- "f : int \u2192 int, x : int \u22A2 (f x) : int") --- "f : int \u2192 int, x : int \u22A2 (f (f x)) : int") --- "f : int \u2192 int \u22A2 (\u03BB (x : int) (f (f x))) : int \u2192 int") --- "\u22A2 (\u03BB (f : int \u2192 int) (\u03BB (x : int) (f (f x)))) : (int \u2192 int) \u2192 int \u2192 int")',
+    'stlc-compose': '(("T-Lam" :right) (("T-Lam" :right) (("T-Lam" :right) (("T-App" :right) (("T-Var" :right) --- "f : int \u2192 int, g : int \u2192 int, x : int \u22A2 f : int \u2192 int") (("T-App" :right) (("T-Var" :right) --- "f : int \u2192 int, g : int \u2192 int, x : int \u22A2 g : int \u2192 int") (("T-Var" :right) --- "f : int \u2192 int, g : int \u2192 int, x : int \u22A2 x : int") --- "f : int \u2192 int, g : int \u2192 int, x : int \u22A2 (g x) : int") --- "f : int \u2192 int, g : int \u2192 int, x : int \u22A2 (f (g x)) : int") --- "f : int \u2192 int, g : int \u2192 int \u22A2 (\u03BB (x : int) (f (g x))) : int \u2192 int") --- "f : int \u2192 int \u22A2 (\u03BB (g : int \u2192 int) (\u03BB (x : int) (f (g x)))) : (int \u2192 int) \u2192 int \u2192 int") --- "\u22A2 (\u03BB (f : int \u2192 int) (\u03BB (g : int \u2192 int) (\u03BB (x : int) (f (g x))))) : (int \u2192 int) \u2192 (int \u2192 int) \u2192 int \u2192 int")',
+    'stlc-let-double': '(("T-Let" :right) (("T-Lam" :right) (("T-Add" :right) (("T-Var" :right) --- "x : int \u22A2 x : int") (("T-Var" :right) --- "x : int \u22A2 x : int") --- "x : int \u22A2 (+ x x) : int") --- "\u22A2 (\u03BB (x : int) (+ x x)) : int \u2192 int") (("T-App" :right) (("T-Var" :right) --- "double : int \u2192 int \u22A2 double : int \u2192 int") (("T-Int" :right) --- "double : int \u2192 int \u22A2 21 : int") --- "double : int \u2192 int \u22A2 (double 21) : int") --- "\u22A2 (let ([double (\u03BB (x : int) (+ x x))]) (double 21)) : int")',
 
     // System F
     'sf-poly-id': '(("T-TyLam" :right) (("T-Lam" :right) (("T-Var" :right) --- "x : \u03B1 \u22A2 x : \u03B1") --- "\u22A2 (\u03BB (x : \u03B1) x) : \u03B1 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) : \u2200\u03B1. \u03B1 \u2192 \u03B1")',
-    'sf-tyapp': '(("T-TyApp" :right) (("T-TyLam" :right) (("T-Lam" :right) (("T-Var" :right) --- "x : \u03B1 \u22A2 x : \u03B1") --- "\u22A2 (\u03BB (x : \u03B1) x) : \u03B1 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) : \u2200\u03B1. \u03B1 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) [int] : int \u2192 int")',
+    'sf-tyapp': '(("T-TyApp" :right) (("T-TyLam" :right) (("T-Lam" :right) (("T-Var" :right) --- "x : \u03B1 \u22A2 x : \u03B1") --- "\u22A2 (\u03BB (x : \u03B1) x) : \u03B1 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) : \u2200\u03B1. \u03B1 \u2192 \u03B1") --- "\u22A2 ((\u039B\u03B1. \u03BB (x : \u03B1) x) [int]) : int \u2192 int")',
     'sf-const': '(("T-TyLam" :right) (("T-TyLam" :right) (("T-Lam" :right) (("T-Lam" :right) (("T-Var" :right) --- "x : \u03B1, y : \u03B2 \u22A2 x : \u03B1") --- "x : \u03B1 \u22A2 (\u03BB (y : \u03B2) x) : \u03B2 \u2192 \u03B1") --- "\u22A2 (\u03BB (x : \u03B1) (\u03BB (y : \u03B2) x)) : \u03B1 \u2192 \u03B2 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B2. \u03BB (x : \u03B1) (\u03BB (y : \u03B2) x)) : \u2200\u03B2. \u03B1 \u2192 \u03B2 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u039B\u03B2. \u03BB (x : \u03B1) (\u03BB (y : \u03B2) x)) : \u2200\u03B1. \u2200\u03B2. \u03B1 \u2192 \u03B2 \u2192 \u03B1")',
+    'sf-apply-id': '(("T-App" :right) (("T-TyApp" :right) (("T-TyLam" :right) (("T-Lam" :right) (("T-Var" :right) --- "x : \u03B1 \u22A2 x : \u03B1") --- "\u22A2 (\u03BB (x : \u03B1) x) : \u03B1 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) x) : \u2200\u03B1. \u03B1 \u2192 \u03B1") --- "\u22A2 ((\u039B\u03B1. \u03BB (x : \u03B1) x) [int]) : int \u2192 int") (("T-Int" :right) --- "\u22A2 5 : int") --- "\u22A2 (((\u039B\u03B1. \u03BB (x : \u03B1) x) [int]) 5) : int")',
+    'sf-neg': '(("T-TyLam" :right) (("T-Lam" :right) (("T-Neg" :right) (("T-Int" :right) --- "x : \u03B1 \u22A2 1 : int") --- "x : \u03B1 \u22A2 (- 1) : int") --- "\u22A2 (\u03BB (x : \u03B1) (- 1)) : \u03B1 \u2192 int") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) (- 1)) : \u2200\u03B1. \u03B1 \u2192 int")',
+    'sf-true': '(("T-TyLam" :right) (("T-Lam" :right) (("T-Lam" :right) (("T-Var" :right) --- "x : \u03B1, y : \u03B1 \u22A2 x : \u03B1") --- "x : \u03B1 \u22A2 (\u03BB (y : \u03B1) x) : \u03B1 \u2192 \u03B1") --- "\u22A2 (\u03BB (x : \u03B1) (\u03BB (y : \u03B1) x)) : \u03B1 \u2192 \u03B1 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) (\u03BB (y : \u03B1) x)) : \u2200\u03B1. \u03B1 \u2192 \u03B1 \u2192 \u03B1")',
+    'sf-false': '(("T-TyLam" :right) (("T-Lam" :right) (("T-Lam" :right) (("T-Var" :right) --- "x : \u03B1, y : \u03B1 \u22A2 y : \u03B1") --- "x : \u03B1 \u22A2 (\u03BB (y : \u03B1) y) : \u03B1 \u2192 \u03B1") --- "\u22A2 (\u03BB (x : \u03B1) (\u03BB (y : \u03B1) y)) : \u03B1 \u2192 \u03B1 \u2192 \u03B1") --- "\u22A2 (\u039B\u03B1. \u03BB (x : \u03B1) (\u03BB (y : \u03B1) y)) : \u2200\u03B1. \u03B1 \u2192 \u03B1 \u2192 \u03B1")',
+
+    // First-order natural deduction
+    'fo-forall-i': '(("\u2200I" :right) (("\u2192I" :right) ((Ax :right) --- "P(x) \u22A2 P(x)") --- "\u22A2 P(x) \u2192 P(x)") --- "\u22A2 \u2200x.P(x) \u2192 P(x)")',
+    'fo-forall-e': '(("\u2200E" :right) ((Ax :right) --- "\u2200x.P(x) \u22A2 \u2200x.P(x)") --- "\u2200x.P(x) \u22A2 P(a)")',
+    'fo-exists-i': '(("\u2203I" :right) ((Ax :right) --- "P(a) \u22A2 P(a)") --- "P(a) \u22A2 \u2203x.P(x)")',
+    'fo-exists-e': '(("\u2203E" :right) ((Ax :right) --- "\u2203x.P(x), \u2200x.P(x) \u2192 Q \u22A2 \u2203x.P(x)") (("\u2192E" :right) (("\u2200E" :right) ((Ax :right) --- "\u2203x.P(x), \u2200x.P(x) \u2192 Q, P(x) \u22A2 \u2200x.P(x) \u2192 Q") --- "\u2203x.P(x), \u2200x.P(x) \u2192 Q, P(x) \u22A2 P(x) \u2192 Q") ((Ax :right) --- "\u2203x.P(x), \u2200x.P(x) \u2192 Q, P(x) \u22A2 P(x)") --- "\u2203x.P(x), \u2200x.P(x) \u2192 Q, P(x) \u22A2 Q") --- "\u2203x.P(x), \u2200x.P(x) \u2192 Q \u22A2 Q")',
+    'fo-mixed': '(("\u2192E" :right) (("\u2200E" :right) ((Ax :right) --- "\u2200x.P(x) \u2192 Q(x), P(a) \u22A2 \u2200x.P(x) \u2192 Q(x)") --- "\u2200x.P(x) \u2192 Q(x), P(a) \u22A2 P(a) \u2192 Q(a)") ((Ax :right) --- "\u2200x.P(x) \u2192 Q(x), P(a) \u22A2 P(a)") --- "\u2200x.P(x) \u2192 Q(x), P(a) \u22A2 Q(a)")',
+    'fo-chain': '(("\u2192E" :right) ((Ax :right) --- "\u2200x.P(x), P(a) \u2192 Q \u22A2 P(a) \u2192 Q") (("\u2200E" :right) ((Ax :right) --- "\u2200x.P(x), P(a) \u2192 Q \u22A2 \u2200x.P(x)") --- "\u2200x.P(x), P(a) \u2192 Q \u22A2 P(a)") --- "\u2200x.P(x), P(a) \u2192 Q \u22A2 Q")',
+    'fo-forall-imp': '(("\u2192I" :right) (("\u2200E" :right) ((Ax :right) --- "\u2200x.P(x) \u22A2 \u2200x.P(x)") --- "\u2200x.P(x) \u22A2 P(a)") --- "\u22A2 (\u2200x.P(x)) \u2192 P(a)")',
   };
 
   // ── Per-theory rules reference ────────────────────
@@ -534,6 +594,25 @@ proof_tree: true
   var rulesBody = document.getElementById('pg-rules-body');
 
   var theoryRules = {
+    'small-step': {
+      title: 'Small-Step Semantics',
+      judgement: 'e \u27F6 e\u2032',
+      rules: [
+        { name: 'Add', premises: [], conclusion: '(+ v\u2081 v\u2082) \u27F6 v\u2083', condition: 'v\u2083 = v\u2081 + v\u2082' },
+        { name: 'Neg', premises: [], conclusion: '(- v) \u27F6 v\u2032', condition: 'v\u2032 = \u2212v' },
+        { name: 'Beta', premises: [], conclusion: '((\u03BB (x) e) v) \u27F6 e[x:=v]' },
+        { name: 'Add-L', premises: ['e\u2081 \u27F6 e\u2081\u2032'], conclusion: '(+ e\u2081 e\u2082) \u27F6 (+ e\u2081\u2032 e\u2082)' },
+        { name: 'Add-R', premises: ['e\u2082 \u27F6 e\u2082\u2032'], conclusion: '(+ v\u2081 e\u2082) \u27F6 (+ v\u2081 e\u2082\u2032)' },
+        { name: 'Neg-Step', premises: ['e \u27F6 e\u2032'], conclusion: '(- e) \u27F6 (- e\u2032)' },
+        { name: 'App-L', premises: ['e\u2081 \u27F6 e\u2081\u2032'], conclusion: '(e\u2081 e\u2082) \u27F6 (e\u2081\u2032 e\u2082)' },
+        { name: 'App-R', premises: ['e\u2082 \u27F6 e\u2082\u2032'], conclusion: '(v e\u2082) \u27F6 (v e\u2082\u2032)' },
+        { name: 'If0-True', premises: [], conclusion: '(if0 0 e\u2082 e\u2083) \u27F6 e\u2082' },
+        { name: 'If0-False', premises: [], conclusion: '(if0 v e\u2082 e\u2083) \u27F6 e\u2083', condition: 'v \u2260 0' },
+        { name: 'If0-Step', premises: ['e\u2081 \u27F6 e\u2081\u2032'], conclusion: '(if0 e\u2081 e\u2082 e\u2083) \u27F6 (if0 e\u2081\u2032 e\u2082 e\u2083)' },
+        { name: 'Let-Step', premises: ['e\u2081 \u27F6 e\u2081\u2032'], conclusion: '(let ([x e\u2081]) e\u2082) \u27F6 (let ([x e\u2081\u2032]) e\u2082)' },
+        { name: 'Let', premises: [], conclusion: '(let ([x v]) e) \u27F6 e[x:=v]' },
+      ]
+    },
     'big-step': {
       title: 'Big-Step Semantics',
       judgement: '\u03C1 \u22A2 e \u21D3 v',
@@ -581,6 +660,28 @@ proof_tree: true
         { name: '\u22A5E', premises: ['\u0393 \u22A2 \u22A5'], conclusion: '\u0393 \u22A2 A' },
         { name: '\u00ACI', premises: ['\u0393, A \u22A2 \u22A5'], conclusion: '\u0393 \u22A2 \u00ACA' },
         { name: '\u00ACE', premises: ['\u0393 \u22A2 \u00ACA', '\u0393 \u22A2 A'], conclusion: '\u0393 \u22A2 \u22A5' },
+      ]
+    },
+    'fond': {
+      title: 'First-Order Natural Deduction',
+      judgement: '\u0393 \u22A2 A',
+      rules: [
+        { name: 'Ax', premises: [], conclusion: '\u0393 \u22A2 A', condition: 'A \u2208 \u0393' },
+        { name: '\u2192I', premises: ['\u0393, A \u22A2 B'], conclusion: '\u0393 \u22A2 A \u2192 B' },
+        { name: '\u2192E', premises: ['\u0393 \u22A2 A \u2192 B', '\u0393 \u22A2 A'], conclusion: '\u0393 \u22A2 B' },
+        { name: '\u2227I', premises: ['\u0393 \u22A2 A', '\u0393 \u22A2 B'], conclusion: '\u0393 \u22A2 A \u2227 B' },
+        { name: '\u2227E\u2081', premises: ['\u0393 \u22A2 A \u2227 B'], conclusion: '\u0393 \u22A2 A' },
+        { name: '\u2227E\u2082', premises: ['\u0393 \u22A2 A \u2227 B'], conclusion: '\u0393 \u22A2 B' },
+        { name: '\u2228I\u2081', premises: ['\u0393 \u22A2 A'], conclusion: '\u0393 \u22A2 A \u2228 B' },
+        { name: '\u2228I\u2082', premises: ['\u0393 \u22A2 B'], conclusion: '\u0393 \u22A2 A \u2228 B' },
+        { name: '\u2228E', premises: ['\u0393 \u22A2 A \u2228 B', '\u0393, A \u22A2 C', '\u0393, B \u22A2 C'], conclusion: '\u0393 \u22A2 C' },
+        { name: '\u22A5E', premises: ['\u0393 \u22A2 \u22A5'], conclusion: '\u0393 \u22A2 A' },
+        { name: '\u00ACI', premises: ['\u0393, A \u22A2 \u22A5'], conclusion: '\u0393 \u22A2 \u00ACA' },
+        { name: '\u00ACE', premises: ['\u0393 \u22A2 \u00ACA', '\u0393 \u22A2 A'], conclusion: '\u0393 \u22A2 \u22A5' },
+        { name: '\u2200I', premises: ['\u0393 \u22A2 \u03C6'], conclusion: '\u0393 \u22A2 \u2200x.\u03C6', condition: 'x not free in \u0393' },
+        { name: '\u2200E', premises: ['\u0393 \u22A2 \u2200x.\u03C6'], conclusion: '\u0393 \u22A2 \u03C6[t/x]' },
+        { name: '\u2203I', premises: ['\u0393 \u22A2 \u03C6[t/x]'], conclusion: '\u0393 \u22A2 \u2203x.\u03C6' },
+        { name: '\u2203E', premises: ['\u0393 \u22A2 \u2203x.\u03C6', '\u0393, \u03C6 \u22A2 C'], conclusion: '\u0393 \u22A2 C', condition: 'x not free in \u0393, C' },
       ]
     },
     'stlc': {
@@ -866,8 +967,8 @@ proof_tree: true
 
   // ── Examples dropdown ───────────────────────────
   var _exampleTheoryMap = {
-    'bs-': 'big-step', 'g3-': 'g3ip',
-    'nd-': 'propnd', 'stlc-': 'stlc', 'sf-': 'systemf',
+    'bs-': 'big-step', 'ss-': 'small-step', 'g3-': 'g3ip',
+    'nd-': 'propnd', 'fo-': 'fond', 'stlc-': 'stlc', 'sf-': 'systemf',
   };
 
   examplesSelect.addEventListener('change', function() {
@@ -962,6 +1063,11 @@ proof_tree: true
     if (hashParts.proof) {
       setTimeout(function() { loadProof(hashParts.proof); }, 100);
     }
+  } else {
+    // Default: load Big-Step theory with the largest example
+    theorySelect.value = 'big-step';
+    updateExamples();
+    setTimeout(function() { loadProof(exampleData['bs-let']); }, 100);
   }
 })();
 </script>
