@@ -90,6 +90,54 @@ impl Theory for SmallStepTheory {
     fn is_judgement(&self, s: &str) -> bool {
         is_reduction(s)
     }
+
+    fn applicable_rules(&self, conclusion: &str) -> Vec<(&str, bool, Option<String>)> {
+        if !is_reduction(conclusion) {
+            return self.known_rules().into_iter().map(|r| (r, true, None)).collect();
+        }
+        // Extract the LHS expression (before ⟶)
+        let lhs = conclusion.split('\u{27F6}').next()
+            .or_else(|| conclusion.split("-->").next())
+            .unwrap_or("").trim();
+
+        let parts = crate::types::split_sexpr(lhs);
+        let head = parts.as_ref().and_then(|p| p.first().map(|s| s.as_str()));
+
+        let is_app = parts.as_ref().map_or(false, |p| p.len() == 2 && !crate::stlc::is_keyword(Some(&p[0])));
+        let is_add = head == Some("+");
+        let is_neg = head == Some("-");
+        let is_if0 = head == Some("if0");
+        let is_let = head == Some("let");
+
+        vec![
+            ("Beta",      is_app,  if !is_app  { Some("expression is not an application".into()) } else { None }),
+            ("App-L",     is_app,  if !is_app  { Some("expression is not an application".into()) } else { None }),
+            ("App-R",     is_app,  if !is_app  { Some("expression is not an application".into()) } else { None }),
+            ("Add-L",     is_add,  if !is_add  { Some("expression is not (+ ...)".into()) } else { None }),
+            ("Add-R",     is_add,  if !is_add  { Some("expression is not (+ ...)".into()) } else { None }),
+            ("Add",       is_add,  if !is_add  { Some("expression is not (+ ...)".into()) } else { None }),
+            ("Neg-Step",  is_neg,  if !is_neg  { Some("expression is not (- ...)".into()) } else { None }),
+            ("Neg",       is_neg,  if !is_neg  { Some("expression is not (- ...)".into()) } else { None }),
+            ("If0-Step",  is_if0,  if !is_if0  { Some("expression is not (if0 ...)".into()) } else { None }),
+            ("If0-True",  is_if0,  if !is_if0  { Some("expression is not (if0 ...)".into()) } else { None }),
+            ("If0-False", is_if0,  if !is_if0  { Some("expression is not (if0 ...)".into()) } else { None }),
+            ("Let-Step",  is_let,  if !is_let  { Some("expression is not (let ...)".into()) } else { None }),
+            ("Let",       is_let,  if !is_let  { Some("expression is not (let ...)".into()) } else { None }),
+        ]
+    }
+
+    fn generate_premises(&self, rule_name: &str, conclusion: &str) -> Result<Vec<String>, String> {
+        let _ = conclusion; // not needed for structure
+        let base = "? \u{27F6} ?".to_string();
+
+        match normalize_rule(rule_name) {
+            "Beta" | "Add" | "Neg" | "If0-True" | "If0-False" | "Let" => Ok(vec![]),
+            "App-L" | "App-R" | "Add-L" | "Add-R" | "Neg-Step" | "If0-Step" | "Let-Step" => {
+                Ok(vec![base])
+            }
+            _ => Err(format!("Unknown small-step rule '{}'", rule_name)),
+        }
+    }
 }
 
 fn normalize_rule(name: &str) -> &str {
@@ -124,4 +172,35 @@ fn is_side_condition(s: &str) -> bool {
     let s = s.trim();
     // Things like "i ≠ 0" or "3 + 5 = 8"
     s.contains('=') || s.contains('\u{2260}')
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::check::Theory;
+
+    #[test]
+    fn test_gen_beta() {
+        let prems = SmallStepTheory.generate_premises("Beta", "e \u{27F6} e'").unwrap();
+        assert_eq!(prems.len(), 0);
+    }
+
+    #[test]
+    fn test_gen_app_l() {
+        let prems = SmallStepTheory.generate_premises("App-L", "e \u{27F6} e'").unwrap();
+        assert_eq!(prems.len(), 1);
+        assert!(prems[0].contains("\u{27F6}"));
+    }
+
+    #[test]
+    fn test_gen_add_step() {
+        let prems = SmallStepTheory.generate_premises("Add-L", "e \u{27F6} e'").unwrap();
+        assert_eq!(prems.len(), 1);
+    }
+
+    #[test]
+    fn test_gen_unknown() {
+        let result = SmallStepTheory.generate_premises("Unknown", "e \u{27F6} e'");
+        assert!(result.is_err());
+    }
 }

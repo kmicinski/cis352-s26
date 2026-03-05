@@ -5,8 +5,8 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>http://localhost:4000/cis352-s26/</link>
     <atom:link href="http://localhost:4000/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 04 Mar 2026 23:33:49 -0500</pubDate>
-    <lastBuildDate>Wed, 04 Mar 2026 23:33:49 -0500</lastBuildDate>
+    <pubDate>Thu, 05 Mar 2026 01:08:41 -0500</pubDate>
+    <lastBuildDate>Thu, 05 Mar 2026 01:08:41 -0500</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -135,6 +135,8 @@ details .solution-body {
 function openInPlayground(sexp) {
   window.open(&apos;/cis352-s26/playground#proof=&apos; + encodeURIComponent(sexp), &apos;_blank&apos;);
 }
+
+var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
 &lt;/script&gt;
 
 &lt;hr /&gt;
@@ -157,11 +159,11 @@ function openInPlayground(sexp) {
     | x                              ← Variable reference
     | i                              ← Integer literal
     | (- e)                          ← Unary negation
-    | (+ e₁ e₂)                     ← Binary addition
-    | (if0 e_guard e_true e_false)   ← Conditional (zero test)
-    | (let ([x e]) e_body)           ← Let binding
+    | (+ e₀ e₁)                     ← Binary addition
+    | (if0 e_g e_t e_f)                ← Conditional (zero test)
+    | (let ([x e]) e_b)              ← Let binding
     | (λ (x) e)                      ← Lambda abstraction
-    | (e₁ e₂)                       ← Application
+    | (e₀ e₁)                       ← Application
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The Racket predicate &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;expr?&lt;/code&gt; checks membership in this language:&lt;/p&gt;
@@ -229,25 +231,25 @@ function openInPlayground(sexp) {
 &lt;div class=&quot;rule-block&quot;&gt;
 &lt;div class=&quot;rule-name&quot;&gt;Add&lt;/div&gt;
 &lt;div class=&quot;rule-desc&quot;&gt;Evaluate both subexpressions and add the results.&lt;/div&gt;
-&lt;div data-proof-tree=&quot;((Add :right) &amp;quot;ρ ⊢ e₁ ⇓ i₁&amp;quot; &amp;quot;ρ ⊢ e₂ ⇓ i₂&amp;quot; &amp;quot;v = i₁ + i₂&amp;quot; --- &amp;quot;ρ ⊢ (+ e₁ e₂) ⇓ v&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((Add :right) &amp;quot;ρ ⊢ e₀ ⇓ i₀&amp;quot; &amp;quot;ρ ⊢ e₁ ⇓ i₁&amp;quot; &amp;quot;v = i₀ + i₁&amp;quot; --- &amp;quot;ρ ⊢ (+ e₀ e₁) ⇓ v&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
 &lt;/div&gt;
 
 &lt;div class=&quot;rule-block&quot;&gt;
 &lt;div class=&quot;rule-name&quot;&gt;If0-True&lt;/div&gt;
 &lt;div class=&quot;rule-desc&quot;&gt;If the guard evaluates to 0, evaluate the true branch.&lt;/div&gt;
-&lt;div data-proof-tree=&quot;((&amp;quot;If0-True&amp;quot; :right) &amp;quot;ρ ⊢ e_guard ⇓ 0&amp;quot; &amp;quot;ρ ⊢ e_true ⇓ v&amp;quot; --- &amp;quot;ρ ⊢ (if0 e_guard e_true e_false) ⇓ v&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((&amp;quot;If0-True&amp;quot; :right) &amp;quot;ρ ⊢ e_g ⇓ 0&amp;quot; &amp;quot;ρ ⊢ e_t ⇓ v&amp;quot; --- &amp;quot;ρ ⊢ (if0 e_g e_t e_f) ⇓ v&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
 &lt;/div&gt;
 
 &lt;div class=&quot;rule-block&quot;&gt;
 &lt;div class=&quot;rule-name&quot;&gt;If0-False&lt;/div&gt;
 &lt;div class=&quot;rule-desc&quot;&gt;If the guard evaluates to a nonzero integer, evaluate the false branch.&lt;/div&gt;
-&lt;div data-proof-tree=&quot;((&amp;quot;If0-False&amp;quot; :right) &amp;quot;ρ ⊢ e_guard ⇓ i&amp;quot; &amp;quot;i ≠ 0&amp;quot; &amp;quot;ρ ⊢ e_false ⇓ v&amp;quot; --- &amp;quot;ρ ⊢ (if0 e_guard e_true e_false) ⇓ v&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((&amp;quot;If0-False&amp;quot; :right) &amp;quot;ρ ⊢ e_g ⇓ i&amp;quot; &amp;quot;i ≠ 0&amp;quot; &amp;quot;ρ ⊢ e_f ⇓ v&amp;quot; --- &amp;quot;ρ ⊢ (if0 e_g e_t e_f) ⇓ v&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
 &lt;/div&gt;
 
 &lt;div class=&quot;rule-block&quot;&gt;
 &lt;div class=&quot;rule-name&quot;&gt;Let&lt;/div&gt;
-&lt;div class=&quot;rule-desc&quot;&gt;Evaluate e to get v₁, extend the environment with x ↦ v₁, then evaluate the body.&lt;/div&gt;
-&lt;div data-proof-tree=&quot;((Let :right) &amp;quot;ρ ⊢ e ⇓ v₁&amp;quot; &amp;quot;ρ[x ↦ v₁] ⊢ e_body ⇓ v₂&amp;quot; --- &amp;quot;ρ ⊢ (let ([x e]) e_body) ⇓ v₂&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;div class=&quot;rule-desc&quot;&gt;Evaluate e to get v′, extend the environment with x ↦ v′, then evaluate the body.&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((Let :right) &amp;quot;ρ ⊢ e ⇓ v′&amp;quot; &amp;quot;ρ[x ↦ v′] ⊢ e_b ⇓ v&amp;quot; --- &amp;quot;ρ ⊢ (let ([x e]) e_b) ⇓ v&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
 &lt;/div&gt;
 
 &lt;hr /&gt;
@@ -266,7 +268,10 @@ function openInPlayground(sexp) {
 (function() {
   var container = document.getElementById(&apos;exercise1-editor&apos;);
   var editor = ProofTree.createEditor(container, {
-    tree: &apos;(--- &quot;{x ↦ 3} ⊢ (- x) ⇓ -3&quot;)&apos;
+    tree: &apos;(--- &quot;{x ↦ 3} ⊢ (- x) ⇓ -3&quot;)&apos;,
+    theoryRules: _bsConfig.theoryRules,
+    onGeneratePremises: _bsConfig.onGeneratePremises,
+    onCheckApplicability: _bsConfig.onCheckApplicability
   });
   ProofChecker.createCheckButton(container, editor);
 })();
@@ -309,7 +314,10 @@ function openInPlayground(sexp) {
 (function() {
   var container = document.getElementById(&apos;exercise2-editor&apos;);
   var editor = ProofTree.createEditor(container, {
-    tree: &apos;(--- &quot;{x ↦ 5} ⊢ (let ([y 3]) (+ y x)) ⇓ 8&quot;)&apos;
+    tree: &apos;(--- &quot;{x ↦ 5} ⊢ (let ([y 3]) (+ y x)) ⇓ 8&quot;)&apos;,
+    theoryRules: _bsConfig.theoryRules,
+    onGeneratePremises: _bsConfig.onGeneratePremises,
+    onCheckApplicability: _bsConfig.onCheckApplicability
   });
   ProofChecker.createCheckButton(container, editor);
 })();
@@ -340,7 +348,7 @@ function openInPlayground(sexp) {
 
 &lt;h2 id=&quot;from-rules-to-interpreter&quot;&gt;From Rules to Interpreter&lt;/h2&gt;
 
-&lt;p&gt;We can read the judgement ρ ⊢ e ⇓ v as a &lt;em&gt;function&lt;/em&gt; from (ρ, e) to v. The structure of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; tells us exactly which rule to use—if &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; is a variable, we must use Var; if it is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ e₁ e₂)&lt;/code&gt;, we must use Add; and so on. Each premise that involves a recursive judgement becomes a recursive call.&lt;/p&gt;
+&lt;p&gt;We can read the judgement ρ ⊢ e ⇓ v as a &lt;em&gt;function&lt;/em&gt; from (ρ, e) to v. The structure of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; tells us exactly which rule to use—if &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; is a variable, we must use Var; if it is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ e₀ e₁)&lt;/code&gt;, we must use Add; and so on. Each premise that involves a recursive judgement becomes a recursive call.&lt;/p&gt;
 
 &lt;p&gt;This gives us a direct strategy: pattern-match on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt;, and for each form, translate the corresponding natural deduction rule into code.&lt;/p&gt;
 
@@ -431,11 +439,11 @@ function openInPlayground(sexp) {
 
 &lt;div class=&quot;rule-block&quot;&gt;
 &lt;div class=&quot;rule-name&quot;&gt;App&lt;/div&gt;
-&lt;div class=&quot;rule-desc&quot;&gt;Evaluate e₁ to get a closure, evaluate e₂ to get the argument, then evaluate the body in the closure&apos;s environment extended with the parameter binding.&lt;/div&gt;
-&lt;div data-proof-tree=&quot;((App :right) &amp;quot;ρ ⊢ e₁ ⇓ ⟨λ (x) e_body , ρ_clo⟩&amp;quot; &amp;quot;ρ ⊢ e₂ ⇓ v_arg&amp;quot; &amp;quot;ρ_clo[x ↦ v_arg] ⊢ e_body ⇓ v&amp;quot; --- &amp;quot;ρ ⊢ (e₁ e₂) ⇓ v&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;div class=&quot;rule-desc&quot;&gt;Evaluate e₀ to get a closure, evaluate e₁ to get the argument, then evaluate the body in the closure&apos;s environment extended with the parameter binding.&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((App :right) &amp;quot;ρ ⊢ e₀ ⇓ ⟨λ (x) e′ , ρ′⟩&amp;quot; &amp;quot;ρ ⊢ e₁ ⇓ v′&amp;quot; &amp;quot;ρ′[x ↦ v′] ⊢ e′ ⇓ v&amp;quot; --- &amp;quot;ρ ⊢ (e₀ e₁) ⇓ v&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
 &lt;/div&gt;
 
-&lt;p&gt;&lt;strong&gt;Important:&lt;/strong&gt; we evaluate the body in &lt;strong&gt;ρ_clo&lt;/strong&gt; (the environment from when the function was &lt;em&gt;defined&lt;/em&gt;), &lt;strong&gt;not&lt;/strong&gt; in ρ (the environment at the &lt;em&gt;call site&lt;/em&gt;). This is called &lt;strong&gt;lexical scoping&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Important:&lt;/strong&gt; we evaluate the body in &lt;strong&gt;ρ’&lt;/strong&gt; (the environment from when the function was &lt;em&gt;defined&lt;/em&gt;), &lt;strong&gt;not&lt;/strong&gt; in ρ (the environment at the &lt;em&gt;call site&lt;/em&gt;). This is called &lt;strong&gt;lexical scoping&lt;/strong&gt;.&lt;/p&gt;
 
 &lt;hr /&gt;
 
@@ -454,7 +462,10 @@ function openInPlayground(sexp) {
 (function() {
   var container = document.getElementById(&apos;exercise3-editor&apos;);
   var editor = ProofTree.createEditor(container, {
-    tree: &apos;(--- &quot;{} ⊢ ((λ (x) (+ x 1)) 5) ⇓ 6&quot;)&apos;
+    tree: &apos;(--- &quot;{} ⊢ ((λ (x) (+ x 1)) 5) ⇓ 6&quot;)&apos;,
+    theoryRules: _bsConfig.theoryRules,
+    onGeneratePremises: _bsConfig.onGeneratePremises,
+    onCheckApplicability: _bsConfig.onCheckApplicability
   });
   ProofChecker.createCheckButton(container, editor);
 })();
@@ -569,7 +580,10 @@ function openInPlayground(sexp) {
 (function() {
   var container = document.getElementById(&apos;optA-editor&apos;);
   var editor = ProofTree.createEditor(container, {
-    tree: &apos;(--- &quot;{} ⊢ (if0 (+ 1 (- 1)) 42 0) ⇓ 42&quot;)&apos;
+    tree: &apos;(--- &quot;{} ⊢ (if0 (+ 1 (- 1)) 42 0) ⇓ 42&quot;)&apos;,
+    theoryRules: _bsConfig.theoryRules,
+    onGeneratePremises: _bsConfig.onGeneratePremises,
+    onCheckApplicability: _bsConfig.onCheckApplicability
   });
   ProofChecker.createCheckButton(container, editor);
 })();
@@ -608,7 +622,10 @@ function openInPlayground(sexp) {
 (function() {
   var container = document.getElementById(&apos;optB-editor&apos;);
   var editor = ProofTree.createEditor(container, {
-    tree: &apos;(--- &quot;{} ⊢ (let ([x 10]) ((λ (y) (+ x y)) 7)) ⇓ 17&quot;)&apos;
+    tree: &apos;(--- &quot;{} ⊢ (let ([x 10]) ((λ (y) (+ x y)) 7)) ⇓ 17&quot;)&apos;,
+    theoryRules: _bsConfig.theoryRules,
+    onGeneratePremises: _bsConfig.onGeneratePremises,
+    onCheckApplicability: _bsConfig.onCheckApplicability
   });
   ProofChecker.createCheckButton(container, editor);
 })();

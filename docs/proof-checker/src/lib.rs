@@ -92,6 +92,55 @@ pub fn parse_judgement(s: &str) -> String {
     }
 }
 
+/// Given a conclusion and a rule name, generate expected premise strings.
+/// Returns JSON: { ok: true, premises: [...] } or { ok: false, error: "..." }
+#[wasm_bindgen]
+pub fn generate_premises(conclusion: &str, rule: &str, theory: &str) -> String {
+    use check::Theory;
+
+    let result: Result<Vec<String>, String> = match theory {
+        "big-step" | "bigstep" | "" => bigstep::BigStepTheory.generate_premises(rule, conclusion),
+        "small-step" | "smallstep" => smallstep::SmallStepTheory.generate_premises(rule, conclusion),
+        "g3ip" | "G3ip" | "sequent" => g3ip::G3ipTheory.generate_premises(rule, conclusion),
+        "propnd" | "prop-nd" | "natural-deduction" => propnd::PropNDTheory.generate_premises(rule, conclusion),
+        "stlc" | "STLC" | "simply-typed" => stlc::STLCTheory.generate_premises(rule, conclusion),
+        "systemf" | "system-f" | "SystemF" => systemf::SystemFTheory.generate_premises(rule, conclusion),
+        _ => Err(format!("Unknown theory '{}'", theory)),
+    };
+    match result {
+        Ok(premises) => serde_json::to_string(&serde_json::json!({"ok": true, "premises": premises})).unwrap(),
+        Err(e) => serde_json::to_string(&serde_json::json!({"ok": false, "error": e})).unwrap(),
+    }
+}
+
+/// Check which rules can apply to a given conclusion for a theory.
+/// Returns JSON: { "RuleName": { "applicable": true/false, "reason": "..." }, ... }
+#[wasm_bindgen]
+pub fn applicable_rules(conclusion: &str, theory: &str) -> String {
+    use check::Theory;
+
+    let rules: Vec<(&str, bool, Option<String>)> = match theory {
+        "big-step" | "bigstep" | "" => bigstep::BigStepTheory.applicable_rules(conclusion),
+        "small-step" | "smallstep" => smallstep::SmallStepTheory.applicable_rules(conclusion),
+        "g3ip" | "G3ip" | "sequent" => g3ip::G3ipTheory.applicable_rules(conclusion),
+        "propnd" | "prop-nd" | "natural-deduction" => propnd::PropNDTheory.applicable_rules(conclusion),
+        "stlc" | "STLC" | "simply-typed" => stlc::STLCTheory.applicable_rules(conclusion),
+        "systemf" | "system-f" | "SystemF" => systemf::SystemFTheory.applicable_rules(conclusion),
+        _ => vec![],
+    };
+
+    let mut map = serde_json::Map::new();
+    for (name, applicable, reason) in rules {
+        let mut entry = serde_json::Map::new();
+        entry.insert("applicable".into(), serde_json::Value::Bool(applicable));
+        if let Some(r) = reason {
+            entry.insert("reason".into(), serde_json::Value::String(r));
+        }
+        map.insert(name.into(), serde_json::Value::Object(entry));
+    }
+    serde_json::Value::Object(map).to_string()
+}
+
 /// List available theories. Returns JSON array of {id, name} objects.
 #[wasm_bindgen]
 pub fn list_theories() -> String {

@@ -87,6 +87,141 @@ impl Theory for PropNDTheory {
     fn is_judgement(&self, s: &str) -> bool {
         s.contains('\u{22A2}') && !s.contains('\u{21D2}') && !s.contains('\u{21D3}')
     }
+
+    fn applicable_rules(&self, conclusion: &str) -> Vec<(&str, bool, Option<String>)> {
+        let seq = match formula::parse_sequent(conclusion, SEP) {
+            Ok(s) => s,
+            Err(_) => return self.known_rules().into_iter().map(|r| (r, true, None)).collect(),
+        };
+        let suc = &seq.succedent;
+        let suc_in_ant = formula::contains_formula(&seq.antecedents, suc);
+        let suc_is_bot = *suc == Formula::Bot;
+        let suc_is_imp = matches!(suc, Formula::Imp(_, _));
+        let suc_is_and = matches!(suc, Formula::And(_, _));
+        let suc_is_or  = matches!(suc, Formula::Or(_, _));
+        let suc_is_not = matches!(suc, Formula::Not(_));
+
+        vec![
+            ("Ax",   suc_in_ant, if !suc_in_ant { Some("conclusion must appear in context".into()) } else { None }),
+            ("\u{2192}I", suc_is_imp, if !suc_is_imp { Some("conclusion is not an implication".into()) } else { None }),
+            ("\u{2192}E", true, None), // always potentially applicable (modus ponens)
+            ("\u{2227}I", suc_is_and, if !suc_is_and { Some("conclusion is not a conjunction".into()) } else { None }),
+            ("\u{2227}E\u{2081}", true, None), // elimination rules are always potentially applicable
+            ("\u{2227}E\u{2082}", true, None),
+            ("\u{2228}I\u{2081}", suc_is_or, if !suc_is_or { Some("conclusion is not a disjunction".into()) } else { None }),
+            ("\u{2228}I\u{2082}", suc_is_or, if !suc_is_or { Some("conclusion is not a disjunction".into()) } else { None }),
+            ("\u{2228}E", true, None), // always potentially applicable
+            ("\u{22A5}E", true, None), // ex falso — always potentially applicable
+            ("\u{00AC}I", suc_is_not, if !suc_is_not { Some("conclusion is not a negation".into()) } else { None }),
+            ("\u{00AC}E", suc_is_bot, if !suc_is_bot { Some("conclusion must be \u{22A5}".into()) } else { None }),
+        ]
+    }
+
+    fn generate_premises(&self, rule_name: &str, conclusion: &str) -> Result<Vec<String>, String> {
+        let seq = formula::parse_sequent(conclusion, SEP)
+            .map_err(|e| format!("Can't parse conclusion: {}", e))?;
+        let ants = &seq.antecedents;
+        let suc = &seq.succedent;
+        let placeholder = Formula::Atom("?".into());
+
+        match normalize_rule(rule_name) {
+            "Ax" => Ok(vec![]),
+            "ImpI" => {
+                match suc {
+                    Formula::Imp(a, b) => {
+                        let mut new_ants = ants.to_vec();
+                        new_ants.push(*a.clone());
+                        let p = formula::format_sequent_str(&new_ants, b, SEP);
+                        Ok(vec![p])
+                    }
+                    _ => Err(format!("\u{2192}I requires the conclusion to be A \u{2192} B, but got {}", suc)),
+                }
+            }
+            "ImpE" => {
+                // conclusion: Γ ⊢ B → premises: Γ ⊢ ? → B, Γ ⊢ ?
+                let imp_suc = Formula::Imp(Box::new(placeholder.clone()), Box::new(suc.clone()));
+                let p1 = formula::format_sequent_str(ants, &imp_suc, SEP);
+                let p2 = formula::format_sequent_str(ants, &placeholder, SEP);
+                Ok(vec![p1, p2])
+            }
+            "AndI" => {
+                match suc {
+                    Formula::And(a, b) => {
+                        let p1 = formula::format_sequent_str(ants, a, SEP);
+                        let p2 = formula::format_sequent_str(ants, b, SEP);
+                        Ok(vec![p1, p2])
+                    }
+                    _ => Err(format!("\u{2227}I requires the conclusion to be A \u{2227} B, but got {}", suc)),
+                }
+            }
+            "AndE1" => {
+                // conclusion: Γ ⊢ A → premise: Γ ⊢ A ∧ ?
+                let conj = Formula::And(Box::new(suc.clone()), Box::new(placeholder));
+                let p = formula::format_sequent_str(ants, &conj, SEP);
+                Ok(vec![p])
+            }
+            "AndE2" => {
+                // conclusion: Γ ⊢ B → premise: Γ ⊢ ? ∧ B
+                let conj = Formula::And(Box::new(placeholder), Box::new(suc.clone()));
+                let p = formula::format_sequent_str(ants, &conj, SEP);
+                Ok(vec![p])
+            }
+            "OrI1" => {
+                match suc {
+                    Formula::Or(a, _) => {
+                        let p = formula::format_sequent_str(ants, a, SEP);
+                        Ok(vec![p])
+                    }
+                    _ => Err(format!("\u{2228}I\u{2081} requires the conclusion to be A \u{2228} B, but got {}", suc)),
+                }
+            }
+            "OrI2" => {
+                match suc {
+                    Formula::Or(_, b) => {
+                        let p = formula::format_sequent_str(ants, b, SEP);
+                        Ok(vec![p])
+                    }
+                    _ => Err(format!("\u{2228}I\u{2082} requires the conclusion to be A \u{2228} B, but got {}", suc)),
+                }
+            }
+            "OrE" => {
+                // conclusion: Γ ⊢ C → premises: Γ ⊢ ? ∨ ?, Γ, ? ⊢ C, Γ, ? ⊢ C
+                let disj = Formula::Or(Box::new(placeholder.clone()), Box::new(placeholder.clone()));
+                let p1 = formula::format_sequent_str(ants, &disj, SEP);
+                let mut ants2 = ants.to_vec();
+                ants2.push(placeholder.clone());
+                let p2 = formula::format_sequent_str(&ants2, suc, SEP);
+                let mut ants3 = ants.to_vec();
+                ants3.push(placeholder);
+                let p3 = formula::format_sequent_str(&ants3, suc, SEP);
+                Ok(vec![p1, p2, p3])
+            }
+            "BotE" => {
+                // conclusion: Γ ⊢ A → premise: Γ ⊢ ⊥
+                let p = formula::format_sequent_str(ants, &Formula::Bot, SEP);
+                Ok(vec![p])
+            }
+            "NotI" => {
+                match suc {
+                    Formula::Not(a) => {
+                        let mut new_ants = ants.to_vec();
+                        new_ants.push(*a.clone());
+                        let p = formula::format_sequent_str(&new_ants, &Formula::Bot, SEP);
+                        Ok(vec![p])
+                    }
+                    _ => Err(format!("\u{00AC}I requires the conclusion to be \u{00AC}A, but got {}", suc)),
+                }
+            }
+            "NotE" => {
+                // conclusion: Γ ⊢ ⊥ → premises: Γ ⊢ ¬?, Γ ⊢ ?
+                let neg = Formula::Not(Box::new(placeholder.clone()));
+                let p1 = formula::format_sequent_str(ants, &neg, SEP);
+                let p2 = formula::format_sequent_str(ants, &placeholder, SEP);
+                Ok(vec![p1, p2])
+            }
+            _ => Err(format!("Unknown natural deduction rule '{}'", rule_name)),
+        }
+    }
 }
 
 fn normalize_rule(name: &str) -> &str {
@@ -710,4 +845,68 @@ fn check_not_e(seq: &Sequent, premises: &[&ProofNode]) -> Vec<Diagnostic> {
     }
 
     diags
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::check::Theory;
+
+    #[test]
+    fn test_gen_ax() {
+        let prems = PropNDTheory.generate_premises("Ax", "P \u{22A2} P").unwrap();
+        assert_eq!(prems.len(), 0);
+    }
+
+    #[test]
+    fn test_gen_imp_i() {
+        let prems = PropNDTheory.generate_premises("ImpI", "\u{22A2} P \u{2192} Q").unwrap();
+        assert_eq!(prems.len(), 1);
+        assert!(prems[0].contains("P"));
+        assert!(prems[0].contains("Q"));
+    }
+
+    #[test]
+    fn test_gen_imp_e() {
+        let prems = PropNDTheory.generate_premises("ImpE", "\u{22A2} Q").unwrap();
+        assert_eq!(prems.len(), 2);
+        assert!(prems[0].contains("?"));
+        assert!(prems[0].contains("Q"));
+    }
+
+    #[test]
+    fn test_gen_and_i() {
+        let prems = PropNDTheory.generate_premises("AndI", "\u{22A2} P \u{2227} Q").unwrap();
+        assert_eq!(prems.len(), 2);
+        assert!(prems[0].contains("P"));
+        assert!(prems[1].contains("Q"));
+    }
+
+    #[test]
+    fn test_gen_or_i1() {
+        let prems = PropNDTheory.generate_premises("OrI1", "\u{22A2} P \u{2228} Q").unwrap();
+        assert_eq!(prems.len(), 1);
+        assert!(prems[0].contains("P"));
+    }
+
+    #[test]
+    fn test_gen_not_i() {
+        let prems = PropNDTheory.generate_premises("NotI", "\u{22A2} \u{00AC}P").unwrap();
+        assert_eq!(prems.len(), 1);
+        assert!(prems[0].contains("P"));
+        assert!(prems[0].contains("\u{22A5}"));
+    }
+
+    #[test]
+    fn test_gen_bot_e() {
+        let prems = PropNDTheory.generate_premises("BotE", "\u{22A2} P").unwrap();
+        assert_eq!(prems.len(), 1);
+        assert!(prems[0].contains("\u{22A5}"));
+    }
+
+    #[test]
+    fn test_gen_and_i_not_conjunction() {
+        let result = PropNDTheory.generate_premises("AndI", "\u{22A2} P \u{2192} Q");
+        assert!(result.is_err());
+    }
 }

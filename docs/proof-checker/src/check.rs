@@ -49,6 +49,18 @@ pub trait Theory {
     /// Returns true if the given string looks like a judgement in this theory
     /// (as opposed to a side condition). Used to determine if a bare leaf needs a rule.
     fn is_judgement(&self, s: &str) -> bool;
+
+    /// Given a rule name and a conclusion string, generate the expected premise strings.
+    /// Returns Ok(vec![...]) on success, Err(msg) on failure.
+    fn generate_premises(&self, _rule_name: &str, _conclusion: &str) -> Result<Vec<String>, String> {
+        Err("Premise generation not supported for this theory".to_string())
+    }
+
+    /// Check which rules can potentially apply to a conclusion.
+    /// Returns `(rule_name, applicable, reason)` for each known rule.
+    fn applicable_rules(&self, _conclusion: &str) -> Vec<(&str, bool, Option<String>)> {
+        self.known_rules().into_iter().map(|r| (r, true, None)).collect()
+    }
 }
 
 /// Check an entire proof tree against a theory.

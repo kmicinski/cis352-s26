@@ -1,3 +1,29 @@
+/* @ts-self-types="./proof_checker.d.ts" */
+
+/**
+ * Check which rules can apply to a given conclusion for a theory.
+ * Returns JSON: { "RuleName": { "applicable": true/false, "reason": "..." }, ... }
+ * @param {string} conclusion
+ * @param {string} theory
+ * @returns {string}
+ */
+export function applicable_rules(conclusion, theory) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passStringToWasm0(conclusion, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(theory, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.applicable_rules(ptr0, len0, ptr1, len1);
+        deferred3_0 = ret[0];
+        deferred3_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
 /**
  * Check a proof tree S-expression against a named theory.
  * Returns JSON: { valid, complete, diagnostics: [{level, path, message}] }
@@ -19,6 +45,33 @@ export function check_proof(sexp_str, theory) {
         return getStringFromWasm0(ret[0], ret[1]);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * Given a conclusion and a rule name, generate expected premise strings.
+ * Returns JSON: { ok: true, premises: [...] } or { ok: false, error: "..." }
+ * @param {string} conclusion
+ * @param {string} rule
+ * @param {string} theory
+ * @returns {string}
+ */
+export function generate_premises(conclusion, rule, theory) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(conclusion, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(rule, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(theory, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ret = wasm.generate_premises(ptr0, len0, ptr1, len1, ptr2, len2);
+        deferred4_0 = ret[0];
+        deferred4_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
     }
 }
 

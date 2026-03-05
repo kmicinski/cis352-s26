@@ -362,6 +362,16 @@ pub fn format_formula_list(formulas: &[Formula]) -> String {
     }
 }
 
+/// Format a sequent (antecedent list + succedent) as a string.
+pub fn format_sequent_str(antecedents: &[Formula], succedent: &Formula, sep: char) -> String {
+    let ant_str = format_formula_list(antecedents);
+    if ant_str.is_empty() {
+        format!("{} {}", sep, succedent)
+    } else {
+        format!("{} {} {}", ant_str, sep, succedent)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

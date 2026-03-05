@@ -81,6 +81,144 @@ impl Theory for G3ipTheory {
     fn is_judgement(&self, s: &str) -> bool {
         s.contains('\u{21D2}') // ⇒
     }
+
+    fn applicable_rules(&self, conclusion: &str) -> Vec<(&str, bool, Option<String>)> {
+        let seq = match formula::parse_sequent(conclusion, SEP) {
+            Ok(s) => s,
+            Err(_) => return self.known_rules().into_iter().map(|r| (r, true, None)).collect(),
+        };
+        let suc = &seq.succedent;
+        let has_bot = formula::contains_formula(&seq.antecedents, &Formula::Bot);
+        let has_imp = seq.antecedents.iter().any(|f| matches!(f, Formula::Imp(_, _)));
+        let has_and = seq.antecedents.iter().any(|f| matches!(f, Formula::And(_, _)));
+        let has_or  = seq.antecedents.iter().any(|f| matches!(f, Formula::Or(_, _)));
+        let suc_is_atom = matches!(suc, Formula::Atom(_));
+        let atom_in_ant = suc_is_atom && formula::contains_formula(&seq.antecedents, suc);
+
+        // Only return the canonical rule names used in the dropdown
+        vec![
+            ("Ax",    atom_in_ant, if !atom_in_ant { Some("succedent must be an atom present in antecedent".into()) } else { None }),
+            ("\u{22A5}L", has_bot, if !has_bot { Some("\u{22A5} not in antecedent".into()) } else { None }),
+            ("\u{22A4}R", *suc == Formula::Top, if *suc != Formula::Top { Some("succedent is not \u{22A4}".into()) } else { None }),
+            ("\u{2227}R", matches!(suc, Formula::And(_, _)), if !matches!(suc, Formula::And(_, _)) { Some("succedent is not a conjunction".into()) } else { None }),
+            ("\u{2227}L", has_and, if !has_and { Some("no conjunction in antecedent".into()) } else { None }),
+            ("\u{2228}R\u{2081}", matches!(suc, Formula::Or(_, _)), if !matches!(suc, Formula::Or(_, _)) { Some("succedent is not a disjunction".into()) } else { None }),
+            ("\u{2228}R\u{2082}", matches!(suc, Formula::Or(_, _)), if !matches!(suc, Formula::Or(_, _)) { Some("succedent is not a disjunction".into()) } else { None }),
+            ("\u{2228}L", has_or, if !has_or { Some("no disjunction in antecedent".into()) } else { None }),
+            ("\u{2192}R", matches!(suc, Formula::Imp(_, _)), if !matches!(suc, Formula::Imp(_, _)) { Some("succedent is not an implication".into()) } else { None }),
+            ("\u{2192}L", has_imp, if !has_imp { Some("no implication in antecedent".into()) } else { None }),
+        ]
+    }
+
+    fn generate_premises(&self, rule_name: &str, conclusion: &str) -> Result<Vec<String>, String> {
+        let seq = formula::parse_sequent(conclusion, SEP)
+            .map_err(|e| format!("Can't parse conclusion: {}", e))?;
+        let ants = &seq.antecedents;
+        let suc = &seq.succedent;
+
+        match normalize_rule(rule_name) {
+            "Ax" | "BotL" | "TopR" => Ok(vec![]),
+            "AndR" => {
+                match suc {
+                    Formula::And(a, b) => {
+                        let p1 = formula::format_sequent_str(ants, a, SEP);
+                        let p2 = formula::format_sequent_str(ants, b, SEP);
+                        Ok(vec![p1, p2])
+                    }
+                    _ => Err(format!("\u{2227}R requires the succedent to be A \u{2227} B, but got {}", suc)),
+                }
+            }
+            "AndL" => {
+                // Find first conjunction in antecedent
+                let pos = ants.iter().position(|f| matches!(f, Formula::And(_, _)));
+                match pos {
+                    Some(idx) => {
+                        if let Formula::And(a, b) = &ants[idx] {
+                            let mut new_ants = ants.to_vec();
+                            new_ants.remove(idx);
+                            new_ants.insert(idx, *b.clone());
+                            new_ants.insert(idx, *a.clone());
+                            let p = formula::format_sequent_str(&new_ants, suc, SEP);
+                            Ok(vec![p])
+                        } else {
+                            unreachable!()
+                        }
+                    }
+                    None => Err(format!("\u{2227}L requires a conjunction A \u{2227} B in the antecedent, but found only: {}", formula::format_formula_list(ants))),
+                }
+            }
+            "OrR1" => {
+                match suc {
+                    Formula::Or(a, _) => {
+                        let p = formula::format_sequent_str(ants, a, SEP);
+                        Ok(vec![p])
+                    }
+                    _ => Err(format!("\u{2228}R\u{2081} requires the succedent to be A \u{2228} B, but got {}", suc)),
+                }
+            }
+            "OrR2" => {
+                match suc {
+                    Formula::Or(_, b) => {
+                        let p = formula::format_sequent_str(ants, b, SEP);
+                        Ok(vec![p])
+                    }
+                    _ => Err(format!("\u{2228}R\u{2082} requires the succedent to be A \u{2228} B, but got {}", suc)),
+                }
+            }
+            "OrL" => {
+                let pos = ants.iter().position(|f| matches!(f, Formula::Or(_, _)));
+                match pos {
+                    Some(idx) => {
+                        if let Formula::Or(a, b) = &ants[idx] {
+                            let mut gamma_prime = ants.to_vec();
+                            gamma_prime.remove(idx);
+                            let mut ants1 = vec![*a.clone()];
+                            ants1.extend(gamma_prime.clone());
+                            let mut ants2 = vec![*b.clone()];
+                            ants2.extend(gamma_prime);
+                            let p1 = formula::format_sequent_str(&ants1, suc, SEP);
+                            let p2 = formula::format_sequent_str(&ants2, suc, SEP);
+                            Ok(vec![p1, p2])
+                        } else {
+                            unreachable!()
+                        }
+                    }
+                    None => Err(format!("\u{2228}L requires a disjunction A \u{2228} B in the antecedent, but found only: {}", formula::format_formula_list(ants))),
+                }
+            }
+            "ImpR" => {
+                match suc {
+                    Formula::Imp(a, b) => {
+                        let mut new_ants = vec![*a.clone()];
+                        new_ants.extend(ants.to_vec());
+                        let p = formula::format_sequent_str(&new_ants, b, SEP);
+                        Ok(vec![p])
+                    }
+                    _ => Err(format!("\u{2192}R requires the succedent to be A \u{2192} B, but got {}", suc)),
+                }
+            }
+            "ImpL" => {
+                let pos = ants.iter().position(|f| matches!(f, Formula::Imp(_, _)));
+                match pos {
+                    Some(idx) => {
+                        if let Formula::Imp(a, b) = &ants[idx] {
+                            // First premise: Γ ⇒ A (keep full antecedent including A→B)
+                            let p1 = formula::format_sequent_str(ants, a, SEP);
+                            // Second premise: B, Γ' ⇒ C where Γ' has A→B replaced by B
+                            let mut new_ants = ants.to_vec();
+                            new_ants[idx] = *b.clone();
+                            let p2 = formula::format_sequent_str(&new_ants, suc, SEP);
+                            Ok(vec![p1, p2])
+                        } else {
+                            unreachable!()
+                        }
+                    }
+                    None => Err(format!("\u{2192}L requires an implication A \u{2192} B in the antecedent, but found only: {}", formula::format_formula_list(ants))),
+                }
+            }
+            _ => Err(format!("Unknown G3ip rule '{}'", rule_name)),
+        }
+    }
 }
 
 fn normalize_rule(name: &str) -> &str {
@@ -617,4 +755,68 @@ fn check_or_l(seq: &Sequent, premises: &[&ProofNode]) -> Vec<Diagnostic> {
     }
 
     diags
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::check::Theory;
+
+    #[test]
+    fn test_gen_and_r() {
+        let prems = G3ipTheory.generate_premises("\u{2227}R", "P, Q \u{21D2} P \u{2227} Q").unwrap();
+        assert_eq!(prems.len(), 2);
+        assert!(prems[0].contains("P"));
+        assert!(prems[1].contains("Q"));
+    }
+
+    #[test]
+    fn test_gen_and_l() {
+        let prems = G3ipTheory.generate_premises("\u{2227}L", "P \u{2227} Q \u{21D2} R").unwrap();
+        assert_eq!(prems.len(), 1);
+        assert!(prems[0].contains("P"));
+        assert!(prems[0].contains("Q"));
+        assert!(prems[0].contains("R"));
+    }
+
+    #[test]
+    fn test_gen_or_r1() {
+        let prems = G3ipTheory.generate_premises("OrR1", "P \u{21D2} P \u{2228} Q").unwrap();
+        assert_eq!(prems.len(), 1);
+        assert!(prems[0].contains("P"));
+    }
+
+    #[test]
+    fn test_gen_or_l() {
+        let prems = G3ipTheory.generate_premises("OrL", "P \u{2228} Q \u{21D2} R").unwrap();
+        assert_eq!(prems.len(), 2);
+        assert!(prems[0].contains("P"));
+        assert!(prems[1].contains("Q"));
+    }
+
+    #[test]
+    fn test_gen_imp_r() {
+        let prems = G3ipTheory.generate_premises("ImpR", "\u{21D2} P \u{2192} Q").unwrap();
+        assert_eq!(prems.len(), 1);
+        assert!(prems[0].contains("P"));
+        assert!(prems[0].contains("Q"));
+    }
+
+    #[test]
+    fn test_gen_imp_l() {
+        let prems = G3ipTheory.generate_premises("ImpL", "P \u{2192} Q \u{21D2} R").unwrap();
+        assert_eq!(prems.len(), 2);
+    }
+
+    #[test]
+    fn test_gen_ax_zero_premises() {
+        let prems = G3ipTheory.generate_premises("Ax", "P \u{21D2} P").unwrap();
+        assert_eq!(prems.len(), 0);
+    }
+
+    #[test]
+    fn test_gen_and_r_not_conjunction() {
+        let result = G3ipTheory.generate_premises("\u{2227}R", "P \u{21D2} P \u{2192} Q");
+        assert!(result.is_err());
+    }
 }

@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::fmt;
 
 /// Expressions in the object language.
 #[derive(Debug, Clone, PartialEq)]
@@ -50,4 +51,41 @@ impl Expr {
             Expr::App(_, _) => "(e₁ e₂)",
         }
     }
+}
+
+impl fmt::Display for Expr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Expr::Var(x) => write!(f, "{}", x),
+            Expr::Int(i) => write!(f, "{}", i),
+            Expr::Neg(e) => write!(f, "(- {})", e),
+            Expr::Add(a, b) => write!(f, "(+ {} {})", a, b),
+            Expr::If0(g, t, e) => write!(f, "(if0 {} {} {})", g, t, e),
+            Expr::Let(x, e, b) => write!(f, "(let ([{} {}]) {})", x, e, b),
+            Expr::Lam(x, b) => write!(f, "(λ ({}) {})", x, b),
+            Expr::App(a, b) => write!(f, "({} {})", a, b),
+        }
+    }
+}
+
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Value::Int(i) => write!(f, "{}", i),
+            Value::Closure { param, body, env } => {
+                write!(f, "⟨λ ({}) {} , {}⟩", param, body, format_env(env))
+            }
+        }
+    }
+}
+
+pub fn format_env(env: &Env) -> String {
+    if env.is_empty() {
+        return "{}".to_string();
+    }
+    let bindings: Vec<String> = env
+        .iter()
+        .map(|(k, v)| format!("{} ↦ {}", k, v))
+        .collect();
+    format!("{{{}}}", bindings.join(", "))
 }

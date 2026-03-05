@@ -42,6 +42,7 @@ var ProofTree = (function() {
         s = s.replace(/\\subseteq/g, '\u2286');
         s = s.replace(/\\cup/g, '\u222A');
         s = s.replace(/\\cap/g, '\u2229');
+        s = s.replace(/\\mapsto/g, '\u21A6');
         s = s.replace(/\\vdash/g, '\u22A2');
         s = s.replace(/\\models/g, '\u22A8');
         s = s.replace(/\\implies/g, '\u2192');
@@ -49,6 +50,7 @@ var ProofTree = (function() {
         s = s.replace(/\\land/g, '\u2227');
         s = s.replace(/\\lor/g, '\u2228');
         s = s.replace(/\\lnot/g, '\u00AC');
+        s = s.replace(/\|->/g, '\u21A6');
         s = s.replace(/\|-/g, '\u22A2');
         s = s.replace(/<->/g, '\u2194');
         s = s.replace(/->/g, '\u2192');
@@ -610,12 +612,18 @@ var ProofTree = (function() {
         options = options || {};
         var useZoom = options.zoom !== false;
         var onChange = options.onChange || function() {};
+        var theoryRules = options.theoryRules || [];
+        var onGeneratePremises = options.onGeneratePremises || null;
+        var onCheckApplicability = options.onCheckApplicability || null;
+        var showLigatureHints = options.showLigatureHints || false;
 
         // Closure-scoped state — no globals
         var rawTree = options.tree || null;
         var proofTree = rawTree
             ? (typeof rawTree === 'string' ? parseSexp(rawTree) : rawTree)
             : { conclusion: '', rule_name: null, rule_label_left: null, premises: [] };
+
+        var pendingAutocompletePath = null;
 
         var vp = null;
         var canvasEl;
@@ -637,12 +645,205 @@ var ProofTree = (function() {
             return node;
         }
 
-        function applyRule(path) {
+        function showRuleError(path, message) {
+            // Find the proof node element for this path
+            var nodeEl = canvasEl.querySelector('.proof-node');
+            if (nodeEl && path.length > 0) {
+                for (var i = 0; i < path.length; i++) {
+                    var premisesEl = nodeEl.querySelector(':scope > .proof-premises');
+                    if (!premisesEl) break;
+                    var children = premisesEl.querySelectorAll(':scope > .proof-node');
+                    if (path[i] < children.length) {
+                        nodeEl = children[path[i]];
+                    } else {
+                        break;
+                    }
+                }
+            }
+            if (!nodeEl) return;
+            // Remove any existing error tooltip
+            var old = canvasEl.querySelector('.proof-rule-error-tip');
+            if (old) old.parentNode.removeChild(old);
+            // Create tooltip
+            var tip = document.createElement('div');
+            tip.className = 'proof-rule-error-tip';
+            tip.textContent = message;
+            // Position near the rule bar of this node
+            var bar = nodeEl.querySelector('.proof-bar') || nodeEl;
+            bar.parentNode.insertBefore(tip, bar.nextSibling);
+            // Auto-remove after 6 seconds
+            setTimeout(function() {
+                if (tip.parentNode) tip.parentNode.removeChild(tip);
+            }, 6000);
+            // Click to dismiss
+            tip.addEventListener('click', function() {
+                if (tip.parentNode) tip.parentNode.removeChild(tip);
+            });
+        }
+
+        function applyRule(path, anchorEl) {
             var node = getNodeAtPath(path);
-            node.rule_name = '';
-            node.rule_label_left = null;
-            node.premises = [{ conclusion: '', rule_name: null, rule_label_left: null, premises: [] }];
-            rerender();
+            if (theoryRules.length > 0 && anchorEl) {
+                // Show floating autocomplete without restructuring the tree
+                showFloatingAutocomplete(path, node, anchorEl);
+            } else {
+                node.rule_name = '';
+                node.rule_label_left = null;
+                node.premises = [{ conclusion: '', rule_name: null, rule_label_left: null, premises: [] }];
+                rerender();
+            }
+        }
+
+        function showFloatingAutocomplete(path, node, anchorEl) {
+            // Remove any existing floating autocomplete
+            var old = canvasEl.querySelector('.proof-floating-ac');
+            if (old) old.parentNode.removeChild(old);
+
+            var wrapper = document.createElement('div');
+            wrapper.className = 'proof-floating-ac';
+
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'proof-rule-edit';
+            input.value = '';
+            input.placeholder = 'rule';
+
+            var dropdown = document.createElement('div');
+            dropdown.className = 'proof-rule-dropdown';
+
+            var selectedIdx = -1;
+            var currentMatches = [];
+
+            var applicabilityInfo = null;
+            if (onCheckApplicability && node.conclusion) {
+                applicabilityInfo = onCheckApplicability(node.conclusion);
+            }
+
+            function updateDropdown() {
+                var query = input.value.toLowerCase();
+                dropdown.innerHTML = '';
+                selectedIdx = -1;
+                currentMatches = [];
+                for (var i = 0; i < theoryRules.length; i++) {
+                    if (!query || theoryRules[i].toLowerCase().indexOf(query) !== -1) {
+                        currentMatches.push(theoryRules[i]);
+                    }
+                }
+                for (var j = 0; j < currentMatches.length; j++) {
+                    var item = document.createElement('div');
+                    item.className = 'proof-rule-dropdown-item';
+                    var ruleName = currentMatches[j];
+                    var ruleInfo = applicabilityInfo && applicabilityInfo[ruleName];
+                    var isDisabled = ruleInfo && ruleInfo.applicable === false;
+                    if (isDisabled) {
+                        item.classList.add('proof-rule-disabled');
+                        if (ruleInfo.reason) {
+                            item.title = ruleInfo.reason;
+                        }
+                    }
+                    item.textContent = ruleName;
+                    item.dataset.idx = j;
+                    (function(idx) {
+                        item.addEventListener('mousedown', function(e) {
+                            e.preventDefault();
+                            commitRule(currentMatches[idx]);
+                        });
+                    })(j);
+                    dropdown.appendChild(item);
+                }
+            }
+
+            function commitRule(ruleName) {
+                if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+                node.rule_name = ruleName;
+                node.rule_label_left = null;
+                var generatedOk = false;
+                if (onGeneratePremises) {
+                    var result = onGeneratePremises(node.conclusion, ruleName);
+                    if (result && result.ok && Array.isArray(result.premises)) {
+                        node.premises = result.premises.map(function(c) {
+                            return { conclusion: c || '', rule_name: null, rule_label_left: null, premises: [] };
+                        });
+                        generatedOk = true;
+                    } else if (result && !result.ok && result.error) {
+                        showRuleError(path, result.error);
+                    }
+                }
+                if (!generatedOk && (!node.premises || node.premises.length === 0)) {
+                    node.premises = [{ conclusion: '', rule_name: null, rule_label_left: null, premises: [] }];
+                }
+                rerender();
+            }
+
+            // Temporarily allow overflow so dropdown isn't clipped by viewport
+            var viewport = canvasEl.closest('.proof-tree-viewport');
+            if (viewport) viewport.style.overflow = 'visible';
+
+            function dismiss() {
+                if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+                if (viewport) viewport.style.overflow = '';
+            }
+
+            function updateHighlight() {
+                var items = dropdown.querySelectorAll('.proof-rule-dropdown-item');
+                for (var i = 0; i < items.length; i++) {
+                    if (i === selectedIdx) {
+                        items[i].classList.add('selected');
+                        items[i].scrollIntoView({ block: 'nearest' });
+                    } else {
+                        items[i].classList.remove('selected');
+                    }
+                }
+            }
+
+            input.addEventListener('input', updateDropdown);
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIdx = Math.min(selectedIdx + 1, currentMatches.length - 1);
+                    updateHighlight();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIdx = Math.max(selectedIdx - 1, -1);
+                    updateHighlight();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (selectedIdx >= 0 && selectedIdx < currentMatches.length) {
+                        commitRule(currentMatches[selectedIdx]);
+                    } else {
+                        var val = input.value.trim();
+                        if (val) {
+                            commitRule(val);
+                        } else {
+                            dismiss();
+                        }
+                    }
+                } else if (e.key === 'Escape') {
+                    dismiss();
+                } else if (e.key === 'Tab') {
+                    if (selectedIdx >= 0 && selectedIdx < currentMatches.length) {
+                        e.preventDefault();
+                        commitRule(currentMatches[selectedIdx]);
+                    }
+                }
+            });
+
+            input.addEventListener('blur', function() {
+                setTimeout(function() {
+                    if (document.activeElement !== input) {
+                        dismiss();
+                    }
+                }, 150);
+            });
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(dropdown);
+
+            // Position the wrapper below the anchor element
+            anchorEl.style.position = 'relative';
+            anchorEl.appendChild(wrapper);
+            input.focus();
+            updateDropdown();
         }
 
         function addPremise(path) {
@@ -699,28 +900,195 @@ var ProofTree = (function() {
         function editRuleLabel(path, side, spanEl) {
             var node = getNodeAtPath(path);
             var current = (side === 'left') ? (node.rule_label_left || '') : (node.rule_name || '');
+
+            // For left labels or when no theory rules, use plain text input
+            if (side === 'left' || theoryRules.length === 0) {
+                var input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'proof-rule-edit';
+                input.value = current;
+                input.placeholder = side === 'left' ? 'label' : 'rule';
+                function commit() {
+                    var val = input.value.trim();
+                    if (side === 'left') {
+                        node.rule_label_left = val || null;
+                    } else {
+                        node.rule_name = val || null;
+                    }
+                    rerender();
+                }
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') commit();
+                    else if (e.key === 'Escape') rerender();
+                });
+                input.addEventListener('blur', commit);
+                spanEl.replaceWith(input);
+                input.focus();
+                input.select();
+                return;
+            }
+
+            // Autocomplete mode for rule name (right side) with theory rules
+            showRuleAutocomplete(path, spanEl, false);
+        }
+
+        function showRuleAutocomplete(path, replaceEl, isNewRule) {
+            var node = getNodeAtPath(path);
+            var current = node.rule_name || '';
+
+            var wrapper = document.createElement('div');
+            wrapper.className = 'proof-rule-ac-wrap';
+
             var input = document.createElement('input');
             input.type = 'text';
             input.className = 'proof-rule-edit';
             input.value = current;
-            input.placeholder = side === 'left' ? 'label' : 'rule';
-            function commit() {
-                var val = input.value.trim();
-                if (side === 'left') {
-                    node.rule_label_left = val || null;
-                } else {
-                    node.rule_name = val || null;
+            input.placeholder = 'rule';
+
+            var dropdown = document.createElement('div');
+            dropdown.className = 'proof-rule-dropdown';
+
+            var selectedIdx = -1;
+            var currentMatches = [];
+
+            // Get applicability info once when dropdown opens
+            var applicabilityInfo = null;
+            if (onCheckApplicability && node.conclusion) {
+                applicabilityInfo = onCheckApplicability(node.conclusion);
+            }
+
+            function updateDropdown() {
+                var query = input.value.toLowerCase();
+                dropdown.innerHTML = '';
+                selectedIdx = -1;
+                currentMatches = [];
+                for (var i = 0; i < theoryRules.length; i++) {
+                    if (!query || theoryRules[i].toLowerCase().indexOf(query) !== -1) {
+                        currentMatches.push(theoryRules[i]);
+                    }
+                }
+                for (var j = 0; j < currentMatches.length; j++) {
+                    var item = document.createElement('div');
+                    item.className = 'proof-rule-dropdown-item';
+                    var ruleName = currentMatches[j];
+                    var ruleInfo = applicabilityInfo && applicabilityInfo[ruleName];
+                    var isDisabled = ruleInfo && ruleInfo.applicable === false;
+                    if (isDisabled) {
+                        item.classList.add('proof-rule-disabled');
+                        if (ruleInfo.reason) {
+                            item.title = ruleInfo.reason;
+                        }
+                    }
+                    item.textContent = ruleName;
+                    item.dataset.idx = j;
+                    (function(idx) {
+                        item.addEventListener('mousedown', function(e) {
+                            e.preventDefault();
+                            selectRule(currentMatches[idx]);
+                        });
+                    })(j);
+                    dropdown.appendChild(item);
+                }
+            }
+
+            function selectRule(ruleName) {
+                node.rule_name = ruleName;
+                // Only generate/overwrite premises for new rule applications,
+                // never when just naming an existing node that already has children
+                if (isNewRule) {
+                    var generatedOk = false;
+                    if (onGeneratePremises) {
+                        var result = onGeneratePremises(node.conclusion, ruleName);
+                        if (result && result.ok && Array.isArray(result.premises)) {
+                            node.premises = result.premises.map(function(c) {
+                                return { conclusion: c || '', rule_name: null, rule_label_left: null, premises: [] };
+                            });
+                            generatedOk = true;
+                        } else if (result && !result.ok && result.error) {
+                            showRuleError(path, result.error);
+                        }
+                    }
+                    if (!generatedOk && (!node.premises || node.premises.length === 0)) {
+                        if (!onGeneratePremises) {
+                            node.premises = [{ conclusion: '', rule_name: null, rule_label_left: null, premises: [] }];
+                        }
+                    }
                 }
                 rerender();
             }
+
+            function commitPlain() {
+                var val = input.value.trim();
+                node.rule_name = val || null;
+                rerender();
+            }
+
+            function updateHighlight() {
+                var items = dropdown.querySelectorAll('.proof-rule-dropdown-item');
+                for (var i = 0; i < items.length; i++) {
+                    if (i === selectedIdx) {
+                        items[i].classList.add('selected');
+                        items[i].scrollIntoView({ block: 'nearest' });
+                    } else {
+                        items[i].classList.remove('selected');
+                    }
+                }
+            }
+
+            input.addEventListener('input', updateDropdown);
             input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') commit();
-                else if (e.key === 'Escape') rerender();
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIdx = Math.min(selectedIdx + 1, currentMatches.length - 1);
+                    updateHighlight();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIdx = Math.max(selectedIdx - 1, -1);
+                    updateHighlight();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (selectedIdx >= 0 && selectedIdx < currentMatches.length) {
+                        selectRule(currentMatches[selectedIdx]);
+                    } else {
+                        // Check for exact match
+                        var val = input.value.trim();
+                        var exact = null;
+                        for (var i = 0; i < theoryRules.length; i++) {
+                            if (theoryRules[i] === val) { exact = val; break; }
+                        }
+                        if (exact) {
+                            selectRule(exact);
+                        } else {
+                            commitPlain();
+                        }
+                    }
+                } else if (e.key === 'Escape') {
+                    rerender();
+                } else if (e.key === 'Tab') {
+                    if (selectedIdx >= 0 && selectedIdx < currentMatches.length) {
+                        e.preventDefault();
+                        selectRule(currentMatches[selectedIdx]);
+                    }
+                }
             });
-            input.addEventListener('blur', commit);
-            spanEl.replaceWith(input);
+
+            input.addEventListener('blur', function() {
+                setTimeout(function() {
+                    if (document.activeElement !== input) {
+                        commitPlain();
+                    }
+                }, 150);
+            });
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(dropdown);
+            replaceEl.replaceWith(wrapper);
+            // Temporarily allow overflow so dropdown isn't clipped
+            var acViewport = canvasEl.closest('.proof-tree-viewport');
+            if (acViewport) acViewport.style.overflow = 'visible';
             input.focus();
             input.select();
+            updateDropdown();
         }
 
         function makeBtn(label, cls, handler) {
@@ -728,27 +1096,40 @@ var ProofTree = (function() {
             btn.type = 'button';
             btn.className = 'proof-action-btn' + (cls ? ' ' + cls : '');
             btn.textContent = label;
-            btn.addEventListener('click', function(e) { e.stopPropagation(); handler(); });
+            btn.addEventListener('click', function(e) { e.stopPropagation(); if (!btn.disabled) handler(); });
             return btn;
+        }
+
+        function pathsEqual(a, b) {
+            if (a.length !== b.length) return false;
+            for (var i = 0; i < a.length; i++) {
+                if (a[i] !== b[i]) return false;
+            }
+            return true;
         }
 
         function renderProofNode(node, parentEl, path) {
             var el = document.createElement('div');
             el.className = 'proof-node';
 
-            var isLeaf = !node.premises || node.premises.length === 0;
+            var isLeaf = (!node.premises || node.premises.length === 0) && !node.rule_name;
+            var isAxiom = node.rule_name && (!node.premises || node.premises.length === 0);
             var p = path.slice();
 
+            if (isAxiom) el.classList.add('proof-axiom');
+
             if (!isLeaf) {
-                var premisesEl = document.createElement('div');
-                premisesEl.className = 'proof-premises';
-                for (var i = 0; i < node.premises.length; i++) {
-                    renderProofNode(node.premises[i], premisesEl, path.concat([i]));
+                if (!isAxiom) {
+                    var premisesEl = document.createElement('div');
+                    premisesEl.className = 'proof-premises';
+                    for (var i = 0; i < node.premises.length; i++) {
+                        renderProofNode(node.premises[i], premisesEl, path.concat([i]));
+                    }
+                    var addBtn = makeBtn('+', 'proof-add-premise', function() { addPremise(p); });
+                    addBtn.title = 'Add premise';
+                    premisesEl.appendChild(addBtn);
+                    el.appendChild(premisesEl);
                 }
-                var addBtn = makeBtn('+', 'proof-add-premise', function() { addPremise(p); });
-                addBtn.title = 'Add premise';
-                premisesEl.appendChild(addBtn);
-                el.appendChild(premisesEl);
 
                 var inferenceEl = document.createElement('div');
                 inferenceEl.className = 'proof-inference';
@@ -757,17 +1138,19 @@ var ProofTree = (function() {
                 ruleLeft.className = 'proof-rule-label proof-rule-left';
                 if (node.rule_label_left) {
                     ruleLeft.textContent = node.rule_label_left;
-                } else {
+                } else if (!isAxiom) {
                     ruleLeft.textContent = 'label';
                     ruleLeft.classList.add('proof-rule-placeholder');
                 }
-                ruleLeft.title = 'Click to add left label';
-                (function(pp, rl) {
-                    rl.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        editRuleLabel(pp, 'left', rl);
-                    });
-                })(p, ruleLeft);
+                if (!isAxiom) {
+                    ruleLeft.title = 'Click to add left label';
+                    (function(pp, rl) {
+                        rl.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            editRuleLabel(pp, 'left', rl);
+                        });
+                    })(p, ruleLeft);
+                }
                 inferenceEl.appendChild(ruleLeft);
 
                 var lineEl = document.createElement('span');
@@ -782,14 +1165,26 @@ var ProofTree = (function() {
                     ruleRight.textContent = 'rule';
                     ruleRight.classList.add('proof-rule-placeholder');
                 }
-                ruleRight.title = 'Click to name this rule';
-                (function(pp, rr) {
-                    rr.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        editRuleLabel(pp, 'right', rr);
-                    });
-                })(p, ruleRight);
+                if (!isAxiom) {
+                    ruleRight.title = 'Click to name this rule';
+                    (function(pp, rr) {
+                        rr.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            editRuleLabel(pp, 'right', rr);
+                        });
+                    })(p, ruleRight);
+                }
                 inferenceEl.appendChild(ruleRight);
+
+                // Trigger pending autocomplete
+                if (pendingAutocompletePath && pathsEqual(p, pendingAutocompletePath)) {
+                    pendingAutocompletePath = null;
+                    (function(pp, rr) {
+                        setTimeout(function() {
+                            showRuleAutocomplete(pp, rr, true);
+                        }, 0);
+                    })(p, ruleRight);
+                }
 
                 var btnsWrap = document.createElement('span');
                 btnsWrap.className = 'proof-line-btns';
@@ -809,7 +1204,24 @@ var ProofTree = (function() {
             if (isLeaf) {
                 var leafZone = document.createElement('div');
                 leafZone.className = 'proof-leaf-zone';
-                var applyBtn = makeBtn('apply rule', '', function() { applyRule(p); });
+
+                var anyApplicable = true;
+                if (onCheckApplicability && node.conclusion) {
+                    var appInfo = onCheckApplicability(node.conclusion);
+                    if (appInfo) {
+                        anyApplicable = false;
+                        for (var rn in appInfo) {
+                            if (appInfo[rn].applicable) { anyApplicable = true; break; }
+                        }
+                    }
+                }
+
+                var applyBtn = makeBtn('apply rule', '', function() { applyRule(p, leafZone); });
+                if (!anyApplicable) {
+                    applyBtn.disabled = true;
+                    applyBtn.classList.add('proof-action-disabled');
+                    applyBtn.title = 'No rules apply to this conclusion';
+                }
                 leafZone.appendChild(applyBtn);
                 if (canRemove(p)) {
                     var rmBtn = makeBtn('\u00d7', 'proof-action-remove', function() { removePremise(p); });
@@ -850,12 +1262,68 @@ var ProofTree = (function() {
         }
 
         function rerender() {
+            // Reset viewport overflow (may have been set to visible for dropdown)
+            var rerenderViewport = canvasEl.closest('.proof-tree-viewport');
+            if (rerenderViewport) rerenderViewport.style.overflow = '';
             canvasEl.innerHTML = '';
             renderProofNode(proofTree, canvasEl, []);
             onChange(proofTree);
             if (vp) {
                 setTimeout(function() { vp.autoFit(); }, 0);
             }
+        }
+
+        // ── Ligature hints panel ───────────────────────────
+        var hintsEl = null;
+        if (showLigatureHints) {
+            hintsEl = document.createElement('div');
+            hintsEl.className = 'pt-ligature-hints';
+            hintsEl.innerHTML =
+                '<div class="pt-lh-title">Shortcuts</div>' +
+                '<div class="pt-lh-cols">' +
+                  '<div class="pt-lh-col">' +
+                    '<span class="pt-lh-row"><kbd>-&gt;</kbd> <span class="pt-lh-arrow">\u279C</span> \u2192</span>' +
+                    '<span class="pt-lh-row"><kbd>&lt;-&gt;</kbd> <span class="pt-lh-arrow">\u279C</span> \u2194</span>' +
+                    '<span class="pt-lh-row"><kbd>|-</kbd> <span class="pt-lh-arrow">\u279C</span> \u22A2</span>' +
+                    '<span class="pt-lh-row"><kbd>|-&gt;</kbd> <span class="pt-lh-arrow">\u279C</span> \u21A6</span>' +
+                  '</div>' +
+                  '<div class="pt-lh-col">' +
+                    '<span class="pt-lh-row"><kbd>/\\</kbd> <span class="pt-lh-arrow">\u279C</span> \u2227</span>' +
+                    '<span class="pt-lh-row"><kbd>\\/</kbd> <span class="pt-lh-arrow">\u279C</span> \u2228</span>' +
+                    '<span class="pt-lh-row"><kbd>~</kbd> <span class="pt-lh-arrow">\u279C</span> \u00AC</span>' +
+                    '<span class="pt-lh-row"><kbd>~~</kbd> <span class="pt-lh-arrow">\u279C</span> \u2194</span>' +
+                  '</div>' +
+                  '<div class="pt-lh-col">' +
+                    '<span class="pt-lh-row"><kbd>\\lambda</kbd> <span class="pt-lh-arrow">\u279C</span> \u03BB</span>' +
+                    '<span class="pt-lh-row"><kbd>\\Lambda</kbd> <span class="pt-lh-arrow">\u279C</span> \u039B</span>' +
+                    '<span class="pt-lh-row"><kbd>\\forall</kbd> <span class="pt-lh-arrow">\u279C</span> \u2200</span>' +
+                    '<span class="pt-lh-row"><kbd>\\Gamma</kbd> <span class="pt-lh-arrow">\u279C</span> \u0393</span>' +
+                  '</div>' +
+                  '<div class="pt-lh-col">' +
+                    '<span class="pt-lh-row"><kbd>\\bot</kbd> <span class="pt-lh-arrow">\u279C</span> \u22A5</span>' +
+                    '<span class="pt-lh-row"><kbd>\\top</kbd> <span class="pt-lh-arrow">\u279C</span> \u22A4</span>' +
+                    '<span class="pt-lh-row"><kbd>\\tau</kbd> <span class="pt-lh-arrow">\u279C</span> \u03C4</span>' +
+                    '<span class="pt-lh-row"><kbd>\\alpha</kbd> <span class="pt-lh-arrow">\u279C</span> \u03B1</span>' +
+                  '</div>' +
+                '</div>';
+            container.appendChild(hintsEl);
+
+            // Show/hide hints when edit inputs are focused
+            container.addEventListener('focusin', function(e) {
+                if (e.target.classList.contains('proof-formula-edit') ||
+                    e.target.classList.contains('proof-rule-edit')) {
+                    hintsEl.classList.add('pt-lh-visible');
+                }
+            });
+            container.addEventListener('focusout', function(e) {
+                setTimeout(function() {
+                    var active = document.activeElement;
+                    if (!active || (!active.classList.contains('proof-formula-edit') &&
+                                    !active.classList.contains('proof-rule-edit'))) {
+                        hintsEl.classList.remove('pt-lh-visible');
+                    }
+                }, 100);
+            });
         }
 
         // Initial render
@@ -868,8 +1336,16 @@ var ProofTree = (function() {
                 proofTree = (typeof tree === 'string') ? parseSexp(tree) : tree;
                 rerender();
             },
+            setTheoryRules: function(rules, generateFn, applicabilityFn) {
+                theoryRules = rules || [];
+                onGeneratePremises = generateFn || null;
+                onCheckApplicability = applicabilityFn || null;
+            },
             rerender: rerender,
             destroy: function() {
+                if (hintsEl && hintsEl.parentNode) {
+                    hintsEl.parentNode.removeChild(hintsEl);
+                }
                 if (vp) {
                     vp.destroy();
                 } else if (canvasEl.parentNode) {

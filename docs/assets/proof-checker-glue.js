@@ -46,6 +46,22 @@ var ProofChecker = (function () {
     return initPromise;
   }
 
+  // ── Generate premises ────────────────────────────────────────
+
+  function generatePremises(conclusion, rule, theory) {
+    if (!wasmModule) return null;
+    var jsonStr = wasmModule.generate_premises(conclusion, rule, theory || '');
+    return JSON.parse(jsonStr);
+  }
+
+  // ── Applicable rules ────────────────────────────────────────
+
+  function applicableRules(conclusion, theory) {
+    if (!wasmModule) return null;
+    var jsonStr = wasmModule.applicable_rules(conclusion, theory || '');
+    return JSON.parse(jsonStr);
+  }
+
   // ── Check ─────────────────────────────────────────────────────
 
   function check(editor, theory) {
@@ -254,6 +270,35 @@ var ProofChecker = (function () {
     return btn;
   }
 
+  // ── Theory config (shared rule lists + helper factories) ─────
+
+  var _theoryRuleNames = {
+    'big-step':   ['Int', 'Var', 'Lam', 'Add', 'Neg', 'App', 'If0-True', 'If0-False', 'Let'],
+    'small-step': ['Beta', 'App-L', 'App-R', 'Add-L', 'Add-R', 'Add', 'Neg-Step', 'Neg', 'If0-Step', 'If0-True', 'If0-False', 'Let-Step', 'Let'],
+    'g3ip':       ['Ax', '\u22A5L', '\u22A4R', '\u2227R', '\u2227L', '\u2228R\u2081', '\u2228R\u2082', '\u2228L', '\u2192R', '\u2192L'],
+    'propnd':     ['Ax', '\u2192I', '\u2192E', '\u2227I', '\u2227E\u2081', '\u2227E\u2082', '\u2228I\u2081', '\u2228I\u2082', '\u2228E', '\u22A5E', '\u00ACI', '\u00ACE'],
+    'stlc':       ['T-Var', 'T-Int', 'T-Bool', 'T-Lam', 'T-App', 'T-Add', 'T-Neg', 'T-If', 'T-Let'],
+    'systemf':    ['T-Var', 'T-Int', 'T-Bool', 'T-Lam', 'T-App', 'T-Add', 'T-Neg', 'T-If', 'T-Let', 'T-TyLam', 'T-TyApp'],
+  };
+
+  /**
+   * Return editor options for a given theory id.
+   * { theoryRules, onGeneratePremises, onCheckApplicability }
+   * Usage:  ProofTree.createEditor(el, Object.assign({}, ProofChecker.theoryConfig('big-step'), { ... }))
+   */
+  function theoryConfig(theoryId) {
+    if (!theoryId) return { theoryRules: [], onGeneratePremises: null, onCheckApplicability: null };
+    return {
+      theoryRules: _theoryRuleNames[theoryId] || [],
+      onGeneratePremises: function (conclusion, ruleName) {
+        return generatePremises(conclusion, ruleName, theoryId);
+      },
+      onCheckApplicability: function (conclusion) {
+        return applicableRules(conclusion, theoryId);
+      },
+    };
+  }
+
   // ── Auto-init ─────────────────────────────────────────────────
 
   // Start loading WASM as soon as this script runs
@@ -266,6 +311,10 @@ var ProofChecker = (function () {
   return {
     init: init,
     check: check,
+    generatePremises: generatePremises,
+    applicableRules: applicableRules,
+    theoryConfig: theoryConfig,
+    theoryRuleNames: _theoryRuleNames,
     annotate: annotate,
     clearAnnotations: clearAnnotations,
     createCheckButton: createCheckButton,

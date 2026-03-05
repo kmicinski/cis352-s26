@@ -270,9 +270,136 @@ pub fn contexts_eq(a: &[(String, Ty)], b: &[(String, Ty)]) -> bool {
     }
     let mut a = a.to_vec();
     let mut b = b.to_vec();
-    a.sort_by(|x, y| x.0.cmp(&y.0));
-    b.sort_by(|x, y| x.0.cmp(&y.0));
+    a.sort_by(|x, y| x.0.cmp(&y.0).then_with(|| x.1.to_string().cmp(&y.1.to_string())));
+    b.sort_by(|x, y| x.0.cmp(&y.0).then_with(|| x.1.to_string().cmp(&y.1.to_string())));
     a == b
+}
+
+/// Check if context `b` equals context `a` extended with one extra binding.
+pub fn context_extends_by(base: &[(String, Ty)], extended: &[(String, Ty)], extra: &(String, Ty)) -> bool {
+    let mut expected = base.to_vec();
+    expected.push(extra.clone());
+    contexts_eq(&expected, extended)
+}
+
+/// Format a typing context for display in error messages.
+pub fn format_context(ctx: &[(String, Ty)]) -> String {
+    if ctx.is_empty() {
+        return "\u{2205}".to_string(); // ∅
+    }
+    ctx.iter()
+        .map(|(v, t)| format!("{} : {}", v, t))
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+/// Format a typing judgement as a string.
+pub fn format_typing_judgement_str(ctx: &[(String, Ty)], expr: &str, ty: &Ty) -> String {
+    let ctx_str = ctx.iter()
+        .map(|(v, t)| format!("{} : {}", v, t))
+        .collect::<Vec<_>>()
+        .join(", ");
+    if ctx_str.is_empty() {
+        format!("\u{22A2} {} : {}", expr, ty)
+    } else {
+        format!("{} \u{22A2} {} : {}", ctx_str, expr, ty)
+    }
+}
+
+/// Split an S-expression string into its top-level parts.
+/// `(f 5)` → `Some(vec!["f", "5"])`
+/// `(+ 3 5)` → `Some(vec!["+", "3", "5"])`
+/// Returns `None` if not parenthesized.
+pub fn split_sexpr(s: &str) -> Option<Vec<String>> {
+    let s = s.trim();
+    if !s.starts_with('(') || !s.ends_with(')') {
+        return None;
+    }
+    let inner = s[1..s.len() - 1].trim();
+    if inner.is_empty() {
+        return Some(vec![]);
+    }
+    let mut parts = Vec::new();
+    let chars: Vec<char> = inner.chars().collect();
+    let mut i = 0;
+
+    while i < chars.len() {
+        while i < chars.len() && chars[i].is_whitespace() {
+            i += 1;
+        }
+        if i >= chars.len() {
+            break;
+        }
+        let start = i;
+        if chars[i] == '(' || chars[i] == '[' {
+            let open = chars[i];
+            let close = if open == '(' { ')' } else { ']' };
+            let mut depth = 1;
+            i += 1;
+            while i < chars.len() && depth > 0 {
+                if chars[i] == open {
+                    depth += 1;
+                }
+                if chars[i] == close {
+                    depth -= 1;
+                }
+                i += 1;
+            }
+        } else {
+            while i < chars.len()
+                && !chars[i].is_whitespace()
+                && chars[i] != '('
+                && chars[i] != ')'
+                && chars[i] != '['
+                && chars[i] != ']'
+            {
+                i += 1;
+            }
+        }
+        let part: String = chars[start..i].iter().collect();
+        if !part.is_empty() {
+            parts.push(part);
+        }
+    }
+
+    Some(parts)
+}
+
+/// Parse a lambda binding like `(x : int)` → `Some(("x", Ty::Int))`.
+pub fn parse_lambda_binding(s: &str) -> Option<(String, Ty)> {
+    let s = s.trim();
+    if !s.starts_with('(') || !s.ends_with(')') {
+        return None;
+    }
+    let inner = &s[1..s.len() - 1];
+    let colon_pos = inner.find(':')?;
+    let var = inner[..colon_pos].trim().to_string();
+    let ty_str = inner[colon_pos + 1..].trim();
+    let ty = parse_type(ty_str).ok()?;
+    Some((var, ty))
+}
+
+/// Parse a let binding list like `([x e₁])` → `Some(("x", "e₁"))`.
+pub fn parse_let_binding(s: &str) -> Option<(String, String)> {
+    let s = s.trim();
+    // Strip outer parens: ([x 5]) → [x 5]
+    let inner = if s.starts_with('(') && s.ends_with(')') {
+        s[1..s.len() - 1].trim()
+    } else {
+        s
+    };
+    // Strip brackets: [x 5] → x 5
+    let binding = if inner.starts_with('[') && inner.ends_with(']') {
+        &inner[1..inner.len() - 1]
+    } else {
+        return None;
+    };
+    let parts = split_sexpr(&format!("({})", binding.trim()))?;
+    if parts.len() == 2 {
+        Some((parts[0].clone(), parts[1].clone()))
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]
@@ -343,5 +470,83 @@ mod tests {
     fn test_parse_ascii_arrow() {
         let t = parse_type("int -> bool").unwrap();
         assert_eq!(t, Ty::Arrow(Box::new(Ty::Int), Box::new(Ty::Bool)));
+    }
+
+    #[test]
+    fn test_contexts_eq_order_independent() {
+        let a = vec![("x".into(), Ty::Int), ("y".into(), Ty::Bool)];
+        let b = vec![("y".into(), Ty::Bool), ("x".into(), Ty::Int)];
+        assert!(contexts_eq(&a, &b));
+    }
+
+    #[test]
+    fn test_contexts_eq_different_types() {
+        let a = vec![("x".into(), Ty::Int)];
+        let b = vec![("x".into(), Ty::Bool)];
+        assert!(!contexts_eq(&a, &b));
+    }
+
+    #[test]
+    fn test_contexts_eq_different_lengths() {
+        let a = vec![("x".into(), Ty::Int)];
+        let b = vec![("x".into(), Ty::Int), ("y".into(), Ty::Bool)];
+        assert!(!contexts_eq(&a, &b));
+    }
+
+    #[test]
+    fn test_split_sexpr_app() {
+        let parts = split_sexpr("(f 5)").unwrap();
+        assert_eq!(parts, vec!["f", "5"]);
+    }
+
+    #[test]
+    fn test_split_sexpr_add() {
+        let parts = split_sexpr("(+ 3 5)").unwrap();
+        assert_eq!(parts, vec!["+", "3", "5"]);
+    }
+
+    #[test]
+    fn test_split_sexpr_lambda() {
+        let parts = split_sexpr("(\u{03BB} (x : int) (+ x 1))").unwrap();
+        assert_eq!(parts.len(), 3);
+        assert_eq!(parts[0], "\u{03BB}");
+        assert_eq!(parts[1], "(x : int)");
+        assert_eq!(parts[2], "(+ x 1)");
+    }
+
+    #[test]
+    fn test_split_sexpr_let() {
+        let parts = split_sexpr("(let ([x 5]) (+ x 1))").unwrap();
+        assert_eq!(parts.len(), 3);
+        assert_eq!(parts[0], "let");
+        assert_eq!(parts[1], "([x 5])");
+        assert_eq!(parts[2], "(+ x 1)");
+    }
+
+    #[test]
+    fn test_split_sexpr_not_sexpr() {
+        assert!(split_sexpr("x").is_none());
+        assert!(split_sexpr("42").is_none());
+    }
+
+    #[test]
+    fn test_parse_lambda_binding() {
+        let (var, ty) = parse_lambda_binding("(x : int)").unwrap();
+        assert_eq!(var, "x");
+        assert_eq!(ty, Ty::Int);
+    }
+
+    #[test]
+    fn test_parse_let_binding() {
+        let (var, expr) = parse_let_binding("([x 5])").unwrap();
+        assert_eq!(var, "x");
+        assert_eq!(expr, "5");
+    }
+
+    #[test]
+    fn test_parse_let_binding_nested() {
+        let (var, expr) = parse_let_binding("([y (+ 1 2)])").unwrap();
+        assert_eq!(var, "y");
+        assert_eq!(expr, "(+ 1 2)");
     }
 }
