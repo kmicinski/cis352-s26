@@ -175,6 +175,16 @@
     background: rgba(79, 70, 229, 0.06);
 }
 
+/* ── Axiom nodes (0-premise rules, locked) ───────── */
+.proof-axiom > .proof-inference .proof-rule-label {
+    cursor: default;
+}
+
+.proof-axiom > .proof-inference .proof-rule-label:hover {
+    color: var(--pt-gray-700);
+    background: transparent;
+}
+
 .proof-readonly .proof-rule-label {
     cursor: default;
 }
@@ -314,6 +324,16 @@
     background: rgba(79, 70, 229, 0.08);
 }
 
+.proof-action-btn.proof-action-disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.proof-action-btn.proof-action-disabled:hover {
+    color: var(--pt-gray-400);
+    background: none;
+}
+
 .proof-action-remove:hover {
     color: var(--pt-danger);
     background: rgba(239, 68, 68, 0.08);
@@ -411,5 +431,195 @@
 @media (max-width: 640px) and (orientation: landscape) {
     .proof-tree-orientation-hint {
         display: none;
+    }
+}
+
+/* ── Rule autocomplete dropdown ──────────────────── */
+.proof-rule-ac-wrap {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: calc(100% + 8px);
+    z-index: 20;
+    white-space: nowrap;
+}
+
+.proof-rule-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 50;
+    min-width: 120px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid var(--pt-gray-300);
+    border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    margin-top: 2px;
+    font-size: 0.8rem;
+    font-variant: normal;
+    letter-spacing: 0;
+    overflow-x: visible;
+}
+
+.proof-rule-dropdown-item {
+    padding: 5px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    color: var(--pt-gray-700);
+    transition: background 0.1s;
+}
+
+.proof-rule-dropdown-item:hover,
+.proof-rule-dropdown-item.selected {
+    background: rgba(79, 70, 229, 0.08);
+    color: var(--pt-primary);
+}
+
+.proof-rule-dropdown-item.proof-rule-disabled {
+    color: var(--pt-gray-300);
+    font-style: italic;
+}
+
+.proof-rule-dropdown-item.proof-rule-disabled:hover {
+    color: var(--pt-gray-400);
+    background: rgba(0, 0, 0, 0.03);
+}
+
+@media (max-width: 640px) {
+    .proof-rule-dropdown {
+        min-width: 100px;
+        max-height: 160px;
+        font-size: 0.85rem;
+    }
+    .proof-rule-dropdown-item {
+        padding: 8px 12px;
+        min-height: 32px;
+    }
+}
+
+/* ── Floating autocomplete (shown on leaf before restructuring) ── */
+.proof-floating-ac {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+    z-index: 60;
+    white-space: nowrap;
+    margin-left: 8px;
+}
+
+.proof-floating-ac .proof-rule-edit {
+    display: block;
+}
+
+.proof-floating-ac .proof-rule-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+}
+
+/* ── Rule error tooltip ───────────────────────────── */
+.proof-rule-error-tip {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.8em;
+    line-height: 1.4;
+    margin-top: 4px;
+    max-width: 400px;
+    cursor: pointer;
+    animation: proof-error-fade-in 0.2s ease;
+    position: relative;
+    z-index: 10;
+}
+.proof-rule-error-tip::before {
+    content: "\2717 ";
+    font-weight: 600;
+}
+@keyframes proof-error-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Ligature hints panel ────────────────────────── */
+.pt-ligature-hints {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.35s ease, max-height 0.35s ease, padding 0.35s ease;
+    padding: 0 16px;
+    margin-top: 0;
+    border-top: 1px solid transparent;
+    pointer-events: none;
+    font-size: 0.78rem;
+    color: var(--pt-gray-700);
+    user-select: none;
+}
+
+.pt-ligature-hints.pt-lh-visible {
+    opacity: 1;
+    max-height: 120px;
+    padding: 10px 16px 8px;
+    border-top: 1px solid var(--pt-gray-200);
+    pointer-events: auto;
+}
+
+.pt-lh-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--pt-gray-400);
+    margin-bottom: 6px;
+}
+
+.pt-lh-cols {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.pt-lh-col {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pt-lh-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    line-height: 1.5;
+}
+
+.pt-lh-row kbd {
+    display: inline-block;
+    background: var(--pt-gray-100);
+    border: 1px solid var(--pt-gray-200);
+    border-radius: 3px;
+    padding: 0 4px;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.85em;
+    min-width: 20px;
+    text-align: center;
+    color: var(--pt-gray-700);
+}
+
+.pt-lh-arrow {
+    font-size: 0.7em;
+    color: var(--pt-gray-300);
+}
+
+@media (max-width: 640px) {
+    .pt-lh-cols {
+        gap: 12px;
+    }
+    .pt-ligature-hints.pt-lh-visible {
+        max-height: 200px;
     }
 }
