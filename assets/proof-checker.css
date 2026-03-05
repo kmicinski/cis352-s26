@@ -5,6 +5,7 @@
 }
 .pt-check-error > .proof-inference .proof-line {
   background: #ef4444;
+  height: 2.5px;
 }
 .pt-check-incomplete > .proof-conclusion {
   background: rgba(59, 130, 246, 0.08);
@@ -19,31 +20,37 @@
   background: #22c55e;
 }
 
-/* ── Error tooltips ─────────────────────────────────────────────── */
+/* ── Inline error/incomplete tooltips (shown below nodes) ────────── */
 
 .pt-check-tooltip {
-  position: absolute;
-  z-index: 100;
-  max-width: 360px;
-  padding: 6px 12px;
-  font-size: 0.82em;
+  position: relative;
+  z-index: 10;
+  max-width: 400px;
+  padding: 5px 10px;
+  font-size: 0.78em;
   line-height: 1.4;
-  color: #fff;
-  background: #1e293b;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  pointer-events: none;
+  border-radius: 5px;
   white-space: normal;
+  text-align: left;
+  margin: 2px auto 0;
+  animation: pt-tooltip-fade 0.25s ease;
 }
-.pt-check-tooltip::before {
-  content: '';
-  position: absolute;
-  bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 6px 6px 0;
-  border-style: solid;
-  border-color: #1e293b transparent transparent;
+
+.pt-check-tooltip-error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.pt-check-tooltip-incomplete {
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+@keyframes pt-tooltip-fade {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Summary banner ─────────────────────────────────────────────── */
@@ -55,8 +62,9 @@
   font-size: 0.88em;
   font-weight: 500;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
+  flex-wrap: wrap;
 }
 .pt-check-summary-valid {
   background: #f0fdf4;
@@ -75,6 +83,19 @@
 }
 .pt-check-summary .pt-check-icon {
   font-size: 1.1em;
+  flex-shrink: 0;
+}
+
+/* Error list in summary when many errors */
+.pt-check-error-list {
+  margin: 4px 0 2px;
+  padding-left: 18px;
+  list-style: disc;
+  font-weight: 400;
+  width: 100%;
+}
+.pt-check-error-list li {
+  margin-bottom: 2px;
 }
 
 /* ── Check button ───────────────────────────────────────────────── */
@@ -96,4 +117,26 @@
 .pt-check-btn:hover {
   background: #4338ca;
   border-color: #4338ca;
+}
+.pt-check-btn-loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* ── Green flash overlay for correct proofs ─────────────────────── */
+
+.pt-success-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(34, 197, 94, 0);
+  pointer-events: none;
+  transition: background 0.35s ease;
+}
+.pt-success-flash-active {
+  background: rgba(34, 197, 94, 0.12);
+}
+.pt-success-flash-out {
+  background: rgba(34, 197, 94, 0);
+  transition: background 0.5s ease;
 }

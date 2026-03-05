@@ -66,6 +66,8 @@ var ProofTree = (function() {
         s = s.replace(/\\land/g, '\u2227');
         s = s.replace(/\\lor/g, '\u2228');
         s = s.replace(/\\lnot/g, '\u00AC');
+        s = s.replace(/\\langle/g, '\u27E8');
+        s = s.replace(/\\rangle/g, '\u27E9');
         s = s.replace(/\|->/g, '\u21A6');
         s = s.replace(/\|-/g, '\u22A2');
         s = s.replace(/<->/g, '\u2194');
@@ -74,6 +76,9 @@ var ProofTree = (function() {
         s = s.replace(/\\\//g, '\u2228');
         s = s.replace(/~~/g, '\u2194');
         s = s.replace(/~/g, '\u00AC');
+        // Angle brackets for closures: < and > (after all multi-char sequences)
+        s = s.replace(/</g, '\u27E8');
+        s = s.replace(/>/g, '\u27E9');
         return s;
     }
 
@@ -681,6 +686,9 @@ var ProofTree = (function() {
         function getNodeAtPath(path) {
             var node = proofTree;
             for (var i = 0; i < path.length; i++) {
+                if (!node || !node.premises || path[i] >= node.premises.length) {
+                    return null;
+                }
                 node = node.premises[path[i]];
             }
             return node;
@@ -724,6 +732,7 @@ var ProofTree = (function() {
 
         function applyRule(path, anchorEl) {
             var node = getNodeAtPath(path);
+            if (!node) return;
             saveUndo();
             if (theoryRules.length > 0 && anchorEl) {
                 // Show floating autocomplete without restructuring the tree
@@ -901,6 +910,7 @@ var ProofTree = (function() {
         function addPremise(path) {
             saveUndo();
             var node = getNodeAtPath(path);
+            if (!node) return;
             node.premises.push({ conclusion: '', rule_name: null, rule_label_left: null, premises: [] });
             rerender();
         }
@@ -910,6 +920,7 @@ var ProofTree = (function() {
             var parentPath = path.slice(0, -1);
             var idx = path[path.length - 1];
             var parent = getNodeAtPath(parentPath);
+            if (!parent || !parent.premises) return;
             parent.premises.splice(idx, 1);
             rerender();
         }
@@ -917,6 +928,7 @@ var ProofTree = (function() {
         function clearNode(path) {
             saveUndo();
             var node = getNodeAtPath(path);
+            if (!node) return;
             node.rule_name = null;
             node.rule_label_left = null;
             node.premises = [];
@@ -926,12 +938,13 @@ var ProofTree = (function() {
         function canRemove(path) {
             if (path.length === 0) return false;
             var parentNode = getNodeAtPath(path.slice(0, -1));
-            return parentNode.premises.length > 1;
+            return parentNode && parentNode.premises && parentNode.premises.length > 1;
         }
 
         function editConclusion(path, spanEl) {
             saveUndo();
             var node = getNodeAtPath(path);
+            if (!node) return;
             var input = document.createElement('input');
             input.type = 'text';
             input.className = 'proof-formula-edit';
@@ -956,6 +969,7 @@ var ProofTree = (function() {
         function editRuleLabel(path, side, spanEl) {
             saveUndo();
             var node = getNodeAtPath(path);
+            if (!node) return;
             var current = (side === 'left') ? (node.rule_label_left || '') : (node.rule_name || '');
 
             // For left labels or when no theory rules, use plain text input
@@ -991,6 +1005,7 @@ var ProofTree = (function() {
 
         function showRuleAutocomplete(path, replaceEl, isNewRule) {
             var node = getNodeAtPath(path);
+            if (!node) return;
             var current = node.rule_name || '';
 
             var wrapper = document.createElement('div');
@@ -1365,6 +1380,10 @@ var ProofTree = (function() {
                     '<span class="pt-lh-row"><kbd>\\top</kbd> <span class="pt-lh-arrow">\u279C</span> \u22A4</span>' +
                     '<span class="pt-lh-row"><kbd>\\tau</kbd> <span class="pt-lh-arrow">\u279C</span> \u03C4</span>' +
                     '<span class="pt-lh-row"><kbd>\\alpha</kbd> <span class="pt-lh-arrow">\u279C</span> \u03B1</span>' +
+                  '</div>' +
+                  '<div class="pt-lh-col">' +
+                    '<span class="pt-lh-row"><kbd>&lt;</kbd> <span class="pt-lh-arrow">\u279C</span> \u27E8</span>' +
+                    '<span class="pt-lh-row"><kbd>&gt;</kbd> <span class="pt-lh-arrow">\u279C</span> \u27E9</span>' +
                   '</div>' +
                 '</div>';
             container.appendChild(hintsEl);

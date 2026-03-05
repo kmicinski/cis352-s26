@@ -204,15 +204,8 @@ body {
     background: rgba(79, 70, 229, 0.06);
 }
 
-/* ── Axiom nodes (0-premise rules, locked) ───────── */
-.proof-axiom > .proof-inference .proof-rule-label {
-    cursor: default;
-}
-
-.proof-axiom > .proof-inference .proof-rule-label:hover {
-    color: var(--pt-gray-700);
-    background: transparent;
-}
+/* ── Axiom nodes (0-premise rules) ───────────────── */
+/* Axiom rule labels are still clickable in the editor */
 
 .proof-readonly .proof-rule-label {
     cursor: default;

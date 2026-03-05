@@ -925,15 +925,30 @@ proof_tree: true
   }
 
   // ── Check button ──────────────────────────────
+  var pgChecking = false;
   checkBtn.addEventListener('click', function() {
-    if (!currentEditor) return;
+    if (!currentEditor || pgChecking) return;
     var theory = theorySelect.value;
     if (!theory) return;
+
+    pgChecking = true;
+    checkBtn.textContent = 'Checking\u2026';
 
     ProofChecker.init().then(function() {
       var result = ProofChecker.check(currentEditor, theory);
       ProofChecker.annotate(canvas, result);
       showCheckResult(result);
+      if (result.valid && ProofChecker.flashSuccess) {
+        ProofChecker.flashSuccess(canvas);
+      }
+    }).catch(function() {
+      showCheckResult({
+        valid: false, complete: false,
+        diagnostics: [{ level: 'error', path: [], message: 'Failed to load proof checker. Please refresh.' }]
+      });
+    }).finally(function() {
+      pgChecking = false;
+      checkBtn.textContent = 'Check';
     });
   });
 

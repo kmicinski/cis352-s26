@@ -50,16 +50,26 @@ var ProofChecker = (function () {
 
   function generatePremises(conclusion, rule, theory) {
     if (!wasmModule) return null;
-    var jsonStr = wasmModule.generate_premises(conclusion, rule, theory || '');
-    return JSON.parse(jsonStr);
+    try {
+      var jsonStr = wasmModule.generate_premises(conclusion, rule, theory || '');
+      return JSON.parse(jsonStr);
+    } catch (e) {
+      console.error('ProofChecker.generatePremises error:', e);
+      return { ok: false, error: 'Internal error: ' + e.message };
+    }
   }
 
   // ── Applicable rules ────────────────────────────────────────
 
   function applicableRules(conclusion, theory) {
     if (!wasmModule) return null;
-    var jsonStr = wasmModule.applicable_rules(conclusion, theory || '');
-    return JSON.parse(jsonStr);
+    try {
+      var jsonStr = wasmModule.applicable_rules(conclusion, theory || '');
+      return JSON.parse(jsonStr);
+    } catch (e) {
+      console.error('ProofChecker.applicableRules error:', e);
+      return {};
+    }
   }
 
   // ── Check ─────────────────────────────────────────────────────
@@ -70,13 +80,24 @@ var ProofChecker = (function () {
         valid: false,
         complete: false,
         diagnostics: [
-          { level: 'error', path: [], message: 'WASM module not loaded yet' },
+          { level: 'error', path: [], message: 'Proof checker is still loading. Please try again in a moment.' },
         ],
       };
     }
-    var sexp = editor.getSexp();
-    var jsonStr = wasmModule.check_proof(sexp, theory || 'big-step');
-    return JSON.parse(jsonStr);
+    try {
+      var sexp = editor.getSexp();
+      var jsonStr = wasmModule.check_proof(sexp, theory || 'big-step');
+      return JSON.parse(jsonStr);
+    } catch (e) {
+      console.error('ProofChecker.check error:', e);
+      return {
+        valid: false,
+        complete: false,
+        diagnostics: [
+          { level: 'error', path: [], message: 'Failed to check proof: ' + e.message },
+        ],
+      };
+    }
   }
 
   // ── DOM annotation ────────────────────────────────────────────
@@ -102,6 +123,11 @@ var ProofChecker = (function () {
     for (var k = 0; k < summaries.length; k++) {
       summaries[k].parentNode.removeChild(summaries[k]);
     }
+  }
+
+  // Escape HTML entities to prevent XSS in diagnostic messages
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   function annotate(container, result) {
@@ -130,8 +156,8 @@ var ProofChecker = (function () {
       }
       if (premisesEl) {
         var childIdx = 0;
-        for (var c = 0; c < premisesEl.children.length; c++) {
-          var child = premisesEl.children[c];
+        for (var c2 = 0; c2 < premisesEl.children.length; c2++) {
+          var child = premisesEl.children[c2];
           if (child.classList.contains('proof-node')) {
             collectNodes(child, path.concat([childIdx]));
             childIdx++;
@@ -148,24 +174,24 @@ var ProofChecker = (function () {
       collectNodes(rootNode, []);
     }
 
-    // Apply classes
+    // Apply classes and create inline error tooltips
     for (var n = 0; n < allNodes.length; n++) {
       var info = allNodes[n];
       var key = info.path.join(',');
       var diags = pathMap[key];
       if (!diags) continue;
 
-      // Determine worst level
+      // Determine worst level and collect messages
       var hasError = false;
       var hasIncomplete = false;
       var hasValid = false;
       var messages = [];
-      for (var d = 0; d < diags.length; d++) {
-        if (diags[d].level === 'error') hasError = true;
-        else if (diags[d].level === 'incomplete') hasIncomplete = true;
-        else if (diags[d].level === 'valid') hasValid = true;
-        if (diags[d].level !== 'valid') {
-          messages.push(diags[d].message);
+      for (var dd = 0; dd < diags.length; dd++) {
+        if (diags[dd].level === 'error') hasError = true;
+        else if (diags[dd].level === 'incomplete') hasIncomplete = true;
+        else if (diags[dd].level === 'valid') hasValid = true;
+        if (diags[dd].level !== 'valid') {
+          messages.push(diags[dd].message);
         }
       }
 
@@ -175,6 +201,30 @@ var ProofChecker = (function () {
         info.el.classList.add('pt-check-incomplete');
       } else if (hasValid) {
         info.el.classList.add('pt-check-valid');
+      }
+
+      // Show inline tooltip for error/incomplete nodes
+      if (messages.length > 0) {
+        var tooltip = document.createElement('div');
+        tooltip.className = 'pt-check-tooltip';
+        if (hasError) {
+          tooltip.classList.add('pt-check-tooltip-error');
+        } else {
+          tooltip.classList.add('pt-check-tooltip-incomplete');
+        }
+        var html = '';
+        for (var m = 0; m < messages.length; m++) {
+          if (m > 0) html += '<br>';
+          html += escapeHtml(messages[m]);
+        }
+        tooltip.innerHTML = html;
+        // Insert after the conclusion element
+        var conclusionEl = info.el.querySelector(':scope > .proof-conclusion');
+        if (conclusionEl) {
+          conclusionEl.parentNode.insertBefore(tooltip, conclusionEl.nextSibling);
+        } else {
+          info.el.appendChild(tooltip);
+        }
       }
     }
 
@@ -190,6 +240,8 @@ var ProofChecker = (function () {
 
     var summary = document.createElement('div');
     summary.className = 'pt-check-summary';
+    summary.setAttribute('role', 'status');
+    summary.setAttribute('aria-live', 'polite');
 
     var errorCount = 0;
     var incompleteCount = 0;
@@ -211,16 +263,26 @@ var ProofChecker = (function () {
         .map(function (d) {
           return d.message;
         });
-      summary.innerHTML =
+      // Show all errors as a list
+      var html =
         '<span class="pt-check-icon">&#10007;</span> ' +
         errorCount +
         ' error' +
-        (errorCount > 1 ? 's' : '') +
-        ': ' +
-        errorMessages[0];
-      if (errorMessages.length > 1) {
-        summary.innerHTML += ' (and ' + (errorMessages.length - 1) + ' more)';
+        (errorCount > 1 ? 's' : '');
+      if (errorMessages.length <= 3) {
+        html += ': ';
+        for (var e = 0; e < errorMessages.length; e++) {
+          if (e > 0) html += ' · ';
+          html += escapeHtml(errorMessages[e]);
+        }
+      } else {
+        html += ':<ul class="pt-check-error-list">';
+        for (var e2 = 0; e2 < errorMessages.length; e2++) {
+          html += '<li>' + escapeHtml(errorMessages[e2]) + '</li>';
+        }
+        html += '</ul>';
       }
+      summary.innerHTML = html;
     } else if (incompleteCount > 0) {
       summary.classList.add('pt-check-summary-incomplete');
       summary.innerHTML =
@@ -243,12 +305,42 @@ var ProofChecker = (function () {
     btn.className = 'pt-check-btn';
     btn.textContent = 'Check My Proof';
 
+    var checking = false;
+
     btn.addEventListener('click', function () {
-      init().then(function () {
-        var result = check(editor, theory);
-        annotate(container, result);
-        createSummary(container, result);
-      });
+      if (checking) return;
+      checking = true;
+      btn.textContent = 'Checking\u2026';
+      btn.classList.add('pt-check-btn-loading');
+
+      init()
+        .then(function () {
+          var result = check(editor, theory);
+          annotate(container, result);
+          createSummary(container, result);
+
+          // Flash green on valid proof
+          if (result.valid) {
+            flashSuccess(container);
+          }
+        })
+        .catch(function (err) {
+          // Show WASM load failure
+          var errResult = {
+            valid: false,
+            complete: false,
+            diagnostics: [
+              { level: 'error', path: [], message: 'Failed to load proof checker. Please refresh the page.' },
+            ],
+          };
+          annotate(container, errResult);
+          createSummary(container, errResult);
+        })
+        .finally(function () {
+          checking = false;
+          btn.textContent = 'Check My Proof';
+          btn.classList.remove('pt-check-btn-loading');
+        });
     });
 
     // Insert button after the editor container
@@ -268,6 +360,25 @@ var ProofChecker = (function () {
     }
 
     return btn;
+  }
+
+  // ── Green flash on successful proof ────────────────────────────
+
+  function flashSuccess(container) {
+    var overlay = document.createElement('div');
+    overlay.className = 'pt-success-flash';
+    // Insert at document body level for full-viewport effect
+    document.body.appendChild(overlay);
+    // Force reflow then trigger animation
+    overlay.offsetHeight;
+    overlay.classList.add('pt-success-flash-active');
+    setTimeout(function () {
+      overlay.classList.remove('pt-success-flash-active');
+      overlay.classList.add('pt-success-flash-out');
+      setTimeout(function () {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }, 600);
+    }, 500);
   }
 
   // ── Theory config (shared rule lists + helper factories) ─────
@@ -319,5 +430,6 @@ var ProofChecker = (function () {
     annotate: annotate,
     clearAnnotations: clearAnnotations,
     createCheckButton: createCheckButton,
+    flashSuccess: flashSuccess,
   };
 })();
