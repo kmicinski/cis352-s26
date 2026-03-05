@@ -274,7 +274,6 @@ var ProofChecker = (function () {
 
   var _theoryRuleNames = {
     'big-step':   ['Int', 'Var', 'Lam', 'Add', 'Neg', 'App', 'If0-True', 'If0-False', 'Let'],
-    'small-step': ['Beta', 'App-L', 'App-R', 'Add-L', 'Add-R', 'Add', 'Neg-Step', 'Neg', 'If0-Step', 'If0-True', 'If0-False', 'Let-Step', 'Let'],
     'g3ip':       ['Ax', '\u22A5L', '\u22A4R', '\u2227R', '\u2227L', '\u2228R\u2081', '\u2228R\u2082', '\u2228L', '\u2192R', '\u2192L'],
     'propnd':     ['Ax', '\u2192I', '\u2192E', '\u2227I', '\u2227E\u2081', '\u2227E\u2082', '\u2228I\u2081', '\u2228I\u2082', '\u2228E', '\u22A5E', '\u00ACI', '\u00ACE'],
     'stlc':       ['T-Var', 'T-Int', 'T-Bool', 'T-Lam', 'T-App', 'T-Add', 'T-Neg', 'T-If', 'T-Let'],

@@ -11,6 +11,11 @@ permalink: pretty
 # Build posts to appear in the future
 future: true
 
+exclude:
+  - proof-checker
+  - Gemfile
+  - Gemfile.lock
+
 defaults:
   - scope:
       path: "assets/img"

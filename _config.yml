@@ -1,6 +1,6 @@
 # Site settings
 title: CIS352
-baseurl: "/cis352-s26"
+baseurl: "cis352-s26"
 url: "https://kmicinski.com/"
 description: "CMSC352--Principles of Programming Languages (Spring '26) at Syracuse"
 permalink: pretty
@@ -10,6 +10,11 @@ permalink: pretty
 
 # Build posts to appear in the future
 future: true
+
+exclude:
+  - proof-checker
+  - Gemfile
+  - Gemfile.lock
 
 defaults:
   - scope:

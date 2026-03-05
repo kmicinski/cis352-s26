@@ -376,7 +376,6 @@ proof_tree: true
   <select id="pg-theory" class="pg-select">
     <option value="">Freestyle (no checking)</option>
     <option value="big-step">Big-Step Semantics</option>
-    <option value="small-step">Small-Step Semantics</option>
     <option value="g3ip">G3ip Sequent Calculus</option>
     <option value="propnd">Natural Deduction</option>
     <option value="stlc">Simply-Typed Lambda Calculus</option>
@@ -447,7 +446,6 @@ proof_tree: true
       { label: 'Sequent: P \u2227 Q \u21D2 Q \u2227 P', key: 'g3-swap' },
       { label: 'ND: P, P \u2192 Q \u22A2 Q', key: 'nd-mp' },
       { label: 'STLC: \u22A2 (\u03BB (x : int) x) : int \u2192 int', key: 'stlc-id' },
-      { label: 'Small-Step: ((+ 1 2)) \u27F6 3', key: 'ss-add' },
     ],
     'big-step': [
       { label: 'Add: {} \u22A2 (+ 3 5) \u21D3 8', key: 'bs-add' },
@@ -455,13 +453,6 @@ proof_tree: true
       { label: 'App: {} \u22A2 ((\u03BB (x) (+ x 1)) 5) \u21D3 6', key: 'bs-app' },
       { label: 'If0: {} \u22A2 (if0 (+ 1 (- 1)) 42 0) \u21D3 42', key: 'bs-if0' },
       { label: 'Let+Closure: {} \u22A2 (let ([x 10]) ((\u03BB (y) (+ x y)) 7)) \u21D3 17', key: 'bs-let' },
-    ],
-    'small-step': [
-      { label: 'Add: (+ 3 5) \u27F6 8', key: 'ss-add' },
-      { label: 'Add nested: (+ (+ 1 2) 5) \u27F6* 8', key: 'ss-add-nested' },
-      { label: 'Beta: ((\u03BB (x) x) 5) \u27F6 5', key: 'ss-beta' },
-      { label: 'Neg: (- (+ 1 2)) \u27F6* -3', key: 'ss-neg' },
-      { label: 'If0-True: (if0 0 1 2) \u27F6 1', key: 'ss-if0' },
     ],
     'g3ip': [
       { label: 'Identity: P \u21D2 P', key: 'g3-id' },
@@ -556,25 +547,6 @@ proof_tree: true
         { name: 'If0-True', premises: ['\u03C1 \u22A2 e\u2081 \u21D3 0', '\u03C1 \u22A2 e\u2082 \u21D3 v'], conclusion: '\u03C1 \u22A2 (if0 e\u2081 e\u2082 e\u2083) \u21D3 v' },
         { name: 'If0-False', premises: ['\u03C1 \u22A2 e\u2081 \u21D3 v\u2081', '\u03C1 \u22A2 e\u2083 \u21D3 v'], conclusion: '\u03C1 \u22A2 (if0 e\u2081 e\u2082 e\u2083) \u21D3 v', condition: 'v\u2081 \u2260 0' },
         { name: 'Let', premises: ['\u03C1 \u22A2 e\u2081 \u21D3 v\u2081', '\u03C1[x\u21A6v\u2081] \u22A2 e\u2082 \u21D3 v'], conclusion: '\u03C1 \u22A2 (let ([x e\u2081]) e\u2082) \u21D3 v' },
-      ]
-    },
-    'small-step': {
-      title: 'Small-Step Semantics',
-      judgement: 'e \u27F6 e\u2032',
-      rules: [
-        { name: 'Beta', premises: [], conclusion: '((\u03BB (x) e) v) \u27F6 e[x := v]' },
-        { name: 'App-L', premises: ['e\u2081 \u27F6 e\u2081\u2032'], conclusion: '(e\u2081 e\u2082) \u27F6 (e\u2081\u2032 e\u2082)' },
-        { name: 'App-R', premises: ['e\u2082 \u27F6 e\u2082\u2032'], conclusion: '(v e\u2082) \u27F6 (v e\u2082\u2032)' },
-        { name: 'Add-L', premises: ['e\u2081 \u27F6 e\u2081\u2032'], conclusion: '(+ e\u2081 e\u2082) \u27F6 (+ e\u2081\u2032 e\u2082)' },
-        { name: 'Add-R', premises: ['e\u2082 \u27F6 e\u2082\u2032'], conclusion: '(+ v e\u2082) \u27F6 (+ v e\u2082\u2032)' },
-        { name: 'Add', premises: [], conclusion: '(+ n\u2081 n\u2082) \u27F6 n\u2083', condition: 'n\u2083 = n\u2081 + n\u2082' },
-        { name: 'Neg-Step', premises: ['e \u27F6 e\u2032'], conclusion: '(- e) \u27F6 (- e\u2032)' },
-        { name: 'Neg', premises: [], conclusion: '(- n) \u27F6 \u2212n' },
-        { name: 'If0-Step', premises: ['e \u27F6 e\u2032'], conclusion: '(if0 e e\u2082 e\u2083) \u27F6 (if0 e\u2032 e\u2082 e\u2083)' },
-        { name: 'If0-True', premises: [], conclusion: '(if0 0 e\u2082 e\u2083) \u27F6 e\u2082' },
-        { name: 'If0-False', premises: [], conclusion: '(if0 n e\u2082 e\u2083) \u27F6 e\u2083', condition: 'n \u2260 0' },
-        { name: 'Let-Step', premises: ['e \u27F6 e\u2032'], conclusion: '(let ([x e]) e\u2082) \u27F6 (let ([x e\u2032]) e\u2082)' },
-        { name: 'Let', premises: [], conclusion: '(let ([x v]) e) \u27F6 e[x := v]' },
       ]
     },
     'g3ip': {
@@ -740,7 +712,16 @@ proof_tree: true
 
   theorySelect.addEventListener('change', function() {
     updateExamples();
-    if (currentEditor) {
+    var theory = theorySelect.value;
+    // When switching theories, load the simplest example for that theory
+    var examples = theoryExamples[theory];
+    if (examples && examples.length > 0 && exampleData[examples[0].key]) {
+      loadProof(exampleData[examples[0].key]);
+    } else if (theory) {
+      // No examples: start a new blank proof with the theory config
+      newProof();
+    } else if (currentEditor) {
+      // Freestyle: just update the config without resetting
       var cfg = getTheoryConfig();
       currentEditor.setTheoryRules(cfg.theoryRules, cfg.onGeneratePremises, cfg.onCheckApplicability);
     }
@@ -885,7 +866,7 @@ proof_tree: true
 
   // ── Examples dropdown ───────────────────────────
   var _exampleTheoryMap = {
-    'bs-': 'big-step', 'ss-': 'small-step', 'g3-': 'g3ip',
+    'bs-': 'big-step', 'g3-': 'g3ip',
     'nd-': 'propnd', 'stlc-': 'stlc', 'sf-': 'systemf',
   };
 
@@ -968,10 +949,18 @@ proof_tree: true
 
   // ── Load from URL hash on page load ─────────────
   if (window.location.hash) {
-    var match = window.location.hash.match(/^#proof=(.+)/);
-    if (match) {
-      var sexp = decodeURIComponent(match[1]);
-      setTimeout(function() { loadProof(sexp); }, 100);
+    var hashStr = window.location.hash.substring(1);
+    var hashParts = {};
+    hashStr.split('&').forEach(function(part) {
+      var eq = part.indexOf('=');
+      if (eq >= 0) hashParts[part.substring(0, eq)] = decodeURIComponent(part.substring(eq + 1));
+    });
+    if (hashParts.theory) {
+      theorySelect.value = hashParts.theory;
+      updateExamples();
+    }
+    if (hashParts.proof) {
+      setTimeout(function() { loadProof(hashParts.proof); }, 100);
     }
   }
 })();
