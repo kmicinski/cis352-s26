@@ -168,19 +168,22 @@ impl Term {
     }
 
     /// Alpha-convert: rename bound variable in a lambda abstraction
-    pub fn alpha_convert(&self, new_name: &str) -> Option<Term> {
+    pub fn alpha_convert(&self, new_name: &str) -> Result<Term, String> {
         if let Term::Abs(x, body) = self {
             if x == new_name {
-                return Some(self.clone());
+                return Ok(self.clone());
             }
             // new_name must not be free in body (would capture)
             if body.free_vars().contains(new_name) {
-                return None;
+                return Err(format!(
+                    "Cannot rename {} to {}: the variable {} already appears free in the body, so renaming would capture it (changing the meaning of the term).",
+                    x, new_name, new_name
+                ));
             }
             let new_body = body.substitute(x, &Term::Var(new_name.to_string()));
-            Some(Term::Abs(new_name.to_string(), Box::new(new_body)))
+            Ok(Term::Abs(new_name.to_string(), Box::new(new_body)))
         } else {
-            None
+            Err("α-conversion can only be applied to a λ-abstraction (a term of the form (λ (x) body)).".to_string())
         }
     }
 
@@ -438,8 +441,34 @@ impl Strategy {
 mod tests {
     use super::*;
 
+    // ── Helpers ──────────────────────────────────────────────────
+
+    /// Reduce term to normal form under a strategy, returning each step.
+    /// Panics if it doesn't reach normal form within `limit` steps.
+    fn reduce_to_nf(term: &Term, strategy: &Strategy, limit: usize) -> (Term, Vec<Term>) {
+        let mut current = term.clone();
+        let mut steps = vec![current.clone()];
+        for _ in 0..limit {
+            match current.reduce_step(strategy) {
+                Some(next) => { current = next; steps.push(current.clone()); }
+                None => return (current, steps),
+            }
+        }
+        panic!(
+            "Did not reach normal form within {} steps. Last term: {}",
+            limit, current.display_string()
+        );
+    }
+
+    /// Parse a CIS352-syntax term (convenience for integration-style tests).
+    fn p(input: &str) -> Term {
+        crate::parser::parse(input).unwrap_or_else(|e| panic!("Parse error on {:?}: {}", input, e))
+    }
+
+    // ── Free Variables ──────────────────────────────────────────
+
     #[test]
-    fn test_free_vars() {
+    fn free_vars_bound() {
         let t = Term::abs("x", Term::app(Term::var("x"), Term::var("y")));
         let fv = t.free_vars();
         assert!(fv.contains("y"));
@@ -447,68 +476,541 @@ mod tests {
     }
 
     #[test]
-    fn test_substitute_no_capture() {
+    fn free_vars_closed_term() {
+        // (λx. x) has no free variables
+        assert!(Term::abs("x", Term::var("x")).free_vars().is_empty());
+    }
+
+    #[test]
+    fn free_vars_nested_shadow() {
+        // (λx. (λx. x)) — inner x shadows outer, no free vars
+        let t = Term::abs("x", Term::abs("x", Term::var("x")));
+        assert!(t.free_vars().is_empty());
+    }
+
+    #[test]
+    fn free_vars_multiple() {
+        // (x (y z)) — all three are free
+        let t = Term::app(Term::var("x"), Term::app(Term::var("y"), Term::var("z")));
+        let fv = t.free_vars();
+        assert_eq!(fv.len(), 3);
+        assert!(fv.contains("x") && fv.contains("y") && fv.contains("z"));
+    }
+
+    // ── Substitution ────────────────────────────────────────────
+
+    #[test]
+    fn substitute_simple() {
+        // x[x := y] → y
+        assert_eq!(Term::var("x").substitute("x", &Term::var("y")), Term::var("y"));
+    }
+
+    #[test]
+    fn substitute_different_var() {
+        // z[x := y] → z
+        assert_eq!(Term::var("z").substitute("x", &Term::var("y")), Term::var("z"));
+    }
+
+    #[test]
+    fn substitute_under_lambda_shadowed() {
+        // (λx. x)[x := y] → (λx. x) — x is shadowed
+        let t = Term::abs("x", Term::var("x"));
+        assert_eq!(t.substitute("x", &Term::var("y")), t);
+    }
+
+    #[test]
+    fn substitute_under_lambda_not_shadowed() {
+        // (λz. x)[x := y] → (λz. y)
+        let t = Term::abs("z", Term::var("x"));
+        let result = t.substitute("x", &Term::var("y"));
+        assert_eq!(result, Term::abs("z", Term::var("y")));
+    }
+
+    #[test]
+    fn substitute_capture_avoiding() {
         // (λy. x)[x := y] should alpha-rename to avoid capture
         let t = Term::abs("y", Term::var("x"));
         let result = t.substitute("x", &Term::var("y"));
-        // Result should be λy0. y (or similar fresh name), NOT λy. y
         if let Term::Abs(param, body) = &result {
-            assert_ne!(param, "y"); // must have been renamed
-            if let Term::Var(v) = body.as_ref() {
-                assert_eq!(v, "y"); // the substituted value
-            } else {
-                panic!("Expected Var");
-            }
+            assert_ne!(param, "y", "must rename to avoid capture");
+            assert_eq!(body.as_ref(), &Term::var("y"), "substituted value is y");
         } else {
-            panic!("Expected Abs");
+            panic!("Expected Abs, got {:?}", result);
         }
     }
 
     #[test]
-    fn test_beta_reduce() {
-        // (λx.x) y → y
+    fn substitute_in_app() {
+        // (x x)[x := y] → (y y)
+        let t = Term::app(Term::var("x"), Term::var("x"));
+        let result = t.substitute("x", &Term::var("y"));
+        assert_eq!(result, Term::app(Term::var("y"), Term::var("y")));
+    }
+
+    // ── Beta Reduction ──────────────────────────────────────────
+
+    #[test]
+    fn beta_identity() {
+        // (λx. x) y → y
         let t = Term::app(Term::abs("x", Term::var("x")), Term::var("y"));
+        assert_eq!(t.beta_reduce().unwrap(), Term::var("y"));
+    }
+
+    #[test]
+    fn beta_constant() {
+        // (λx. z) y → z
+        let t = Term::app(Term::abs("x", Term::var("z")), Term::var("y"));
+        assert_eq!(t.beta_reduce().unwrap(), Term::var("z"));
+    }
+
+    #[test]
+    fn beta_self_application() {
+        // (λx. (x x)) y → (y y)
+        let t = Term::app(
+            Term::abs("x", Term::app(Term::var("x"), Term::var("x"))),
+            Term::var("y"),
+        );
+        assert_eq!(
+            t.beta_reduce().unwrap(),
+            Term::app(Term::var("y"), Term::var("y"))
+        );
+    }
+
+    #[test]
+    fn beta_not_redex() {
+        // (x y) is not a redex
+        assert!(Term::app(Term::var("x"), Term::var("y")).beta_reduce().is_none());
+    }
+
+    #[test]
+    fn beta_capture_avoiding() {
+        // (λx. (λy. x)) y → (λy'. y), NOT (λy. y)
+        let t = Term::app(
+            Term::abs("x", Term::abs("y", Term::var("x"))),
+            Term::var("y"),
+        );
         let result = t.beta_reduce().unwrap();
-        assert_eq!(result, Term::var("y"));
+        if let Term::Abs(param, body) = &result {
+            assert_ne!(param, "y", "must rename to avoid capture");
+            assert_eq!(body.as_ref(), &Term::var("y"));
+        } else {
+            panic!("Expected Abs, got {:?}", result);
+        }
     }
 
+    // ── Eta Conversion ──────────────────────────────────────────
+
     #[test]
-    fn test_eta_convert() {
-        // λx.(f x) → f  (when x ∉ FV(f))
+    fn eta_simple() {
+        // λx.(f x) → f
         let t = Term::abs("x", Term::app(Term::var("f"), Term::var("x")));
-        let result = t.eta_convert().unwrap();
-        assert_eq!(result, Term::var("f"));
+        assert_eq!(t.eta_convert().unwrap(), Term::var("f"));
     }
 
     #[test]
-    fn test_eta_not_convertible() {
-        // λx.(x x) — NOT eta-convertible (x ∈ FV(x))
+    fn eta_not_convertible_free_var() {
+        // λx.(x x) — x ∈ FV(x), cannot eta-convert
         let t = Term::abs("x", Term::app(Term::var("x"), Term::var("x")));
+        assert!(t.eta_convert().is_none());
         assert!(!t.is_eta_convertible());
     }
 
     #[test]
-    fn test_alpha_convert() {
+    fn eta_not_convertible_wrong_arg() {
+        // λx.(f y) — argument is y not x
+        let t = Term::abs("x", Term::app(Term::var("f"), Term::var("y")));
+        assert!(t.eta_convert().is_none());
+    }
+
+    #[test]
+    fn eta_not_abs() {
+        // (f x) is not an abstraction
+        assert!(Term::app(Term::var("f"), Term::var("x")).eta_convert().is_none());
+    }
+
+    // ── Alpha Conversion ────────────────────────────────────────
+
+    #[test]
+    fn alpha_simple() {
         let t = Term::abs("x", Term::var("x"));
+        assert_eq!(t.alpha_convert("z").unwrap(), Term::abs("z", Term::var("z")));
+    }
+
+    #[test]
+    fn alpha_same_name() {
+        let t = Term::abs("x", Term::var("x"));
+        assert_eq!(t.alpha_convert("x").unwrap(), t);
+    }
+
+    #[test]
+    fn alpha_capture_rejected() {
+        // (λy. (x y)) — renaming y to x would capture the free x
+        let t = Term::abs("y", Term::app(Term::var("x"), Term::var("y")));
+        let err = t.alpha_convert("x").unwrap_err();
+        assert!(err.contains("capture"), "Error should mention capture: {}", err);
+    }
+
+    #[test]
+    fn alpha_on_non_abs() {
+        let err = Term::var("x").alpha_convert("y").unwrap_err();
+        assert!(err.contains("λ-abstraction"), "Error: {}", err);
+    }
+
+    #[test]
+    fn alpha_in_nested_body() {
+        // (λx. (λy. (x y))) — rename x to z → (λz. (λy. (z y)))
+        let t = Term::abs("x", Term::abs("y", Term::app(Term::var("x"), Term::var("y"))));
         let result = t.alpha_convert("z").unwrap();
-        assert_eq!(result, Term::abs("z", Term::var("z")));
+        assert_eq!(
+            result,
+            Term::abs("z", Term::abs("y", Term::app(Term::var("z"), Term::var("y"))))
+        );
+    }
+
+    // ── Strategies: next_redex ───────────────────────────────────
+
+    // Test term: (λx.x) ((λy.y) z)   — two redexes: root and Right
+    fn two_redex_term() -> Term {
+        Term::app(
+            Term::abs("x", Term::var("x")),
+            Term::app(Term::abs("y", Term::var("y")), Term::var("z")),
+        )
     }
 
     #[test]
-    fn test_normal_order() {
-        // (λx.x) ((λy.y) z) — should reduce outermost first
-        let inner = Term::app(Term::abs("y", Term::var("y")), Term::var("z"));
-        let t = Term::app(Term::abs("x", Term::var("x")), inner);
+    fn normal_picks_outermost() {
+        let path = two_redex_term().next_redex(&Strategy::Normal).unwrap();
+        assert_eq!(path, vec![], "Normal order: root (outermost) redex");
+    }
+
+    #[test]
+    fn applicative_picks_innermost() {
+        let path = two_redex_term().next_redex(&Strategy::Applicative).unwrap();
+        assert_eq!(path, vec![PathStep::Right], "Applicative: inner redex first");
+    }
+
+    #[test]
+    fn cbv_picks_argument_first() {
+        // (λx.x) ((λy.y) z): func is value (Abs), arg is not value (App/redex)
+        let path = two_redex_term().next_redex(&Strategy::CallByValue).unwrap();
+        assert_eq!(path, vec![PathStep::Right], "CBV: reduce arg to value first");
+    }
+
+    #[test]
+    fn cbn_picks_outermost_no_under_lambda() {
+        let path = two_redex_term().next_redex(&Strategy::CallByName).unwrap();
+        assert_eq!(path, vec![], "CBN: outermost redex (like normal, but no under-lambda)");
+    }
+
+    #[test]
+    fn normal_under_lambda() {
+        // λx. ((λy.y) z) — redex is inside a lambda body
+        let t = Term::abs("x", Term::app(Term::abs("y", Term::var("y")), Term::var("z")));
         let path = t.next_redex(&Strategy::Normal).unwrap();
-        assert_eq!(path, vec![]); // root is the redex
+        assert_eq!(path, vec![PathStep::Body]);
     }
 
     #[test]
-    fn test_applicative_order() {
-        // (λx.x) ((λy.y) z) — should reduce innermost first
-        let inner = Term::app(Term::abs("y", Term::var("y")), Term::var("z"));
-        let t = Term::app(Term::abs("x", Term::var("x")), inner);
-        let path = t.next_redex(&Strategy::Applicative).unwrap();
-        assert_eq!(path, vec![PathStep::Right]); // inner redex first
+    fn cbv_no_under_lambda() {
+        // λx. ((λy.y) z) — CBV does NOT reduce under lambda
+        let t = Term::abs("x", Term::app(Term::abs("y", Term::var("y")), Term::var("z")));
+        assert!(t.next_redex(&Strategy::CallByValue).is_none());
     }
+
+    #[test]
+    fn cbn_no_under_lambda() {
+        let t = Term::abs("x", Term::app(Term::abs("y", Term::var("y")), Term::var("z")));
+        assert!(t.next_redex(&Strategy::CallByName).is_none());
+    }
+
+    // ── Root-level redex (the empty-string-is-falsy bug) ────────
+
+    #[test]
+    fn root_redex_returns_empty_path() {
+        // ((λy. body) w) — the whole term is a redex, path = []
+        let t = Term::app(
+            Term::abs("y", Term::app(Term::abs("a", Term::var("a")), Term::var("z"))),
+            Term::var("w"),
+        );
+        let path = t.next_redex(&Strategy::Normal).unwrap();
+        assert_eq!(path, vec![], "Root-level redex path must be empty vec");
+        assert_eq!(encode_path(&path), "", "Encoded root path is empty string");
+    }
+
+    #[test]
+    fn root_redex_is_not_normal_form() {
+        // A root-level redex is NOT in normal form
+        let t = Term::app(
+            Term::abs("y", Term::var("z")),
+            Term::var("w"),
+        );
+        assert!(!t.is_normal_form(&Strategy::Normal));
+        assert!(!t.is_normal_form(&Strategy::Applicative));
+        assert!(!t.is_normal_form(&Strategy::CallByValue));
+        assert!(!t.is_normal_form(&Strategy::CallByName));
+    }
+
+    // ── Multi-step reduction to normal form ─────────────────────
+
+    #[test]
+    fn reduce_identity_app() {
+        // (λx.x) y →* y
+        let t = p("((λ (x) x) y)");
+        let (nf, steps) = reduce_to_nf(&t, &Strategy::Normal, 10);
+        assert_eq!(nf, Term::var("y"));
+        assert_eq!(steps.len(), 2); // original + 1 step
+    }
+
+    #[test]
+    fn reduce_skk_to_identity() {
+        // S K K →* λz. z  (S = λxyz.xz(yz), K = λxy.x)
+        let t = p("(((\u{03bb} (x y z) ((x z) (y z))) (\u{03bb} (x y) x)) (\u{03bb} (x y) x))");
+        let (nf, _) = reduce_to_nf(&t, &Strategy::Normal, 20);
+        // The result should be an identity function: λz. z (parameter name may vary)
+        if let Term::Abs(param, body) = &nf {
+            assert_eq!(body.as_ref(), &Term::Var(param.clone()), "S K K should reduce to I");
+        } else {
+            panic!("S K K should reduce to an abstraction, got: {}", nf.display_string());
+        }
+    }
+
+    #[test]
+    fn reduce_church_rosser_demo_term() {
+        // This is the exact term used in the Church-Rosser tutorial demo.
+        // It triggered the empty-string-path bug because the second step
+        // has a root-level redex (path "").
+        let t = p("((\u{03bb} (x y) x) ((\u{03bb} (a) a) z) w)");
+
+        // Normal order
+        let (nf_normal, steps_n) = reduce_to_nf(&t, &Strategy::Normal, 10);
+        assert_eq!(nf_normal.display_string(), "z", "Normal order should reach z");
+        assert!(steps_n.len() > 2, "Should take more than 1 step (was the bug)");
+
+        // Applicative order
+        let (nf_app, _) = reduce_to_nf(&t, &Strategy::Applicative, 10);
+        assert_eq!(nf_app.display_string(), "z", "Applicative should also reach z");
+
+        // Church-Rosser: both strategies reach the same normal form
+        assert_eq!(nf_normal, nf_app, "Church-Rosser: normal form must be the same");
+    }
+
+    #[test]
+    fn church_rosser_property() {
+        // Test Church-Rosser on several terms with all four strategies.
+        let terms = vec![
+            "((λ (x) x) y)",
+            "((λ (x) (x x)) y)",
+            "((λ (x y) x) a b)",
+            "((λ (f x) (f (f x))) (λ (y) y) z)",
+        ];
+        for input in &terms {
+            let t = p(input);
+            let results: Vec<_> = [
+                Strategy::Normal, Strategy::Applicative,
+                Strategy::CallByValue, Strategy::CallByName,
+            ].iter().filter_map(|s| {
+                // Some strategies may not reach NF (e.g., stuck terms in CBV/CBN)
+                let mut cur = t.clone();
+                for _ in 0..50 {
+                    match cur.reduce_step(s) {
+                        Some(next) => cur = next,
+                        None => return Some(cur.display_string()),
+                    }
+                }
+                None // didn't terminate
+            }).collect();
+
+            // All strategies that terminated should agree
+            if results.len() > 1 {
+                for r in &results[1..] {
+                    assert_eq!(
+                        r, &results[0],
+                        "Church-Rosser violated for {:?}: got {:?} and {:?}",
+                        input, results[0], r
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn omega_diverges() {
+        // Ω = (λx. x x)(λx. x x) reduces to itself
+        let t = p("((\u{03bb} (x) (x x)) (\u{03bb} (x) (x x)))");
+        let next = t.reduce_step(&Strategy::Normal).unwrap();
+        assert_eq!(t, next, "Omega must reduce to itself");
+    }
+
+    #[test]
+    fn omega_root_redex() {
+        let t = p("((\u{03bb} (x) (x x)) (\u{03bb} (x) (x x)))");
+        let path = t.next_redex(&Strategy::Normal).unwrap();
+        assert_eq!(path, vec![], "Omega's redex is at the root");
+    }
+
+    // ── Capture-avoiding substitution through full reduction ────
+
+    #[test]
+    fn capture_avoiding_through_beta() {
+        // ((λx. (λy. x)) y) → (λy'. y)  NOT (λy. y)
+        let t = p("((\u{03bb} (x) (\u{03bb} (y) x)) y)");
+        let (nf, _) = reduce_to_nf(&t, &Strategy::Normal, 10);
+        // The result should be λ<fresh>. y, where <fresh> ≠ y
+        if let Term::Abs(param, body) = &nf {
+            assert_ne!(param, "y", "Must alpha-rename to avoid capture");
+            assert_eq!(body.as_ref(), &Term::var("y"), "Body should be free y");
+        } else {
+            panic!("Expected Abs, got: {}", nf.display_string());
+        }
+    }
+
+    // ── Normal form detection ───────────────────────────────────
+
+    #[test]
+    fn variable_is_normal_form() {
+        let t = Term::var("x");
+        assert!(t.is_normal_form(&Strategy::Normal));
+        assert!(t.is_normal_form(&Strategy::Applicative));
+        assert!(t.is_normal_form(&Strategy::CallByValue));
+        assert!(t.is_normal_form(&Strategy::CallByName));
+    }
+
+    #[test]
+    fn lambda_with_no_redex_is_nf() {
+        assert!(Term::abs("x", Term::var("x")).is_normal_form(&Strategy::Normal));
+    }
+
+    #[test]
+    fn redex_is_not_nf() {
+        let t = Term::app(Term::abs("x", Term::var("x")), Term::var("y"));
+        assert!(!t.is_normal_form(&Strategy::Normal));
+    }
+
+    #[test]
+    fn cbv_normal_form_with_redex_under_lambda() {
+        // λx. ((λy.y) z) — has a redex under λ, but CBV won't reduce it
+        let t = Term::abs("x", Term::app(Term::abs("y", Term::var("y")), Term::var("z")));
+        assert!(!t.is_normal_form(&Strategy::Normal), "Not NF in normal order");
+        assert!(t.is_normal_form(&Strategy::CallByValue), "IS NF in CBV");
+        assert!(t.is_normal_form(&Strategy::CallByName), "IS NF in CBN");
+    }
+
+    // ── Path encoding / decoding ────────────────────────────────
+
+    #[test]
+    fn path_roundtrip() {
+        let path = vec![PathStep::Left, PathStep::Body, PathStep::Right];
+        assert_eq!(encode_path(&path), "LBR");
+        assert_eq!(parse_path("LBR").unwrap(), path);
+    }
+
+    #[test]
+    fn empty_path_roundtrip() {
+        assert_eq!(encode_path(&[]), "");
+        assert_eq!(parse_path("").unwrap(), vec![]);
+    }
+
+    #[test]
+    fn parse_path_invalid() {
+        assert!(parse_path("X").is_err());
+    }
+
+    // ── map_at_path ─────────────────────────────────────────────
+
+    #[test]
+    fn map_at_path_root() {
+        let t = Term::var("x");
+        let result = t.map_at_path(&[], |_| Some(Term::var("y")));
+        assert_eq!(result, Some(Term::var("y")));
+    }
+
+    #[test]
+    fn map_at_path_nested() {
+        // (f x) — replace x (Right child) with z
+        let t = Term::app(Term::var("f"), Term::var("x"));
+        let result = t.map_at_path(&[PathStep::Right], |_| Some(Term::var("z")));
+        assert_eq!(result, Some(Term::app(Term::var("f"), Term::var("z"))));
+    }
+
+    #[test]
+    fn map_at_path_invalid() {
+        // Try to go Left on a Var — should return None
+        assert!(Term::var("x").map_at_path(&[PathStep::Left], |_| Some(Term::var("y"))).is_none());
+    }
+
+    // ── size ────────────────────────────────────────────────────
+
+    #[test]
+    fn size_var() { assert_eq!(Term::var("x").size(), 1); }
+
+    #[test]
+    fn size_abs() {
+        assert_eq!(Term::abs("x", Term::var("x")).size(), 2);
+    }
+
+    #[test]
+    fn size_app() {
+        assert_eq!(Term::app(Term::var("f"), Term::var("x")).size(), 3);
+    }
+
+    // ── display_string ──────────────────────────────────────────
+
+    #[test]
+    fn display_var() {
+        assert_eq!(Term::var("x").display_string(), "x");
+    }
+
+    #[test]
+    fn display_abs() {
+        assert_eq!(
+            Term::abs("x", Term::var("x")).display_string(),
+            "(\u{03bb} (x) x)"
+        );
+    }
+
+    #[test]
+    fn display_app() {
+        assert_eq!(
+            Term::app(Term::var("f"), Term::var("x")).display_string(),
+            "(f x)"
+        );
+    }
+
+    // ── all_redex_paths ─────────────────────────────────────────
+
+    #[test]
+    fn all_redex_paths_two_redexes() {
+        let t = two_redex_term();
+        let paths = t.all_redex_paths(&[]);
+        assert_eq!(paths.len(), 2);
+        assert!(paths.contains(&vec![]));             // root
+        assert!(paths.contains(&vec![PathStep::Right])); // inner
+    }
+
+    #[test]
+    fn all_redex_paths_no_redex() {
+        assert!(Term::var("x").all_redex_paths(&[]).is_empty());
+    }
+
+    // ── Strategy::from_str ──────────────────────────────────────
+
+    #[test]
+    fn strategy_from_str() {
+        assert_eq!(Strategy::from_str("normal"), Some(Strategy::Normal));
+        assert_eq!(Strategy::from_str("applicative"), Some(Strategy::Applicative));
+        assert_eq!(Strategy::from_str("cbv"), Some(Strategy::CallByValue));
+        assert_eq!(Strategy::from_str("cbn"), Some(Strategy::CallByName));
+        assert_eq!(Strategy::from_str("bogus"), None);
+    }
+
+    // ── is_value (for CBV) ──────────────────────────────────────
+
+    #[test]
+    fn is_value_var() { assert!(Term::var("x").is_value()); }
+
+    #[test]
+    fn is_value_abs() { assert!(Term::abs("x", Term::var("x")).is_value()); }
+
+    #[test]
+    fn is_value_app() { assert!(!Term::app(Term::var("f"), Term::var("x")).is_value()); }
 }

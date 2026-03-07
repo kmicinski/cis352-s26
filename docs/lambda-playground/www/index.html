@@ -3,62 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>λ-Calculus Explorer</title>
+    <title>λ-Calculus Explorer — CIS352 · Syracuse University</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
-        <!-- Toolbar: slides down on hover near top -->
-        <header id="toolbar">
-            <div class="toolbar-left">
-                <span class="logo">λ</span>
-                <span class="app-title">Calculus Explorer</span>
+        <!-- Back to CIS352 -->
+        <a id="back-bar" href="https://kmicinski.com/cis352-s26/" class="back-bar">
+            <span class="back-arrow">&larr;</span>
+            <span class="back-text">Back to <strong>CIS352</strong> at Syracuse</span>
+        </a>
+
+        <!-- Floating input bar at top -->
+        <header id="input-bar">
+            <span class="logo">λ</span>
+            <div class="input-group">
+                <input type="text" id="term-input"
+                       placeholder="(λ (x) (x x))"
+                       spellcheck="false"
+                       autocomplete="off" />
+                <button id="parse-btn" class="btn btn-primary">Parse</button>
             </div>
-            <div class="toolbar-center">
-                <div class="input-group">
-                    <input type="text" id="term-input"
-                           placeholder="(λ (x) (x x))"
-                           spellcheck="false"
-                           autocomplete="off" />
-                    <button id="parse-btn" class="btn btn-primary">Parse</button>
-                </div>
-                <select id="examples-select" class="select">
-                    <option value="">Examples...</option>
+            <select id="examples-select" class="select">
+                <option value="">Examples...</option>
+                <optgroup label="Combinators">
                     <option value="id">I — Identity</option>
-                    <option value="omega">Ω — Omega</option>
-                    <option value="K">K Combinator</option>
-                    <option value="S">S Combinator</option>
-                    <option value="skk">S K K</option>
-                    <option value="church0">Church 0</option>
-                    <option value="church2">Church 2</option>
+                    <option value="K">K — Constant</option>
+                    <option value="S">S — Substitution</option>
+                    <option value="B">B — Composition</option>
+                    <option value="C">C — Flip</option>
+                    <option value="W">W — Duplicate</option>
+                    <option value="omega">Ω — Omega (diverges!)</option>
+                </optgroup>
+                <optgroup label="Booleans">
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                    <option value="and">And</option>
+                    <option value="or">Or</option>
+                    <option value="not">Not</option>
+                    <option value="ite">If-Then-Else</option>
+                </optgroup>
+                <optgroup label="Church Numerals">
+                    <option value="church0">0</option>
+                    <option value="church1">1</option>
+                    <option value="church2">2</option>
+                    <option value="church3">3</option>
                     <option value="succ">Successor</option>
-                    <option value="Y">Y Combinator</option>
-                    <option value="true">True (λ-encoded)</option>
-                    <option value="false">False (λ-encoded)</option>
-                </select>
-            </div>
-            <div class="toolbar-right">
-                <button id="random-btn" class="btn">Random</button>
-                <label class="checkbox-label">
-                    <input type="checkbox" id="closed-check" checked />
-                    Closed
-                </label>
-                <div class="separator"></div>
-                <button id="undo-btn" class="btn" disabled>Undo</button>
-                <div class="separator"></div>
-                <div class="zoom-controls">
-                    <button id="zoom-out" class="btn btn-icon">−</button>
-                    <span id="zoom-level" class="zoom-label">100%</span>
-                    <button id="zoom-in" class="btn btn-icon">+</button>
-                    <button id="zoom-reset" class="btn btn-icon btn-small">1:1</button>
-                </div>
-            </div>
+                    <option value="plus">Addition</option>
+                    <option value="mult">Multiplication</option>
+                    <option value="exp">Exponentiation</option>
+                    <option value="pred">Predecessor</option>
+                    <option value="iszero">IsZero</option>
+                </optgroup>
+                <optgroup label="Lists">
+                    <option value="cons">Cons</option>
+                    <option value="car">Car</option>
+                    <option value="cdr">Cdr</option>
+                    <option value="null">Null</option>
+                    <option value="nullq">Null?</option>
+                </optgroup>
+                <optgroup label="Recursion">
+                    <option value="Y">Z Combinator (CBV Y)</option>
+                </optgroup>
+                <optgroup label="Reductions">
+                    <option value="skk">S K K → I</option>
+                    <option value="succ2">Succ 2 → 3</option>
+                    <option value="twoplustwo">2 + 2 → 4</option>
+                    <option value="twotimesthree">2 × 3 → 6</option>
+                    <option value="twocubed">2³ → 8</option>
+                    <option value="nottrue">Not True → False</option>
+                    <option value="andtt">And True True → True</option>
+                    <option value="ortf">Or True False → True</option>
+                    <option value="iszero0">IsZero 0 → True</option>
+                    <option value="pred3">Pred 3 → 2</option>
+                    <option value="carcons">Car (Cons 1 2) → 1</option>
+                    <option value="factbase">Z Fact (advanced)</option>
+                </optgroup>
+            </select>
         </header>
 
-        <!-- Hover zone to reveal toolbar -->
-        <div id="toolbar-trigger"></div>
+        <!-- Side drawer toggle -->
+        <button id="drawer-toggle" class="drawer-fab" title="Controls (Tab)">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <rect y="2" width="18" height="2" rx="1" fill="currentColor"/>
+                <rect y="8" width="18" height="2" rx="1" fill="currentColor"/>
+                <rect y="14" width="18" height="2" rx="1" fill="currentColor"/>
+            </svg>
+        </button>
+
+        <!-- Tutorial start button (always visible) -->
+        <button id="tutorial-fab" class="tutorial-fab" title="Tutorial">
+            <span class="tutorial-fab-icon">?</span>
+        </button>
+
+        <!-- Backdrop for drawer -->
+        <div id="drawer-backdrop" class="drawer-backdrop"></div>
+
+        <!-- Left side drawer -->
+        <aside id="drawer" class="drawer">
+            <div class="drawer-header">
+                <span class="drawer-title">λ-Calculus Explorer</span>
+                <span class="drawer-subtitle">CIS352 · Syracuse University</span>
+                <button id="drawer-close" class="drawer-close-btn">&times;</button>
+            </div>
+
+            <div class="drawer-body">
+                <!-- Reduction controls -->
+                <div class="drawer-section">
+                    <div class="drawer-section-label">Reduction</div>
+                    <div class="drawer-actions">
+                        <button id="step-btn" class="btn btn-primary btn-wide">
+                            <span>Step</span><kbd>Space</kbd>
+                        </button>
+                        <div class="drawer-row">
+                            <button id="run-btn" class="btn btn-flex">Auto ▶</button>
+                            <button id="stop-btn" class="btn btn-flex" style="display:none">Stop ■</button>
+                            <button id="undo-btn" class="btn btn-flex" disabled>
+                                <span>Undo</span><kbd>⌘Z</kbd>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="drawer-info-row">
+                        <span id="step-count" class="drawer-info">Steps: 0</span>
+                        <span id="normal-form-badge" class="badge badge-green" style="display:none">Normal form</span>
+                    </div>
+                </div>
+
+                <!-- Strategy -->
+                <div class="drawer-section">
+                    <div class="drawer-section-label">Strategy</div>
+                    <div id="strategy-group" class="strategy-grid">
+                        <button class="btn strategy-btn active" data-strategy="normal" title="Leftmost-outermost redex first">
+                            <span class="strategy-name">Normal</span><kbd>N</kbd>
+                        </button>
+                        <button class="btn strategy-btn" data-strategy="applicative" title="Leftmost-innermost redex first">
+                            <span class="strategy-name">Applicative</span><kbd>A</kbd>
+                        </button>
+                        <button class="btn strategy-btn" data-strategy="cbv" title="Arguments to values first; no reduction under λ">
+                            <span class="strategy-name">Call-by-Value</span><kbd>V</kbd>
+                        </button>
+                        <button class="btn strategy-btn" data-strategy="cbn" title="Outermost first; no reduction under λ">
+                            <span class="strategy-name">Call-by-Name</span><kbd>L</kbd>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Generate -->
+                <div class="drawer-section">
+                    <div class="drawer-section-label">Generate</div>
+                    <div class="drawer-row">
+                        <button id="random-btn" class="btn btn-flex">Random</button>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="closed-check" checked />
+                            Closed
+                        </label>
+                    </div>
+                </div>
+
+                <!-- View -->
+                <div class="drawer-section">
+                    <div class="drawer-section-label">View</div>
+                    <div class="drawer-row">
+                        <div class="zoom-controls">
+                            <button id="zoom-out" class="btn btn-icon">−</button>
+                            <span id="zoom-level" class="zoom-label">100%</span>
+                            <button id="zoom-in" class="btn btn-icon">+</button>
+                            <button id="zoom-reset" class="btn btn-icon btn-small">1:1</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tutorial -->
+                <div class="drawer-section">
+                    <button id="tutorial-btn" class="btn btn-wide tutorial-start-btn">
+                        <span>Tutorial: Learn λ-Calculus</span>
+                    </button>
+                </div>
+
+                <!-- Keyboard shortcuts -->
+                <div class="drawer-section drawer-shortcuts">
+                    <div class="drawer-section-label">Shortcuts</div>
+                    <div class="shortcut-grid">
+                        <div class="shortcut-row"><kbd>B</kbd><span>reveal β-redexes</span></div>
+                        <div class="shortcut-row"><kbd>C</kbd><span>center view</span></div>
+                        <div class="shortcut-row"><kbd>↑↓←→</kbd><span>navigate tree</span></div>
+                        <div class="shortcut-row"><kbd>Tab</kbd><span>toggle panel</span></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
 
         <!-- Main viewport -->
         <main id="viewport">
@@ -72,81 +207,17 @@
             </div>
         </main>
 
-        <!-- Strategy panel (right drawer) -->
-        <aside id="strategy-panel" class="panel-closed">
-            <div class="panel-header">
-                <h2>Reduction Strategy</h2>
-                <button id="panel-close" class="btn btn-icon">×</button>
-            </div>
-            <div class="panel-body">
-                <div class="strategy-options">
-                    <label class="radio-card">
-                        <input type="radio" name="strategy" value="normal" checked />
-                        <div class="radio-content">
-                            <strong>Normal Order</strong>
-                            <span>Leftmost-outermost redex first</span>
-                        </div>
-                    </label>
-                    <label class="radio-card">
-                        <input type="radio" name="strategy" value="applicative" />
-                        <div class="radio-content">
-                            <strong>Applicative Order</strong>
-                            <span>Leftmost-innermost redex first</span>
-                        </div>
-                    </label>
-                    <label class="radio-card">
-                        <input type="radio" name="strategy" value="cbv" />
-                        <div class="radio-content">
-                            <strong>Call-by-Value</strong>
-                            <span>Arguments to values first; no reduction under λ</span>
-                        </div>
-                    </label>
-                    <label class="radio-card">
-                        <input type="radio" name="strategy" value="cbn" />
-                        <div class="radio-content">
-                            <strong>Call-by-Name</strong>
-                            <span>Outermost first; no reduction under λ</span>
-                        </div>
-                    </label>
-                </div>
-                <div class="panel-actions">
-                    <button id="step-btn" class="btn btn-primary btn-wide">
-                        Step →
-                    </button>
-                    <button id="run-btn" class="btn btn-wide">
-                        Auto-run ▶
-                    </button>
-                    <button id="stop-btn" class="btn btn-wide" style="display:none">
-                        Stop ■
-                    </button>
-                </div>
-                <div id="step-info" class="step-info">
-                    <span id="step-count">Steps: 0</span>
-                    <span id="normal-form-badge" class="badge badge-green" style="display:none">Normal form</span>
-                </div>
-            </div>
-        </aside>
-        <button id="strategy-toggle" class="strategy-fab" title="Reduction strategies">
-            ⚙
-        </button>
-
         <!-- Context menu (compact symbol buttons) -->
         <div id="context-menu" class="hidden"></div>
 
-        <!-- Alpha rename dialog -->
-        <div id="alpha-overlay" class="overlay hidden">
-            <div class="dialog">
-                <div class="dialog-icon">α</div>
-                <div class="dialog-subtitle" id="alpha-info"></div>
-                <div class="dialog-input">
-                    <input type="text" id="alpha-name" placeholder="new name"
-                           spellcheck="false" autocomplete="off" />
-                </div>
-                <div class="dialog-actions">
-                    <button id="alpha-cancel" class="btn">Cancel</button>
-                    <button id="alpha-apply" class="btn btn-primary">Rename</button>
-                </div>
-            </div>
+        <!-- Inline alpha rename popup -->
+        <div id="alpha-popup" class="alpha-popup hidden">
+            <span class="alpha-tag">α</span>
+            <span id="alpha-old" class="alpha-old"></span>
+            <span class="alpha-arrow">↦</span>
+            <input type="text" id="alpha-name" class="alpha-input"
+                   placeholder="..."
+                   spellcheck="false" autocomplete="off" />
         </div>
 
         <!-- Derivation tree panel -->
@@ -157,6 +228,39 @@
             <div id="tree-view"></div>
         </div>
 
+        <!-- Tutorial tree callout pointer -->
+        <div id="tree-callout" class="tree-callout hidden">
+            <svg class="tree-callout-svg" viewBox="0 0 180 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path class="tree-callout-stroke" d="M170 8 C140 10, 100 20, 60 55 C40 72, 25 90, 12 112" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+                <path class="tree-callout-head" d="M8 105 L12 115 L20 108" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+            <span class="tree-callout-text">Notice the derivation tree</span>
+        </div>
+
+        <!-- Tutorial card -->
+        <div id="tutorial" class="tutorial hidden">
+            <div class="tutorial-header">
+                <span class="tutorial-step-indicator" id="tutorial-indicator"></span>
+                <button id="tutorial-close" class="tutorial-close">&times;</button>
+            </div>
+            <div class="tutorial-body" id="tutorial-body"></div>
+            <div class="tutorial-footer">
+                <button id="tutorial-prev" class="btn btn-small">← Back</button>
+                <div class="tutorial-dots" id="tutorial-dots"></div>
+                <button id="tutorial-next" class="btn btn-primary btn-small">Next →</button>
+            </div>
+        </div>
+
+        <!-- Hint bar -->
+        <div id="hint-bar">
+            <span class="hint"><kbd>B</kbd> redexes</span>
+            <span class="hint"><kbd>Space</kbd> step</span>
+            <span class="hint"><kbd>C</kbd> center</span>
+            <span class="hint"><kbd>↑↓</kbd> navigate</span>
+            <span class="hint"><kbd>R</kbd> random</span>
+            <span class="hint"><kbd>Tab</kbd> controls</span>
+        </div>
+
         <!-- Status bar -->
         <footer id="status-bar">
             <span id="term-size"></span>
@@ -164,6 +268,13 @@
             <span id="redex-count"></span>
             <span id="strategy-name"></span>
         </footer>
+
+        <!-- Branding watermark -->
+        <div id="branding">
+            <span class="branding-course">CIS352</span>
+            <span class="branding-sep">·</span>
+            <span class="branding-school">Syracuse University</span>
+        </div>
     </div>
 
     <script type="module" src="app.js"></script>

@@ -1,0 +1,19 @@
+{
+  "name": "lambda-playground",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "build": "tsc --noEmit && node esbuild.mjs",
+    "watch": "node -e \"const{context}=await import('esbuild');const ctx=await context({entryPoints:['www/src/app.ts'],bundle:true,outfile:'www/app.js',format:'esm',target:'es2022',sourcemap:true,plugins:[{name:'rw',setup(b){b.onResolve({filter:/lambda_viz\\.js$/},()=>({path:'./pkg/lambda_viz.js',external:true}))}}]});await ctx.watch();console.log('watching...')\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kmicinski/lambda-playground.git"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.27.3",
+    "typescript": "^5.9.3"
+  }
+}

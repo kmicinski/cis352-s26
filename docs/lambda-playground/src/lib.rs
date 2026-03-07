@@ -1,6 +1,6 @@
-mod term;
-mod parser;
-mod render;
+pub mod term;
+pub mod parser;
+pub mod render;
 
 use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
@@ -42,13 +42,17 @@ impl LambdaEngine {
         self.get_render_tree()
     }
 
-    /// Generate a random term
-    pub fn random_term(&mut self, max_depth: u32, closed: bool) -> String {
+    /// Generate a random term with depth sampled from a Pareto distribution.
+    /// Most terms are sizable (depth 5-8), occasionally huge (depth 15+).
+    pub fn random_term(&mut self, closed: bool) -> String {
         let var_pool = vec![
             "x".to_string(), "y".to_string(), "z".to_string(),
             "w".to_string(), "u".to_string(), "v".to_string(),
         ];
-        let term = gen_random_term(max_depth, &if closed { vec![] } else { var_pool.clone() }, &var_pool, closed);
+        // Pareto(x_min=5, α=2.5): long tail, median ~6.6, ~1.5% chance of depth 18+
+        let u = random().max(0.001);
+        let depth = ((5.0_f64 * u.powf(-1.0 / 2.5)).floor() as u32).min(18);
+        let term = gen_random_term(depth, &if closed { vec![] } else { var_pool.clone() }, &var_pool, closed);
         self.history.clear();
         self.current = Some(term);
         self.get_render_tree().unwrap_or_default()
@@ -108,8 +112,24 @@ impl LambdaEngine {
                 if arg.is_empty() {
                     return Err(JsValue::from_str("Alpha conversion requires a new variable name"));
                 }
-                term.map_at_path(&path, |t| t.alpha_convert(arg))
-                    .ok_or_else(|| JsValue::from_str("Alpha conversion failed (name may be captured)"))?
+                let alpha_err: std::cell::RefCell<Option<String>> = std::cell::RefCell::new(None);
+                let result = term.map_at_path(&path, |t| {
+                    match t.alpha_convert(arg) {
+                        Ok(new_term) => Some(new_term),
+                        Err(msg) => {
+                            *alpha_err.borrow_mut() = Some(msg);
+                            None
+                        }
+                    }
+                });
+                match result {
+                    Some(new_term) => new_term,
+                    None => {
+                        let msg = alpha_err.borrow().clone()
+                            .unwrap_or_else(|| "Alpha conversion failed at this path".to_string());
+                        return Err(JsValue::from_str(&msg));
+                    }
+                }
             }
             _ => return Err(JsValue::from_str(&format!("Unknown operation: {}", op))),
         };
@@ -204,14 +224,14 @@ fn gen_random_term(
         return Term::Abs(param, Box::new(body));
     }
 
-    if r < 0.30 {
+    if r < 0.25 {
         // Lambda
         let param = var_pool[rand_usize(var_pool.len())].clone();
         let mut new_scope = scope.to_vec();
         new_scope.push(param.clone());
         let body = gen_random_term(depth - 1, &new_scope, var_pool, closed);
         Term::Abs(param, Box::new(body))
-    } else if r < 0.70 {
+    } else if r < 0.80 {
         // Application (sometimes create a redex)
         if rand_bool(0.3) && depth >= 2 {
             // Create a redex: (λx.body) arg

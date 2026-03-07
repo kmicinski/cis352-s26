@@ -245,58 +245,105 @@ pub fn parse(input: &str) -> Result<Term, String> {
 mod tests {
     use super::*;
 
+    // ── Basic parsing ───────────────────────────────────────────
+
     #[test]
-    fn test_parse_var() {
+    fn parse_var() {
         assert_eq!(parse("x").unwrap(), Term::var("x"));
     }
 
     #[test]
-    fn test_parse_abs() {
-        let result = parse("(\\ (x) x)").unwrap();
-        assert_eq!(result, Term::abs("x", Term::var("x")));
+    fn parse_multi_char_var() {
+        assert_eq!(parse("foo").unwrap(), Term::var("foo"));
     }
 
     #[test]
-    fn test_parse_abs_lambda_char() {
-        let result = parse("(\u{03bb} (x) x)").unwrap();
-        assert_eq!(result, Term::abs("x", Term::var("x")));
+    fn parse_var_with_digits() {
+        assert_eq!(parse("x0").unwrap(), Term::var("x0"));
     }
 
     #[test]
-    fn test_parse_app() {
-        let result = parse("(f x)").unwrap();
-        assert_eq!(result, Term::app(Term::var("f"), Term::var("x")));
+    fn parse_var_with_prime() {
+        assert_eq!(parse("x'").unwrap(), Term::var("x'"));
     }
 
     #[test]
-    fn test_parse_multi_param() {
-        let result = parse("(\\ (x y) x)").unwrap();
+    fn parse_abs_backslash() {
+        assert_eq!(parse("(\\ (x) x)").unwrap(), Term::abs("x", Term::var("x")));
+    }
+
+    #[test]
+    fn parse_abs_lambda_char() {
+        assert_eq!(parse("(\u{03bb} (x) x)").unwrap(), Term::abs("x", Term::var("x")));
+    }
+
+    #[test]
+    fn parse_abs_lambda_word() {
+        assert_eq!(parse("(lambda (x) x)").unwrap(), Term::abs("x", Term::var("x")));
+    }
+
+    #[test]
+    fn parse_app() {
         assert_eq!(
-            result,
+            parse("(f x)").unwrap(),
+            Term::app(Term::var("f"), Term::var("x"))
+        );
+    }
+
+    // ── Sugar ───────────────────────────────────────────────────
+
+    #[test]
+    fn parse_multi_param() {
+        assert_eq!(
+            parse("(\\ (x y) x)").unwrap(),
             Term::abs("x", Term::abs("y", Term::var("x")))
         );
     }
 
     #[test]
-    fn test_parse_multi_app() {
-        let result = parse("(f x y)").unwrap();
+    fn parse_three_params() {
         assert_eq!(
-            result,
+            parse("(\\ (x y z) x)").unwrap(),
+            Term::abs("x", Term::abs("y", Term::abs("z", Term::var("x"))))
+        );
+    }
+
+    #[test]
+    fn parse_multi_app_left_assoc() {
+        // (f x y) → ((f x) y)
+        assert_eq!(
+            parse("(f x y)").unwrap(),
             Term::app(Term::app(Term::var("f"), Term::var("x")), Term::var("y"))
         );
     }
 
     #[test]
-    fn test_parse_nested() {
-        let result = parse("((\\ (x) x) y)").unwrap();
+    fn parse_four_way_app() {
+        // (f a b c) → (((f a) b) c)
         assert_eq!(
-            result,
+            parse("(f a b c)").unwrap(),
+            Term::app(
+                Term::app(
+                    Term::app(Term::var("f"), Term::var("a")),
+                    Term::var("b"),
+                ),
+                Term::var("c"),
+            )
+        );
+    }
+
+    // ── Nesting ─────────────────────────────────────────────────
+
+    #[test]
+    fn parse_nested_app() {
+        assert_eq!(
+            parse("((\\ (x) x) y)").unwrap(),
             Term::app(Term::abs("x", Term::var("x")), Term::var("y"))
         );
     }
 
     #[test]
-    fn test_parse_complex() {
+    fn parse_complex_y_combinator_arm() {
         let result = parse("(\\ (f) (\\ (x) (f (x x))))").unwrap();
         let expected = Term::abs(
             "f",
@@ -306,5 +353,79 @@ mod tests {
             ),
         );
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn parse_omega() {
+        let t = parse("((\\ (x) (x x)) (\\ (x) (x x)))").unwrap();
+        let half = Term::abs("x", Term::app(Term::var("x"), Term::var("x")));
+        assert_eq!(t, Term::app(half.clone(), half));
+    }
+
+    // ── Whitespace ──────────────────────────────────────────────
+
+    #[test]
+    fn parse_extra_whitespace() {
+        assert_eq!(
+            parse("  ( \\  ( x )   x )  ").unwrap(),
+            Term::abs("x", Term::var("x"))
+        );
+    }
+
+    #[test]
+    fn parse_newlines_and_tabs() {
+        assert_eq!(
+            parse("(\\\n\t(x)\n\tx)").unwrap(),
+            Term::abs("x", Term::var("x"))
+        );
+    }
+
+    // ── Error cases ─────────────────────────────────────────────
+
+    #[test]
+    fn parse_empty_string() {
+        assert!(parse("").is_err());
+    }
+
+    #[test]
+    fn parse_unclosed_paren() {
+        assert!(parse("(f x").is_err());
+    }
+
+    #[test]
+    fn parse_empty_parens() {
+        assert!(parse("()").is_err());
+    }
+
+    #[test]
+    fn parse_lambda_no_body() {
+        assert!(parse("(\\ (x))").is_err());
+    }
+
+    // ── Round-trip: parse → display → parse ─────────────────────
+
+    #[test]
+    fn roundtrip_identity() {
+        let input = "(\u{03bb} (x) x)";
+        let t = parse(input).unwrap();
+        let displayed = t.display_string();
+        let t2 = parse(&displayed).unwrap();
+        assert_eq!(t, t2);
+    }
+
+    #[test]
+    fn roundtrip_application() {
+        let input = "((f x) y)";
+        let t = parse(input).unwrap();
+        let t2 = parse(&t.display_string()).unwrap();
+        assert_eq!(t, t2);
+    }
+
+    #[test]
+    fn roundtrip_nested() {
+        let input = "((\u{03bb} (x) (x x)) (\u{03bb} (y) y))";
+        let t = parse(input).unwrap();
+        let t2 = parse(&t.display_string()).unwrap();
+        assert_eq!(t, t2);
     }
 }
