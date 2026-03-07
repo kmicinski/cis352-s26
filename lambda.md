@@ -5,9 +5,9 @@ permalink: /lambda-explorer
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="refresh" content="0; url={{ site.baseurl }}/lambda-playground/www/index.html">
+<meta http-equiv="refresh" content="0; url={{ '/lambda-playground/www/index.html' | relative_url }}">
 </head>
 <body>
-<a href="{{ site.baseurl }}/lambda-playground/www/index.html">Lambda Calculus Explorer</a>
+<a href="{{ '/lambda-playground/www/index.html' | relative_url }}">Lambda Calculus Explorer</a>
 </body>
 </html>
