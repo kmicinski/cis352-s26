@@ -42,8 +42,8 @@ impl Theory for BigStepTheory {
     }
 
     fn is_judgement(&self, s: &str) -> bool {
-        // A judgement contains ⊢ and ⇓
-        s.contains('⊢') && s.contains('⇓')
+        // A judgement contains ⊢ and ⇓ (or their ASCII equivalents |- and ==>)
+        (s.contains('⊢') || s.contains("|-")) && (s.contains('⇓') || s.contains("==>"))
     }
 
     fn applicable_rules(&self, conclusion: &str) -> Vec<(&str, bool, Option<String>)> {
@@ -147,13 +147,14 @@ impl Theory for BigStepTheory {
                     if let Expr::If0(eg, _et, ef) = &j.expr {
                         Ok(vec![
                             format!("{} \u{22A2} {} \u{21D3} ?", env_str, eg),
+                            "? \u{2260} 0".to_string(),
                             format!("{} \u{22A2} {} \u{21D3} {}", env_str, ef, j.value),
                         ])
                     } else {
-                        Ok(vec![base.clone(), base.clone()])
+                        Ok(vec![base.clone(), "? \u{2260} 0".to_string(), base.clone()])
                     }
                 } else {
-                    Ok(vec![base.clone(), base.clone()])
+                    Ok(vec![base.clone(), "? \u{2260} 0".to_string(), base.clone()])
                 }
             }
             "Let" => {
@@ -237,9 +238,10 @@ mod tests {
     #[test]
     fn test_gen_if0_false() {
         let prems = BigStepTheory.generate_premises("If0-False", "{} \u{22A2} (if0 1 2 3) \u{21D3} 3").unwrap();
-        assert_eq!(prems.len(), 2);
+        assert_eq!(prems.len(), 3);
         assert_eq!(prems[0], "{} \u{22A2} 1 \u{21D3} ?");
-        assert_eq!(prems[1], "{} \u{22A2} 3 \u{21D3} 3");
+        assert_eq!(prems[1], "? \u{2260} 0");
+        assert_eq!(prems[2], "{} \u{22A2} 3 \u{21D3} 3");
     }
 
     #[test]

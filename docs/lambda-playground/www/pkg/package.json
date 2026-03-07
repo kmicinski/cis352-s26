@@ -1,0 +1,15 @@
+{
+  "name": "lambda-viz",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "lambda_viz_bg.wasm",
+    "lambda_viz.js",
+    "lambda_viz.d.ts"
+  ],
+  "main": "lambda_viz.js",
+  "types": "lambda_viz.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

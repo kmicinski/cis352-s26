@@ -3,10 +3,10 @@
   <channel>
     <title>CIS352</title>
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
-    <link>https://kmicinski.com/cis352-s26/</link>
-    <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 05 Mar 2026 02:22:13 -0500</pubDate>
-    <lastBuildDate>Thu, 05 Mar 2026 02:22:13 -0500</lastBuildDate>
+    <link>http://localhost:4000/cis352-s26/</link>
+    <atom:link href="http://localhost:4000/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Sat, 07 Mar 2026 00:32:56 -0500</pubDate>
+    <lastBuildDate>Sat, 07 Mar 2026 00:32:56 -0500</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -834,8 +834,8 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
 &lt;/ul&gt;
 </description>
         <pubDate>Wed, 04 Mar 2026 00:00:00 -0500</pubDate>
-        <link>https://kmicinski.com/cis352-s26/closures</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/closures</guid>
+        <link>http://localhost:4000/cis352-s26/closures</link>
+        <guid isPermaLink="true">http://localhost:4000/cis352-s26/closures</guid>
         
         
       </item>
@@ -1058,8 +1058,8 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
 &lt;/ul&gt;
 </description>
         <pubDate>Tue, 03 Mar 2026 00:00:00 -0500</pubDate>
-        <link>https://kmicinski.com/cis352-s26/lambda</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/lambda</guid>
+        <link>http://localhost:4000/cis352-s26/lambda</link>
+        <guid isPermaLink="true">http://localhost:4000/cis352-s26/lambda</guid>
         
         
       </item>
@@ -1528,8 +1528,8 @@ can only emit logging statements).&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
         <pubDate>Tue, 03 Feb 2026 00:00:00 -0500</pubDate>
-        <link>https://kmicinski.com/cis352-s26/evaluation-order</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/evaluation-order</guid>
+        <link>http://localhost:4000/cis352-s26/evaluation-order</link>
+        <guid isPermaLink="true">http://localhost:4000/cis352-s26/evaluation-order</guid>
         
         
       </item>
@@ -2073,8 +2073,8 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
 &lt;/ul&gt;
 </description>
         <pubDate>Mon, 02 Feb 2026 00:00:00 -0500</pubDate>
-        <link>https://kmicinski.com/cis352-s26/algebra</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/algebra</guid>
+        <link>http://localhost:4000/cis352-s26/algebra</link>
+        <guid isPermaLink="true">http://localhost:4000/cis352-s26/algebra</guid>
         
         
       </item>
@@ -2464,8 +2464,8 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 </description>
         <pubDate>Sun, 01 Feb 2026 00:00:00 -0500</pubDate>
-        <link>https://kmicinski.com/cis352-s26/patterns</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/patterns</guid>
+        <link>http://localhost:4000/cis352-s26/patterns</link>
+        <guid isPermaLink="true">http://localhost:4000/cis352-s26/patterns</guid>
         
         
       </item>
@@ -2865,8 +2865,8 @@ git push
 select for your project to be graded.&lt;/p&gt;
 </description>
         <pubDate>Sun, 02 Oct 2022 00:00:00 -0400</pubDate>
-        <link>https://kmicinski.com/cis352-s26/projects/2</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/projects/2</guid>
+        <link>http://localhost:4000/cis352-s26/projects/2</link>
+        <guid isPermaLink="true">http://localhost:4000/cis352-s26/projects/2</guid>
         
         
         <category>assignment</category>
@@ -2882,8 +2882,8 @@ select for your project to be graded.&lt;/p&gt;
 &lt;p&gt;&lt;a href=&quot;https://www.youtube.com/watch?v=ApIXt_Exf7g&quot;&gt;Project Video&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Sat, 17 Sep 2022 00:00:00 -0400</pubDate>
-        <link>https://kmicinski.com/cis352-s26/projects/1</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/projects/1</guid>
+        <link>http://localhost:4000/cis352-s26/projects/1</link>
+        <guid isPermaLink="true">http://localhost:4000/cis352-s26/projects/1</guid>
         
         
         <category>assignment</category>
