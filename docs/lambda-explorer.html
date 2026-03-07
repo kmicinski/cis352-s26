@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <title>Schedule</title>
+  <title>Lambda Calculus Explorer</title>
   <meta name="description" content="CMSC352--Principles of Programming Languages (Spring '26) at Syracuse">
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="http://localhost:4000/cis352-s26/css/main.css">
-  <link rel="canonical" href="http://localhost:4000/cis352-s26/schedule/">
+  <link rel="canonical" href="http://localhost:4000/cis352-s26/lambda-explorer">
   <link rel="alternate" type="application/rss+xml" title="CIS352" href="http://localhost:4000/cis352-s26/feed.xml">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   
@@ -85,8 +85,6 @@
     <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/syllabus/">Syllabus</a> -->
     <!--        -->
     <!--      -->
-    <!--        -->
-    <!--      -->
     <!--   </div> -->
     <!-- </nav> -->
 
@@ -96,106 +94,80 @@
 
     <div class="page-content">
       <div class="wrapper">
-        <article class="post">
+        <style>
+/* Full-page immersive layout — hide site chrome */
+.lc-fullpage .wrapper { max-width: none; padding: 0; margin: 0; }
+.lc-fullpage .page-content { padding: 0; margin: 0; }
+.lc-fullpage .site-footer { display: none; }
+.lc-fullpage .site-header { display: none; }
 
-  <div class="post-content">
-    <p>The following represents the currently anticipated (and most
-ambitious) schedule. The schedule will be updated as the course
-evolves to reflect the actual pacing.<br />
-Please follow the week number and watch videos accordingly.</p>
+.lc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  z-index: 10;
+}
 
-<ul>
-  <li><strong>Week 0</strong></li>
-  <li><em>Lecture 0</em> - Course Intro
-    <ul>
-      <li>Slides in <a href="http://localhost:4000/cis352-s26/assets/slides/kris-intro.key">Keynote</a> and <a href="http://localhost:4000/cis352-s26/assets/slides/kris-intro.pdf">PDF</a>.</li>
-    </ul>
-  </li>
-  <li><em>Lecture 1</em> - Introduction to Racket: Basics and Lists
-    <ul>
-      <li>Slides in <a href="http://localhost:4000/cis352-s26/assets/slides/intro-racket.key">Keynote</a> and <a href="http://localhost:4000/cis352-s26/assets/slides/intro-racket.pdf">PDF</a>.</li>
-    </ul>
-  </li>
-  <li><strong>Week 1</strong></li>
-  <li><em>Lecture 2</em> - Recursive Structures (Intro asn. 1)</li>
-  <li>
-    <p><em>Lecture 3</em> - Higher-order functions</p>
-  </li>
-  <li><strong>Week 2</strong></li>
-  <li><em>Lecture 4</em> - Execution Order and the Stack</li>
-  <li>
-    <p><em>Lecture 5</em> - Pattern Matching and Sets</p>
-  </li>
-  <li><strong>Week 3</strong></li>
-  <li><em>Lecture 6</em> - Okasaki-style immutable queues (intro asn 2)</li>
-  <li>
-    <p><em>Lecture 7</em> - Immutable Binary and Quad-trees</p>
-  </li>
-  <li><strong>Week 4</strong></li>
-  <li><em>Lecture 8</em> - Static and Dynamic Scope</li>
-  <li>
-    <p><em>Lecture 9</em> - Lambda Calculus, method one: textual-reduction semantics</p>
-  </li>
-  <li><strong>Week 5</strong></li>
-  <li><em>Lecture 10</em> - Lambda Calculus, Big-Step Semantics (CE), Intro to Asn 3.</li>
-  <li>
-    <p><em>Lecture 11</em> - Lambda Calculus via Metacircular interpreter</p>
-  </li>
-  <li><strong>Week 6</strong></li>
-  <li><em>Lecture 12</em> - Metacircular interpreter exercise and <strong>CODING EXAM 0</strong> (worth 5%)</li>
-  <li>
-    <p><em>Lecture 13</em> - Church-encoding and Intro Asn 4.</p>
-  </li>
-  <li><strong>Week 7</strong></li>
-  <li><em>Lecture 14</em> - Control and Continuations</li>
-  <li>
-    <p><em>Lecture 15</em> - Small-step semantics (CEK)</p>
-  </li>
-  <li><strong>Week 8</strong></li>
-  <li><em>Lecture 16</em> - ANF and CPS</li>
-  <li>
-    <p><em>Lecture 17</em> - <strong>(March 12) MIDTERM</strong> (worth 12%)</p>
-  </li>
-  <li>
-    <p><strong>Week 9 — Spring break</strong></p>
-  </li>
-  <li><strong>Week 10</strong></li>
-  <li><em>Lecture 18</em> - Top-down parsing via statepassing: livecoding</li>
-  <li>
-    <p><em>Lecture 19</em> - Big-step (metacircular) CES semantics</p>
-  </li>
-  <li><strong>Week 11</strong></li>
-  <li><em>Lecture 20</em> - Simply-Typed Lambda Calculus</li>
-  <li>
-    <p><em>Lecture 21</em> - Type inference for let-bound polylmorphism</p>
-  </li>
-  <li><strong>Week 12</strong></li>
-  <li><em>Lecture 22</em> - Hygienic Macros 1</li>
-  <li>
-    <p><em>Lecture 24</em> - Hygienic Macros 1</p>
-  </li>
-  <li><strong>Week 13</strong></li>
-  <li><em>Lecture 25</em> - Exercise and <strong>CODING EXAM 1</strong> (worth 5%)</li>
-  <li>
-    <p><em>Lecture 26</em> - MiniKanren 1</p>
-  </li>
-  <li><strong>Week 14</strong></li>
-  <li><em>Lecture 27</em> - MiniKanren 2</li>
-  <li>
-    <p><em>Lecture 28</em> - MiniKanren 3</p>
-  </li>
-  <li><strong>Week 15</strong></li>
-  <li>
-    <p><em>Lecture 29</em> - Course wrap-up / review</p>
-  </li>
-  <li><strong>Finals</strong></li>
-  <li>Final (worth 20%)</li>
-</ul>
+.lc-header h1 {
+  margin: 0;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+  font-size: 1.2em;
+  font-weight: 700;
+  color: #F76900;
+  letter-spacing: -0.02em;
+}
 
+.lc-header .lc-back {
+  font-size: 0.82em;
+  color: #9ca3af;
+  text-decoration: none;
+  margin-left: auto;
+  transition: color 0.2s;
+}
 
-  </div>
+.lc-header .lc-back:hover {
+  color: #F76900;
+}
 
-</article>
+.lc-frame {
+  width: 100%;
+  height: calc(100vh - 49px);
+  border: none;
+  display: block;
+}
+</style>
+
+<div class="lc-header">
+  <h1>&lambda;-Calculus Explorer</h1>
+  <a class="lc-back" href="http://localhost:4000/cis352-s26/">&larr; Back to CIS352</a>
+</div>
+<iframe class="lc-frame" src="/cis352-s26/lambda-playground/www/index.html"></iframe>
+
+<script>
+// Apply full-page class to parent containers
+document.body.parentElement.classList.add('lc-fullpage');
+document.body.classList.add('lc-fullpage');
+document.querySelectorAll('.page-content, .wrapper').forEach(function(el) {
+  el.classList.add('lc-fullpage');
+});
+// Hide site header/footer
+var header = document.querySelector('.site-header');
+var footer = document.querySelector('.site-footer');
+if (header) header.style.display = 'none';
+if (footer) footer.style.display = 'none';
+// Remove wrapper constraints
+document.querySelectorAll('.page-content, .page-content > .wrapper').forEach(function(el) {
+  el.style.maxWidth = 'none';
+  el.style.padding = '0';
+  el.style.margin = '0';
+});
+</script>
+
 
       </div>
     </div>
