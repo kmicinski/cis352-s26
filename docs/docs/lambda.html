@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>The Untyped λ-Calculus</title>
+  <meta name="description" content="Topics">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="http://localhost:4000/cis352-s26/css/main.css">
+  <link rel="canonical" href="http://localhost:4000/cis352-s26/lambda">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="http://localhost:4000/cis352-s26/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  
+</head>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="http://localhost:4000/cis352-s26/">CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/#schedule">Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/syllabus">Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/playground">Proof Playground</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/lambda-explorer">Lambda Explorer</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/lambda-explorer">Lambda Calculus Explorer</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/playground">Proof Tree Playground</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <!-- <header class="post-header"> -->
+  <!--   <h1 class="post-title" itemprop="name headline">The Untyped λ-Calculus</h1> -->
+  <!-- </header> -->
+
+  <div class="post-content" itemprop="articleBody">
+    <h2 id="topics">Topics</h2>
+
+<ul>
+  <li>The Untyped λ-Calculus</li>
+  <li>β-reduction</li>
+  <li>λ-calculus Semantics and Normal Forms</li>
+</ul>
+
+<hr />
+
+<h2 id="the-untyped-λ-calculus">The Untyped λ-Calculus</h2>
+
+<p>Today we will learn about one of the most central aspects of the course: Alonzo Church’s untyped λ-calculus. The λ-calculus is not at all like the integral calculus. Instead, the λ-calculus is a computationally “complete” system consisting of an extremely minimal number of syntax and semantic rules.</p>
+
+<p>The syntax of the λ-calculus includes just three forms. We define untyped λ-calculus expressions in the following manner:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>e ∈ Expr ::=   (read: "The set Expr, of expressions consists of...")
+          | x             ← Variable references
+          | (λ (x) e)     ← λ abstractions
+          | (e e)         ← Application
+</code></pre></div></div>
+
+<p>That is the syntax of the λ-calculus. We will spend a long time studying the “semantics” of the λ calculus: the untyped λ-calculus has a fairly “nondeterministic” semantics defined in terms of rewriting rules—to turn the λ calculus into a programming language (such as Racket / Haskell / etc.), we will need to make some more decisions (we will cover this in later classes).</p>
+
+<p>For now, let’s see some examples of λ-calculus terms:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">λx. x</code>, which I would write as <code class="language-plaintext highlighter-rouge">(λ (x) x)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">λx. λy. x</code>, which I would write as <code class="language-plaintext highlighter-rouge">(λ (x) (λ (y) x))</code></li>
+  <li><code class="language-plaintext highlighter-rouge">λx. x y</code>, which I would write as <code class="language-plaintext highlighter-rouge">(λ (x) (x y))</code></li>
+</ul>
+
+<p>Notice that Racket’s syntax completely disambiguates what is going on, hence we will stick with the Scheme-style λ, compared to the more traditional λ-calculus notation.</p>
+
+<blockquote>
+  <p><strong>QuickAnswer</strong></p>
+
+  <p>Which of the following (possibly multiple) is in the lambda calculus?</p>
+
+  <ul>
+    <li>(A) <code class="language-plaintext highlighter-rouge">(λ (x) y)</code></li>
+    <li>(B) <code class="language-plaintext highlighter-rouge">(λ (x y) x)</code></li>
+    <li>(C) <code class="language-plaintext highlighter-rouge">(λ (x) (λ (y) (λ (z) (z x))))</code></li>
+    <li>(D) <code class="language-plaintext highlighter-rouge">((λ (x) e) 1)</code></li>
+  </ul>
+</blockquote>
+
+<hr />
+
+<h2 id="β-reduction">β-reduction</h2>
+
+<p>β-reduction is the most fundamental operation in the λ calculus. It simply means the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((λ (x) e-b) e-a) β⟹ e-b [x ↦ e-a]
+</code></pre></div></div>
+
+<p>In other words: any expression <code class="language-plaintext highlighter-rouge">(e-f e-a)</code> is a candidate for β-reduction whenever <code class="language-plaintext highlighter-rouge">e-f</code> is of the form <code class="language-plaintext highlighter-rouge">(λ (x) e-b)</code>. We call expressions of this form <em>redexes</em> for “reducible expressions.”</p>
+
+<p>The “meaning” of a λ-calculus term is given by all of the possible different reductions (so far we have talked only about β) we can do to it. Some cases are easy, let’s see our first example of β reduction:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((λ (x) x) y) β⟹ x [x ↦ y] ≡ y
+</code></pre></div></div>
+
+<p>Notice how in this case, <code class="language-plaintext highlighter-rouge">y</code> is the argument. But we couldn’t write this in Racket:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((λ (x) x) y)   ← Syntax error: y is unbound variable
+</code></pre></div></div>
+
+<p>β-reduction, and the untyped λ-calculus in general, doesn’t care that the variable is unbound. β-reduction just says: “to apply a function <code class="language-plaintext highlighter-rouge">(λ (x) e-b)</code> to an argument expression <code class="language-plaintext highlighter-rouge">e-a</code>, substitute <code class="language-plaintext highlighter-rouge">x</code> by <code class="language-plaintext highlighter-rouge">e-a</code> in the body.”</p>
+
+<blockquote>
+  <p><strong>QuickAnswer</strong></p>
+
+  <p>Perform β-reduction on the term <code class="language-plaintext highlighter-rouge">((λ (x) (x (x y))) z)</code></p>
+</blockquote>
+
+<blockquote>
+  <p><strong>QuickAnswer</strong></p>
+
+  <p>Perform β-reduction on the term <code class="language-plaintext highlighter-rouge">((λ (x) (λ (y) (y x))) (λ (z) z))</code></p>
+</blockquote>
+
+<blockquote>
+  <p><strong>QuickAnswer</strong></p>
+
+  <p>Perform β-reduction on the term <code class="language-plaintext highlighter-rouge">((λ (x) (x x)) (λ (x) (x x)))</code></p>
+</blockquote>
+
+<h3 id="substitution-tricky-we-will-skip-for-now">Substitution: Tricky, we will skip for now</h3>
+
+<p>One note: we are being colloquial about substitution. In fact, substitution is a bit tricky, and it requires some care. We will discuss these nuances in a future lecture, where we will cover some other reduction rules and technical details. For now, it is sufficient to say that you can intuit substitution as “plug and chug” from grade-school algebra / calculus.</p>
+
+<h3 id="reducing-deep-into-a-term">Reducing deep into a term</h3>
+
+<p>Sometimes, the redex will not be obvious. In fact, in general, a term may have multiple redexes.</p>
+
+<blockquote>
+  <p><strong>QuickAnswer</strong></p>
+
+  <p>Give a term that contains <em>two</em> redexes, i.e., two subexpressions such that the expression could have β-reduction performed upon it.</p>
+</blockquote>
+
+<p>In the untyped λ calculus, we typically construe β reduction to be <em>any possible</em> beta reduction deep down within the term. Ultimately we will see that this is not what we want for programming, but for now we will develop it.</p>
+
+<blockquote>
+  <p><strong>QuickAnswer</strong></p>
+
+  <p>The following term has two possible β-reductions:</p>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((λ (x) y)
+ ((λ (z) (z z)) (λ (a) (a a))))
+</code></pre></div>  </div>
+
+  <p>Please perform both possible β reductions, what is the result?</p>
+</blockquote>
+
+<hr />
+
+<h2 id="λ-calculus-semantics-and-normal-forms">λ-calculus Semantics and Normal Forms</h2>
+
+<p>We will see that, surprisingly, the λ-calculus is Turing complete. This is surprising because, essentially, β-reduction is the <em>only</em> computational rule in the whole system. There will be some other reduction rules (α and η), which will have their own place, but β is the main computational rule.</p>
+
+<p>The λ-calculus is ruthlessly tiny, essentially the “assembly language” of functional programming, stripping down functional programming <em>just</em> to function calls.</p>
+
+<p>The “semantics” of the untyped λ-calculus is defined by reduction rules. We have seen one already: the β rule. We can see each β-reduction as one “step” of computation in the λ-calculus. Most interesting programs will take—in general—multiple steps of β-reduction to reduce to a <em>normal form</em>.</p>
+
+<p><strong>Definition (Normal Form):</strong> The term “normal form” refers to a class of expressions which cannot be reduced any further according to some metric. For example, in β-normal form, there can be <em>no</em> unreduced β-reductions <em>anywhere</em> in the term.</p>
+
+<blockquote>
+  <p><strong>QuickAnswer</strong></p>
+
+  <p>Which of the following are in β-normal form:</p>
+
+  <ul>
+    <li>(A) <code class="language-plaintext highlighter-rouge">(λ (x) (λ (y) (x (λ (z) y))))</code></li>
+    <li>(B) <code class="language-plaintext highlighter-rouge">(λ (x) ((λ (z) x) x))</code></li>
+    <li>(C) <code class="language-plaintext highlighter-rouge">(z (λ (x) (x x)))</code></li>
+    <li>(D) <code class="language-plaintext highlighter-rouge">(λ (x) (x ((λ (y) y) x)))</code></li>
+  </ul>
+</blockquote>
+
+<p><strong>Fact:</strong> it is impossible, in general, to take an arbitrary λ-calculus expression and determine whether a β-normal form exists.</p>
+
+<p><em>Explanation:</em> Equivalent to the halting problem.</p>
+
+<p>So far, our lecture has focused on the definition of the λ-calculus as a <em>term rewriting</em> system. In fact, this is precisely what the λ-calculus is: a formulation of functions as terms, where we can use β to drive computation via rewriting / substitution.</p>
+
+<p>When we imagine <em>computing</em> with the λ-calculus, we imagine running <em>many</em> steps of β reduction, gradually reducing the term into a <em>value</em> (i.e., result). Thus, we can see normal forms as <em>values</em>, the results of fully-reducing an expression.</p>
+
+<blockquote>
+  <p><strong>QuickAnswer</strong></p>
+
+  <p>Fully-reduce the following term to β-normal form:</p>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(((λ (x) (λ (y) (x y))) (λ (x) x)) (λ (b) a))
+</code></pre></div>  </div>
+
+  <p>Show each step of each β-reduction.</p>
+</blockquote>
+
+<p>As we will see, the “meaning” of a λ-calculus term is a large, non-deterministic tree of all possible ways in which it could potentially be reduced. Some of these will yield normal forms, and some of them will not.</p>
+
+<blockquote>
+  <p><strong>QuickAnswer</strong></p>
+
+  <p>Which of the following is true about the following term:</p>
+
+  <p><code class="language-plaintext highlighter-rouge">((λ (x) z) ((λ (x) (x x)) (λ (x) (x x))))</code></p>
+
+  <ul>
+    <li>(A) The term reduces forever</li>
+    <li>(B) The term reduces to <code class="language-plaintext highlighter-rouge">z</code></li>
+    <li>(C) Both (A) and (B)</li>
+  </ul>
+</blockquote>
+
+<hr />
+
+<h2 id="summary-day-one-of-the-λ-calculus">Summary: Day one of the λ-calculus</h2>
+
+<ul>
+  <li>
+    <p>A <em>calculus</em> refers to a system for manipulating and rewriting terms. The differential and integral calculus is a system for rewriting terms via symbolic differentiation/integration.</p>
+  </li>
+  <li>
+    <p>The untyped λ-calculus is a system of computing with terms that aims for absolute minimalism.</p>
+  </li>
+  <li>
+    <p>Only three forms: variables, application, and λ-abstraction.</p>
+  </li>
+  <li>
+    <p>The single computational rule is given by β, we will learn more reduction rules soon but β is the main (compute-relevant) one.</p>
+  </li>
+  <li>
+    <p>The “meaning” of a term in the λ-calculus is given by a reduction relation (in this case we have learned only of β-reduction): the idea is that the term will be reduced multiple times until it reaches some “normal form.”</p>
+  </li>
+  <li>
+    <p>A normal form is when you can’t reduce any further, by some metric. We learned one normal form today: β-normal form, in which there is no more β-reduction possible.</p>
+  </li>
+  <li>
+    <p>In the untyped λ-calculus, a given term may have a multitude of different possible redexes (reducible subexpressions). The untyped λ-calculus does not tell us which of those redexes must be applied, and so the meaning of a term in the λ-calculus may have some ambiguity: all different possible ways of reducing the term.</p>
+  </li>
+  <li>
+    <p>This leaves us with an obvious question: will all ways of reducing the term reach the same conclusion / normal form? It turns out the answer is Yes*, under some circumstances, which we will learn about in the next lectures. In short: the Church-Rosser theorem tells us that if a term <em>does</em> have a normal form, it will be unique up to variable renaming.</p>
+  </li>
+  <li>
+    <p>Church wasn’t trying to model hardware. He was trying to:</p>
+    <ul>
+      <li>Characterize effective calculability.</li>
+      <li>Provide a logical foundation for mathematics.</li>
+      <li>β-reduction was a mathematical equality principle, not an execution model.</li>
+    </ul>
+  </li>
+</ul>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '26) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src="/cis352-s26/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="/cis352-s26/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js"></script>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Pattern Matching</title>
+  <meta name="description" content="Pattern Matching (CIS352 ‘S26)">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="http://localhost:4000/cis352-s26/css/main.css">
+  <link rel="canonical" href="http://localhost:4000/cis352-s26/patterns">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="http://localhost:4000/cis352-s26/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  
+</head>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="http://localhost:4000/cis352-s26/">CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/#schedule">Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/syllabus">Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/playground">Proof Playground</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/lambda-explorer">Lambda Explorer</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/lambda-explorer">Lambda Calculus Explorer</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/playground">Proof Tree Playground</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <!-- <header class="post-header"> -->
+  <!--   <h1 class="post-title" itemprop="name headline">Pattern Matching</h1> -->
+  <!-- </header> -->
+
+  <div class="post-content" itemprop="articleBody">
+    <h1 id="pattern-matching-cis352-s26">Pattern Matching (CIS352 ‘S26)</h1>
+
+<h2 id="topics">Topics</h2>
+
+<ul>
+  <li>Trees, manually</li>
+  <li>Recursion over trees</li>
+  <li>Introducing pattern matching</li>
+  <li>Matching list patterns (“quasipatterns”)</li>
+  <li>Matching predicate patterns</li>
+  <li>Trees, and algebraic data types generally</li>
+</ul>
+
+<hr />
+
+<h2 id="warmup">Warmup</h2>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>Let’s write <code class="language-plaintext highlighter-rouge">(interleave l0 l1)</code>, a function that takes two lists l0/l1 and returns the elements of l0 interleaved with the elements of l1. Assume l0/l1 have the same length.</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (interleave '(0 1 2) '(x y z)) =&gt; '(0 x 1 y 2 z)</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">interleave</span> <span class="nv">l0</span> <span class="nv">l1</span><span class="p">)</span>
+  <span class="ss">'todo</span><span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="introduction">Introduction</h2>
+
+<p>A big idea in CIS352 is being able to explain complex programming language features in terms of simpler ones. A very reasonable question is: “why Racket? Why not Haskell, Rust, etc.” The answer is that all of those languages have a <em>large</em> set of core features (e.g., static type system), which makes it harder to understand a very tiny core. There is an answer about Racket specifically in the next lecture–but for now, we will study just one more feature.</p>
+
+<p>Later on in the course we will study the λ-calculus: a language with only three forms. We will show that in fact it is possible to encode every single language feature in terms of the λ-calculus. While CIS352 covers Racket, a main reason for doing this is that it is a language that has a very direct connection to the untyped λ-calculus.</p>
+
+<p>Today we will talk about pattern matching, an increasingly-common language feature which originated in functional programming (SML, Haskell, etc.) but now exists in Python, Rust, and other general-purpose multi-paradigm languages.</p>
+
+<p>We are learning the absolutely minimal number of features necessary to build a complete, general-purpose programming language that allows us to get real work done. Because we want to fully understand <em>everything</em>, we will take a minimal number of things as fundamental. In the case of Racket, we will take only a <em>single</em> data structure as fundamental: lists. Nearly <em>everything</em> we build in class–from a data structures point of view–will be done <em>only</em> using lists.</p>
+
+<p>Next week, we’ll use algebraic data types for their main purpose in CIS352: representing the <em>syntax</em> of another programming language, so that we can start writing interpreters.</p>
+
+<hr />
+
+<h2 id="trees-manually">Trees, manually</h2>
+
+<p>In Racket, we will define an algebraic data type via a “type predicate:”</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">tree?</span> <span class="nv">t</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">cond</span> <span class="p">[(</span><span class="nb">equal?</span> <span class="nv">t</span> <span class="ss">'empty</span><span class="p">)</span> <span class="no">#t</span><span class="p">]</span>
+        <span class="p">[(</span><span class="k">and</span> <span class="p">(</span><span class="nb">list?</span> <span class="nv">t</span><span class="p">)</span>
+              <span class="p">(</span><span class="nb">equal?</span> <span class="p">(</span><span class="nb">length</span> <span class="nv">t</span><span class="p">)</span> <span class="mi">4</span><span class="p">)</span> <span class="c1">;; node's length is exactly 4</span>
+              <span class="p">(</span><span class="nb">equal?</span> <span class="p">(</span><span class="nf">first</span> <span class="nv">t</span><span class="p">)</span> <span class="ss">'node</span><span class="p">)</span>
+              <span class="p">(</span><span class="nf">tree?</span> <span class="p">(</span><span class="nf">third</span> <span class="nv">t</span><span class="p">))</span>
+              <span class="p">(</span><span class="nf">tree?</span> <span class="p">(</span><span class="nf">fourth</span> <span class="nv">t</span><span class="p">)))</span>
+         <span class="no">#t</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">else</span> <span class="no">#f</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p>A binary tree is either:</p>
+<ul>
+  <li>The symbol <code class="language-plaintext highlighter-rouge">'empty</code></li>
+  <li>The list <code class="language-plaintext highlighter-rouge">`(node ,v ,l0 ,l1)</code> where:
+    <ul>
+      <li>l’s first element is <code class="language-plaintext highlighter-rouge">'node</code></li>
+      <li>l’s second element is any value v</li>
+      <li>l’s third element l0 is also a <code class="language-plaintext highlighter-rouge">tree?</code></li>
+      <li>l’s fourth element l1 is also a <code class="language-plaintext highlighter-rouge">tree?</code></li>
+    </ul>
+  </li>
+  <li>A tree is <em>nothing else</em></li>
+</ul>
+
+<p>Notice how the second <code class="language-plaintext highlighter-rouge">cond</code> case is extremely ugly: we have to spell out the shape of the list very precisely. The point of pattern matching is to avoid that pain.</p>
+
+<h3 id="example-trees">Example trees</h3>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="ss">'empty</span>
+<span class="o">'</span><span class="p">(</span><span class="nf">node</span> <span class="mi">5</span> <span class="nv">empty</span> <span class="nv">empty</span><span class="p">)</span>
+<span class="o">'</span><span class="p">(</span><span class="nf">node</span> <span class="mi">5</span>
+       <span class="p">(</span><span class="nf">node</span> <span class="mi">0</span> <span class="nv">empty</span> <span class="nv">empty</span><span class="p">)</span>
+       <span class="p">(</span><span class="nf">node</span> <span class="mi">10</span> <span class="p">(</span><span class="nf">node</span> <span class="mi">7</span> <span class="nv">empty</span> <span class="nv">empty</span><span class="p">)</span> <span class="p">(</span><span class="nf">node</span> <span class="mi">12</span> <span class="nv">empty</span> <span class="nv">empty</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>Write the tree:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>         20
+        /  \
+       10  30
+</code></pre></div></div>
+<p>in a manner that satisfies <code class="language-plaintext highlighter-rouge">tree?</code>:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (node ...)</span>
+</code></pre></div></div>
+
+<p>One fact about trees in Racket: they are <em>just lists</em>. We can build them entirely out of cons cells. We don’t need any fancy machinery to define trees, other than recursion and lists. Once we have recursion and lists, we will see we can build the rest of computation.</p>
+
+<hr />
+
+<h2 id="recursion-over-trees">Recursion over trees</h2>
+
+<p>Now we want to write a recursive function over trees. Let’s start:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; A tree's size is the number of *nodes* it contains</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">tree-size</span> <span class="nv">t</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">equal?</span> <span class="nv">t</span> <span class="ss">'empty</span><span class="p">)</span>
+      <span class="c1">;; (tree-size 'empty) =&gt; 0</span>
+      <span class="mi">0</span>
+      <span class="c1">;; it's a node:</span>
+      <span class="c1">;; the left subtree is (third t), the right subtree is (fourth t)</span>
+      <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">t0-size</span> <span class="p">(</span><span class="nf">tree-size</span> <span class="p">(</span><span class="nf">third</span> <span class="nv">t</span><span class="p">))]</span>
+            <span class="p">[</span><span class="nf">t1-size</span> <span class="p">(</span><span class="nf">tree-size</span> <span class="p">(</span><span class="nf">fourth</span> <span class="nv">t</span><span class="p">))])</span>
+        <span class="p">(</span><span class="nb">+</span> <span class="mi">1</span> <span class="nv">t0-size</span> <span class="nv">t1-size</span><span class="p">))))</span>
+</code></pre></div></div>
+
+<p>As we mentioned, every algebraic data type will tell us what the “shape” of our recursion should look like. In the case of trees, we get the following recursion principle:</p>
+
+<p>To define a recursive function f that works on all trees, define:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">(f 'empty)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">(f \</code>(node ,v ,t0 ,t1))`
+    <ul>
+      <li><em>Using</em> the value of <code class="language-plaintext highlighter-rouge">(f t0)</code>, <code class="language-plaintext highlighter-rouge">(f t1)</code>. I.e., the result of applying f to the left / right subtree</li>
+    </ul>
+  </li>
+</ul>
+
+<p>In the above definition, we used <code class="language-plaintext highlighter-rouge">(third t)</code> and <code class="language-plaintext highlighter-rouge">(fourth t)</code> to manually extract t0/t1. Today, we’ll learn about pattern matching, which will make this much easier. But for now, let’s work another example in the same style as the previous:</p>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>Define <code class="language-plaintext highlighter-rouge">(tree-sum t)</code>, assuming t satisfies <code class="language-plaintext highlighter-rouge">tree?</code>:</p>
+<ul>
+  <li>If t is <code class="language-plaintext highlighter-rouge">'empty</code>, return 0</li>
+  <li>If t is a node, return <code class="language-plaintext highlighter-rouge">(second t)</code> + tree-sum applied to the left/right subtree (use <code class="language-plaintext highlighter-rouge">(third t)</code> and <code class="language-plaintext highlighter-rouge">(fourth t)</code> to get them).</li>
+</ul>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (tree-sum '(node 5 (node 10 empty empty) (node -5 empty empty))) =&gt; 10</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">tree-sum</span> <span class="nv">t</span><span class="p">)</span>
+  <span class="ss">'todo</span><span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="introducing-pattern-matching">Introducing pattern matching</h2>
+
+<p>We will introduce a new construct: <code class="language-plaintext highlighter-rouge">(match e [pattern body] ...)</code></p>
+
+<p>This says: “match an expression e against a number of patterns.”</p>
+
+<p>Here is a brief example:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">fib</span> <span class="nv">x</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">x</span>
+    <span class="p">[</span><span class="nf">0</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">1</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">n</span> <span class="p">(</span><span class="nb">+</span> <span class="p">(</span><span class="nf">fib</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">))</span> <span class="p">(</span><span class="nf">fib</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">x</span> <span class="mi">2</span><span class="p">)))]))</span>
+</code></pre></div></div>
+
+<p>A match expression consists of a:</p>
+<ul>
+  <li><strong>Discriminee</strong>, an expression <em>being matched on / observed</em></li>
+  <li>A number of pattern / body pairs, surrounded by <code class="language-plaintext highlighter-rouge">[ ... ]</code></li>
+</ul>
+
+<p>The semantics is this:</p>
+<ol>
+  <li>First, evaluate the discriminee down to a value, v</li>
+  <li>Try to match v against the first pattern:
+    <ul>
+      <li>If the pattern matches, bind pattern variables and evaluate the body</li>
+    </ul>
+  </li>
+  <li>If the first pattern fails to match, try the next pattern, …</li>
+  <li>If no pattern matches, raise an exception.</li>
+</ol>
+
+<p><strong>Trivia:</strong> we call a match <em>total</em> or <em>exhaustive</em> when it matches all possible values that v could be. In this case, we can rest assured that we will never face an error simply due to the fact that we didn’t have the right match case. Later on in the class, we will study tools for how we could reason about this (and related errors).</p>
+
+<h3 id="pattern-types-so-far">Pattern types so far</h3>
+
+<ul>
+  <li>Every literal value (like <code class="language-plaintext highlighter-rouge">0</code>, <code class="language-plaintext highlighter-rouge">"hello"</code>, <code class="language-plaintext highlighter-rouge">'foo</code>) can be used as a pattern
+    <ul>
+      <li>Matches exactly that literal</li>
+    </ul>
+  </li>
+  <li>A variable forms a pattern and binds the variable</li>
+  <li>The wildcard pattern <code class="language-plaintext highlighter-rouge">_</code> matches anything</li>
+</ul>
+
+<h3 id="example-cond-vs-match">Example: cond vs match</h3>
+
+<p>The two are equivalent:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">foo</span> <span class="nv">x</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">cond</span> <span class="p">[(</span><span class="nb">equal?</span> <span class="nv">x</span> <span class="s">"hello"</span><span class="p">)</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="p">[(</span><span class="nb">equal?</span> <span class="nv">x</span> <span class="mi">15</span><span class="p">)</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">else</span> <span class="mi">3</span><span class="p">]))</span>
+
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">foo-using-match</span> <span class="nv">x</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">x</span>
+    <span class="p">[</span><span class="nf">"hello"</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">15</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">_</span> <span class="mi">3</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>Translate the following function, <code class="language-plaintext highlighter-rouge">bar</code>, to use match:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">bar</span> <span class="nv">x</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">cond</span> <span class="p">[(</span><span class="nb">equal?</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="p">[(</span><span class="nb">equal?</span> <span class="nv">x</span> <span class="mi">-1</span><span class="p">)</span> <span class="mi">-1</span><span class="p">]</span>
+        <span class="p">[</span><span class="nf">else</span> <span class="p">(</span><span class="nf">bar</span> <span class="p">(</span><span class="nb">-</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)))]))</span>
+
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">bar-match</span> <span class="nv">x</span><span class="p">)</span>
+  <span class="ss">'todo</span><span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="matching-list-patterns-quasipatterns">Matching list patterns (“quasipatterns”)</h2>
+
+<p>The next pattern we’ll learn is the <strong>most important for CIS352.</strong></p>
+
+<p>Let’s look at the function <code class="language-plaintext highlighter-rouge">match-list</code>, which takes a list l and returns:</p>
+<ul>
+  <li>the first element if it is of length 1</li>
+  <li>the sum of the two elements if it is of length 2</li>
+  <li>the third elements onward if it is of length &gt; 2</li>
+</ul>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">match-list</span> <span class="nv">l</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">l</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">x0</span><span class="p">)</span> <span class="nv">x0</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">x0</span> <span class="o">,</span><span class="nv">x1</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x0</span> <span class="nv">x1</span><span class="p">)]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">x0</span> <span class="o">,</span><span class="nv">x1</span> <span class="o">,</span><span class="nv">rest</span> <span class="o">...</span><span class="p">)</span> <span class="nv">rest</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p><strong>IMPORTANT:</strong> in a pattern, you <em>MUST</em> use <code class="language-plaintext highlighter-rouge">`</code>, not <code class="language-plaintext highlighter-rouge">'</code></p>
+
+<p><strong>IMPORTANT:</strong> when we use <code class="language-plaintext highlighter-rouge">...</code> in a pattern, it matches <em>zero or more</em> occurrences of the pattern immediately previous to it. If that pattern is a variable, then it is bound to a list.</p>
+
+<p><strong>IMPORTANT:</strong> just to repeat this, in the following example, y is bound to a <em>list</em>, because we have <code class="language-plaintext highlighter-rouge">...</code> following y in the pattern.</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">f+</span> <span class="nv">l</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">l</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">1</span> <span class="o">...</span><span class="p">)</span> <span class="s">"matches zero or more 1s"</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">x</span> <span class="o">,</span><span class="nv">y</span> <span class="o">...</span><span class="p">)</span> <span class="s">"matches any list starting with 'x, followed by y (matches as a list)"</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<h3 id="examples">Examples</h3>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (match-list '(5)) =&gt; 5</span>
+<span class="c1">;; (match-list '(1 2)) =&gt; 3</span>
+<span class="c1">;; (match-list '(1 2 3)) =&gt; '(3)</span>
+<span class="c1">;; (match-list '(1 2 3 4)) =&gt; '(3 4)</span>
+</code></pre></div></div>
+
+<h3 id="quasipattern-details">Quasipattern details</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">`(,x0 ,x1 ,x2 ...)</code> is called a <em>quasipattern</em>, which sounds complex, but it is actually quite simple once you get the gist of it:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">`(,x0 ,x1 ,x2)</code> matches a list of size 3
+    <ul>
+      <li>x0, x1, and x2 are bound as pattern variables</li>
+    </ul>
+  </li>
+  <li><code class="language-plaintext highlighter-rouge">`(,x0 ,x-rest ...)</code> matches a list of size &gt;= 1
+    <ul>
+      <li>x-rest can be <code class="language-plaintext highlighter-rouge">'()</code>, or any length &gt; 0</li>
+    </ul>
+  </li>
+  <li>We will only ever use <code class="language-plaintext highlighter-rouge">...</code> at the <em>end</em> of a quasipattern (pattern that matches a list).</li>
+</ul>
+
+<p>It turns out that x0, x1, and x2 are just <em>patterns</em>, which happen to be (in this case) variable patterns. We can use literals too, or any other pattern:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nf">match</span> <span class="o">'</span><span class="p">(</span><span class="nf">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">)</span>
+  <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">1</span> <span class="mi">2</span> <span class="o">,</span><span class="nv">x</span><span class="p">)</span> <span class="nv">x</span><span class="p">])</span> <span class="c1">;; returns 3</span>
+</code></pre></div></div>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>Use match to define a function, <code class="language-plaintext highlighter-rouge">(every-other l)</code>, which returns every other element in l.</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (every-other '()) =&gt; '()</span>
+<span class="c1">;; (every-other '(1)) =&gt; '(1)</span>
+<span class="c1">;; (every-other '(1 2)) =&gt; '(1)</span>
+<span class="c1">;; (every-other '(1 2 3)) =&gt; '(1 3)</span>
+<span class="c1">;; hints: three patterns to use</span>
+<span class="c1">;; `(,x0 ,x1 ,x-rest ...), `(,x0), and '()</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">every-other</span> <span class="nv">l</span><span class="p">)</span>
+  <span class="ss">'todo</span><span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="matching-predicate-patterns">Matching predicate patterns</h2>
+
+<p>Sometimes we want to say: “match this, but only if it satisfies a certain predicate.” To do that, we can use predicate patterns:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">bar++</span> <span class="nv">x</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">x</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">even?</span> <span class="nv">y</span><span class="p">)</span> <span class="p">(</span><span class="nf">bar++</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">y</span> <span class="mi">1</span><span class="p">))]</span> <span class="c1">;; no reason I had to bind y</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">odd?</span><span class="p">)</span> <span class="p">(</span><span class="nb">*</span> <span class="nv">x</span> <span class="mi">3</span><span class="p">)]))</span> <span class="c1">;; because y = x in this case!</span>
+</code></pre></div></div>
+
+<p>The syntax for a predicate pattern is one of two things:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">(? predicate?)</code> Match if <code class="language-plaintext highlighter-rouge">predicate?</code> (a function returning #t/#f) holds</li>
+  <li><code class="language-plaintext highlighter-rouge">(? predicate? x)</code> Match if <code class="language-plaintext highlighter-rouge">predicate?</code> holds, and <em>also</em> bind x</li>
+</ul>
+
+<p>Now, remember how list patterns work: <code class="language-plaintext highlighter-rouge">`(,x ...)</code> matches a <em>list</em> and binds it to <code class="language-plaintext highlighter-rouge">x</code>. Previously however, we mentioned that x need not be a name: it can be <em>any</em> pattern. It is often a name, in which case it matches <em>any</em> list as x. But we can also constrain it, to match a list of elements, all of which satisfy some property:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">evens-or-odds?</span> <span class="nv">l</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">l</span>
+    <span class="p">[</span><span class="o">'</span><span class="p">()</span> <span class="s">"We got nothing."</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">even?</span> <span class="nv">evens</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span> <span class="s">"We got all evens."</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">odd?</span> <span class="nv">odds</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span> <span class="s">"We got all odds."</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">_</span> <span class="s">"We got a mix."</span><span class="p">]))</span>
+
+<span class="p">(</span><span class="nf">evens-or-odds?</span> <span class="o">'</span><span class="p">(</span><span class="nf">1</span> <span class="mi">3</span> <span class="mi">5</span><span class="p">))</span>
+<span class="p">(</span><span class="nf">evens-or-odds?</span> <span class="o">'</span><span class="p">(</span><span class="nf">2</span> <span class="mi">4</span> <span class="mi">6</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>Describe the behavior of <code class="language-plaintext highlighter-rouge">mystery-function</code>. What does it return? Consider all possible inputs, but describe its behavior as precisely as you can.</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">mystery-function</span> <span class="nv">l</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">l</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">1</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">zero?</span> <span class="nv">xs</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span> <span class="p">(</span><span class="nb">length</span> <span class="nv">xs</span><span class="p">)]</span>
+    <span class="p">[</span><span class="nf">_</span> <span class="s">"error"</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="trees-and-algebraic-data-types-generally">Trees, and algebraic data types generally</h2>
+
+<p>We can use pattern matching to implement “type predicates” for algebraic data types: types defined via constructors of associated arities. We rewrite the <code class="language-plaintext highlighter-rouge">tree?</code> predicate using <code class="language-plaintext highlighter-rouge">match</code> as follows.</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">match-tree?</span> <span class="nv">t</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">t</span>
+    <span class="p">[</span><span class="ss">'empty</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">node</span> <span class="o">,</span><span class="nv">v</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">match-tree?</span> <span class="nv">t0</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">match-tree?</span> <span class="nv">t1</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">_</span> <span class="no">#f</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p>Now, let’s use matching to sum up all of the elements in the tree:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; sum-tree : match-tree? -&gt; number? (assume tree of numbers)</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">sum-tree</span> <span class="nv">t</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">t</span> <span class="c1">;; match is total by assumption that t satisfies match-tree?</span>
+    <span class="p">[</span><span class="ss">'empty</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">node</span> <span class="o">,</span><span class="nv">v</span> <span class="o">,</span><span class="nv">t0</span> <span class="o">,</span><span class="nv">t1</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">v</span> <span class="p">(</span><span class="nf">sum-tree</span> <span class="nv">t0</span><span class="p">)</span> <span class="p">(</span><span class="nf">sum-tree</span> <span class="nv">t1</span><span class="p">))]))</span>
+</code></pre></div></div>
+
+<p>Now, we can define a function to calculate the maximum element in a tree of numbers. Make <code class="language-plaintext highlighter-rouge">'empty</code> return <code class="language-plaintext highlighter-rouge">-inf.0</code>:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">max-tree</span> <span class="nv">t</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">t</span>
+    <span class="p">[</span><span class="ss">'empty</span> <span class="mf">-inf.0</span><span class="p">]</span> <span class="c1">;; make the maximum negative infinity</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">node</span> <span class="o">,</span><span class="nv">v</span> <span class="o">,</span><span class="nv">t0</span> <span class="o">,</span><span class="nv">t1</span><span class="p">)</span> <span class="p">(</span><span class="nb">max</span> <span class="nv">v</span> <span class="p">(</span><span class="nf">max-tree</span> <span class="nv">t0</span><span class="p">)</span> <span class="p">(</span><span class="nf">max-tree</span> <span class="nv">t1</span><span class="p">))]))</span>
+</code></pre></div></div>
+
+<p><strong>QuickAnswer</strong></p>
+
+<p>A tree satisfies the BST (binary search tree) property whenever every subtree <code class="language-plaintext highlighter-rouge">`(node ,v ,t0 ,t1)</code> has that <code class="language-plaintext highlighter-rouge">(max t0) &lt; v &lt; (min t1)</code>.</p>
+
+<p>Basic idea: match t</p>
+<ul>
+  <li>If it’s <code class="language-plaintext highlighter-rouge">'empty</code>, return <code class="language-plaintext highlighter-rouge">#t</code></li>
+  <li>If it’s <code class="language-plaintext highlighter-rouge">`(node ,v ,t0 ,t1)</code>, call <code class="language-plaintext highlighter-rouge">(max-tree t)</code> (above) to calculate the maximum of t0 and t1, then check the necessary properties.</li>
+</ul>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">bst-property?</span> <span class="nv">t</span><span class="p">)</span>
+  <span class="ss">'todo</span><span class="p">)</span>
+</code></pre></div></div>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '26) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src="/cis352-s26/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="/cis352-s26/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js"></script>
+
+
+  </body>
+
+</html>

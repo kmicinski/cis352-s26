@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>CIS352</title>
+  <meta name="description" content="CMSC352--Principles of Programming Languages (Spring '26) at Syracuse">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="http://localhost:4000/cis352-s26/css/main.css">
+  <link rel="canonical" href="http://localhost:4000/cis352-s26/">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="http://localhost:4000/cis352-s26/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="http://localhost:4000/cis352-s26/">CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/#schedule">Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/syllabus">Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/playground">Proof Playground</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/lambda-explorer">Lambda Explorer</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/lambda-explorer">Lambda Calculus Explorer</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/playground">Proof Tree Playground</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="masthead">
+      <div class="bs-docs-masthead" >
+        <div class="bs-docs-header">
+          <div class="container">
+            <div class="wrapper">
+              <div class="introtext">
+                <h1 class="compsecurity">CIS352 &mdash; Spring 2026</h1>
+                <h2 class="compsecurity">Principles of Programming Languages</h2>
+                <!--<h2 id="practice""><span class="blackhat">Theory</span> and Practice</h2>-->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+      
+    <div class="page-content">
+      <div class="wrapper">
+        <!-- WEEK 1 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 1: Course Intro &amp; Racket Fundamentals</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session 1: 1/13 -->
+    <li class="session-item">
+      <div class="date-col">Week 1</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-book-open reading-icon"></i>
+          <a>Week 1 Lecture notes (to be posted...)</a>
+        </div>
+      </div>
+    </li>
+    <li class="session-item">
+      <div class="date-col">1/13</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Course Introduction, Basic Racket, and Dr. Racket
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=zFzNhjFv22A&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=3">
+              Racket Basics
+            </a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://youtu.be/bMaMFRBp6ZM">
+              Lecture 1 -- Video Course Notes (NEW 'S26)
+            </a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://gist.github.com/kmicinski/369d966d1fc1d1b7f35e1f1d699ac48e">
+              Lecture Notes -- Taken during class 1/13/26
+            </a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/firstday.pdf">
+              Lecture Slides 
+            </a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- Session 2: 1/15 -->
+    <li class="session-item">
+      <div class="date-col">1/15</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Racket Forms, Callsites, and Definitions
+        </div>
+       <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=kMOgrVjEuk8">
+              Racket Forms and Callsites
+            </a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=bnzjganKVgU">
+              Definitions and the Environment
+            </a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=Z0T8kwlTNqY">
+              (NEW 'S26) [Course Notes] Lecture 2 Video Notes
+            </a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://gist.github.com/kmicinski/4fa69394a59e776fe9c661ca64f51fad">
+              Lecture Notes -- Taken during class 1/15/26
+            </a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/cis352-f22-l1.pdf">
+              Lecture Slides
+            </a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- Reading -->
+    <li class="session-item">
+      <div class="date-col"></div>
+      <div class="session-col">
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-book-open reading-icon"></i>
+            Optional Reading: <a href="http://sarabander.github.io/sicp/html/Chapter-1.xhtml#Chapter-1">SICP sections 1 up to 1.1.5</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 2 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 2: Lists and Recursion</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 1/20 -->
+    <li class="session-item">
+      <div class="date-col">1/20</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Conditional Statements and Linked Lists
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=4HPjJ4M6XVc">Textual Reduction</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=WVmomIoxBZM&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=6&amp;ab_channel=KristopherMicinski">Case Splitting and Lists Intro</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/cis352-f22-l2.pdf">Lecture Slides</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+	    <!-- Homework P1 -->
+    <li class="session-item">
+      <div class="date-col">1/20</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-code project-icon"></i>
+          Homework P1: Tic-Tac-Toe -- Released 1/20, <i>due 2/3</i>
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=ApIXt_Exf7g">Tic-Tac-Toe Video</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+
+    <!-- Session: 1/22 -->
+    <li class="session-item">
+      <div class="date-col">1/22</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Recursion over Lists
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=0y325A82vMc&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=7">Lecture Video</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 3 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 3: Abstractions and Algebraic Data</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 1/27 -->
+    <li class="session-item">
+      <div class="date-col">1/27</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Procedural Abstraction and Lambdas (Higher-Order Functions)
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=OqZleNZto0A&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=9">Lecture Video</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambdas.pdf">Lecture Slides</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+
+    <!-- Session: 1/29 -->
+    <li class="session-item">
+      <div class="date-col">1/29</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Tree-Shaped (Algebraic) Data and Pattern Matching
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=7NA9HZdlR0g&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=10">Lecture Video (Cons Diagrams)</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/cons.pdf">Lecture Slides (Cons)</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=RJFkmh9Wo8o&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=12">Lecture Video (Matching)</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/maps-matches.pdf">Lecture Slides (Matching)</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- Week 3 Notes -->
+    <li class="session-item">
+      <div class="date-col">Week 3</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-book-open reading-icon"></i>
+          <a href="https://kmicinski.com/cis352-s26/notes/week/4">(OLD) Week 3 Lecture notes</a>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 4 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 4: Programming with Algebra</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 2/3 -->
+    <li class="session-item">
+      <div class="date-col">2/3</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Pattern Matching and Algebraic Data 
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/patterns">Lecture Notes</a>
+          </li>
+          <!-- <li> -->
+          <!--   <i class="fa-brands fa-youtube youtube-icon"></i> -->
+          <!--   <a href="https://www.youtube.com/watch?v=kAskgLplQgw&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=13">Lecture Video</a> -->
+          <!-- </li> -->
+          <!-- <li> -->
+          <!--   <i class="fa-solid fa-file-lines notes-icon"></i> -->
+          <!--   <a href="https://kmicinski.com/cis352-s26/assets/slides/tailcalls.pdf">Lecture Slides</a> -->
+          <!-- </li> -->
+        </ul>
+      </div>
+    </li>
+    <li class="session-item deadline">
+      <div class="date-col">2/3</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-calendar-check deadline-icon"></i>
+          Homework P1 Deadline
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-upload"></i>
+            <a href="https://kmicinski.com/cis352-s26/projects/1">Submit Homework by 2/3</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+
+    <li class="session-item">
+      <div class="date-col">2/3</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-book-open reading-icon"></i>
+          <a href="https://gist.github.com/kmicinski/0e0ed7ac52c1fea9873e4d52ef5dc2d0">Code from Class, 2/3</a>
+        </div>
+      </div>
+    </li>
+
+    <!-- Session: 2/5 -->
+    <li class="session-item">
+      <div class="date-col">2/5</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Programming with Algebra, Foldr
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/algebra">Lecture Notes</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=kAskgLplQgw&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=15">Lecture Video (Folding over Lists)</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/folds.pdf">Fold Lecture Slides</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 5 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 5: Graphs and Interpreters</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 2/10 -->
+    <li class="session-item">
+      <div class="date-col">2/10</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Evaluation Order and Tail Recursion
+        </div>
+        <ul class="resources-list">
+          <li>
+			  <i class="fa-solid fa-file-lines notes-icon"></i>
+			  <a href="https://kmicinski.com/cis352-s26/evaluation-order">Lecture Notes for 2/10 - 2/12</a>
+		  </li>
+        </ul>
+      </div>
+    </li>
+    <!-- Session: 2/12 Homework P2 -->
+    <li class="session-item">
+      <div class="date-col">2/12</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-code project-icon"></i>
+          Homework P2: Network Reachability (Due 2/26)
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/projects/2">Homework Details</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- Session: 2/12 Lecture -->
+    <li class="session-item">
+      <div class="date-col">2/12</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+		  Finish up / review previous topics -- Homework 2 Discussion
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=vhOH2GmuYrQ&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG&amp;index=16">Interpreting IfArith</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-code"></i>
+            <a href="https://gist.github.com/kmicinski/7c9bbe55363107ededa028ba917ba10b">Code</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 6 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 6: Exam 1</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 2/17 Exam 1 Review -->
+    <li class="session-item">
+      <div class="date-col">2/17</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Exam 1 Review
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/stack-smashing.pdf">Stack Smashing (Short Lecture Slides)</a>
+          </li>
+        </ul>
+      </div>
+	  
+    </li>
+
+    <!-- Session: 2/19 Exam 1 -->
+    <li class="session-item">
+      <div class="date-col">2/19</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-file-lines notes-icon"></i>
+          Exam 1 (in class, 20%) 
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 7 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 7: Natural Deduction and Interpreters</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 2/24 -->
+    <li class="session-item">
+      <div class="date-col">2/24</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Natural Deduction, Proof Trees, and Interpreters Intro
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=neCrsTf8h7Y&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Natural Deduction)</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=vhOH2GmuYrQ&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Interpreting IfArith)</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- Session: 2/26 P2 Deadline -->
+    <li class="session-item deadline">
+      <div class="date-col">2/26</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-calendar-check deadline-icon"></i>
+          Homework P2 Deadline
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-upload"></i>
+            <a href="https://kmicinski.com/cis352-s26/projects/2">Submit Homework by 2/26</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- Session: 2/26 -->
+    <li class="session-item">
+      <div class="date-col">2/26</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Review Day (Sets, Hashes, etc.)
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 8 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 8: Lambda Calculus and Interpreters</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 3/3 -->
+    <li class="session-item">
+      <div class="date-col">3/3</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Lambda Calculus (Introduction)
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/lambda">NEW Lecture Notes</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=RqA-m_QMJYc&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Lambda Calculus Introduction)</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambda-intro.pdf">(Optional) Lecture Slides</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <li class="session-item">
+      <div class="date-col">3/3</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-code project-icon"></i>
+          Homework P3: TBA -- Released (Due 3/24)
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=-TN--YqcJhI&amp;ab_channel=KristopherMicinski">Homework Video</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- Session: 3/5 -->
+    <li class="session-item">
+      <div class="date-col">3/5</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Closure-Creating Interpreters
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/closures">Lecture Notes</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 9 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 9: Lambda Calculus: Reductions and Church Encoding</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 3/17 -->
+    <li class="session-item">
+      <div class="date-col">3/17</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Lambda Calculus Reduction Rules and Substitution
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=Paxvaq0Q-S0&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Reductions and Substitution)</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=GNkQrqAGB-o&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Reduction Strategies)</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambda-reductions.pdf">Lecture Slides (Reductions)</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/reduction-strategies.pdf">Lecture Slides (Strategies)</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- Session: 3/19 -->
+    <li class="session-item">
+      <div class="date-col">3/19</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Church Numerals, Church Encoding, and the Y Combinator
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=DC-9wWgXQTc&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=24">Lecture Video (Numerals)</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/churchnum.pdf">Lecture Slides (Numerals)</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=izfoxmSAQ28">Lecture Video (Encoding)</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/p4.pdf">Lecture Slides (Encoding)</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=GJi4H2UMaRU&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=27">Lecture Video (Y Combinator)</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/y-comb.pdf">Lecture Slides (Y Combinator)</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 10 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 10: Exam 2</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 3/24 P3 Deadline -->
+    <li class="session-item deadline">
+      <div class="date-col">3/24</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-calendar-check deadline-icon"></i>
+          Homework P3 Deadline
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-upload"></i>
+            <a href="https://kmicinski.com/cis352-s26/projects/3">Submit Homework by 3/24</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- Session: 3/24 Exam 2 Review -->
+    <li class="session-item">
+      <div class="date-col">3/24</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Exam 2 Review
+        </div>
+      </div>
+    </li>
+    <!-- Session: 3/26 Exam 2 -->
+    <li class="session-item">
+      <div class="date-col">3/26</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-file-lines notes-icon"></i>
+          Exam 2 (in class, 20%)
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 11 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 11: Type Systems</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 3/31 -->
+    <li class="session-item">
+      <div class="date-col">3/31</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Simply-Typed λ-Calculus and Type Soundness
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/types-part1.pdf">Lecture Slides</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- Session: 4/2 -->
+    <li class="session-item">
+      <div class="date-col">4/2</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Propositions as Types (Verified Programming in Lean)
+        </div>
+      </div>
+    </li>
+    <li class="session-item">
+      <div class="date-col">4/2</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-code project-icon"></i>
+          Homework 4 -- Released (Due 4/21)
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/projects/4">Homework Details</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 12 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 12: Type Inference, Polymorphism, and Object Orientation</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 4/7 -->
+    <li class="session-item">
+      <div class="date-col">4/7</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Parametric Polymorphism and System F
+        </div>
+      </div>
+    </li>
+    <!-- Session: 4/9 -->
+    <li class="session-item">
+      <div class="date-col">4/9</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Hindley-Milner Type Inference and Short Lecture: Objects vs. Closures
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/assets/slides/types-part2.pdf">Lecture Slides (provisional...)</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 13 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 13: Low-level Programming in Rust</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 4/14 -->
+    <li class="session-item">
+      <div class="date-col">4/14</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Rust Fundamentals: Ownership, Borrowing, and Algebraic Data Types
+        </div>
+      </div>
+    </li>
+    <!-- Session: 4/16 -->
+    <li class="session-item">
+      <div class="date-col">4/16</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Rust Type System: Traits, Lifetimes, and Functional Programming Patterns
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 14 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 14: Exam 3</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <!-- Session: 4/21 P4 Deadline -->
+    <li class="session-item deadline">
+      <div class="date-col">4/21</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-calendar-check deadline-icon"></i>
+          Homework P4 Deadline
+        </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-upload"></i>
+            <a href="https://kmicinski.com/cis352-s26/projects/4">Submit Homework by 4/21</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <!-- Session: 4/21 Final Review -->
+    <li class="session-item">
+      <div class="date-col">4/21</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
+          Final Exam Review
+        </div>
+      </div>
+    </li>
+    <!-- Session: 4/23 Final Exam -->
+    <li class="session-item">
+      <div class="date-col">4/23</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-file-lines notes-icon"></i>
+          Final Exam (in class, 20%) 
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- WEEK 15 -->
+<div class="week-header">
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 15: Finals Week / Course Wrap-up</h2>
+</div>
+<div class="week-schedule">
+  <ul>
+    <li class="session-item">
+      <div class="date-col">TBD</div>
+      <div class="session-col">
+        <div class="session-title">
+          <i class="fa-solid fa-graduation-cap"></i>
+          No regular class - finals week buffer
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '26) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src="/cis352-s26/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="/cis352-s26/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js"></script>
+
+    <script>
+      $(document).ready(function() {
+      var areadescs = [$("#secdesc"),$("#pldesc"),$("#hcidesc")];
+      var areas = $("#areadesc");
+      $("areastr").css("min-height",
+                 (Math.min.apply(null, areadescs.map(function(f) { return f.height(); }))));
+      [$("#circle1"),$("#circle2"),$("#circle3")]
+        .forEach(function(f,i) {
+            f.mouseenter(function() {
+            f.css({"fill-opacity": .7});
+            areas.css({"display": "none"});
+            areadescs[i].css({"display": "table-cell"});
+          });
+          f.mouseleave(function() {
+            areadescs[i].css({"display": "none"});
+            areas.css({"display": "table-cell"});
+            f.css({"fill-opacity": .4});
+          });
+        });
+      });
+    </script>
+
+  </body>
+
+</html>

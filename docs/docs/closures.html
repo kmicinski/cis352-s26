@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Closure-Creating Interpreters</title>
+  <meta name="description" content="Closure-Creating Interpreters">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="http://localhost:4000/cis352-s26/css/main.css">
+  <link rel="canonical" href="http://localhost:4000/cis352-s26/closures">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="http://localhost:4000/cis352-s26/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  
+  <link rel="stylesheet" href="/cis352-s26/assets/proof-tree.css">
+  <script src="/cis352-s26/assets/proof-tree.js"></script>
+  <link rel="stylesheet" href="/cis352-s26/assets/proof-checker.css">
+  <script src="/cis352-s26/assets/proof-checker-glue.js"></script>
+  
+</head>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="http://localhost:4000/cis352-s26/">CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/#schedule">Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/syllabus">Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/playground">Proof Playground</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://localhost:4000/cis352-s26/lambda-explorer">Lambda Explorer</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/lambda-explorer">Lambda Calculus Explorer</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/playground">Proof Tree Playground</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="http://localhost:4000/cis352-s26/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <!-- <header class="post-header"> -->
+  <!--   <h1 class="post-title" itemprop="name headline">Closure-Creating Interpreters</h1> -->
+  <!-- </header> -->
+
+  <div class="post-content" itemprop="articleBody">
+    <h1 id="closure-creating-interpreters">Closure-Creating Interpreters</h1>
+
+<h4 style="margin-top:0.5em; color:#6b7280; font-weight:500;">Topics</h4>
+
+<ul>
+  <li>Environment-based evaluation: ρ ⊢ e ⇓ v</li>
+  <li>Natural deduction rules for an extended λ-calculus</li>
+  <li>From rules to a working interpreter</li>
+  <li>Closures: capturing the environment at definition time</li>
+</ul>
+
+<style>
+/* ── Buttons ──────────────────────────────────────── */
+.cl-btn {
+  display: inline-block;
+  padding: 7px 18px;
+  font-size: 0.85em;
+  font-weight: 500;
+  font-family: inherit;
+  color: #374151;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+.cl-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+.cl-btn-primary {
+  color: #fff;
+  background: #4f46e5;
+  border-color: #4f46e5;
+}
+.cl-btn-primary:hover {
+  background: #4338ca;
+  border-color: #4338ca;
+  color: #fff;
+}
+
+/* ── Solutions ────────────────────────────────────── */
+details {
+  margin: 1em 0 1.5em;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+details summary {
+  padding: 10px 16px;
+  font-weight: 500;
+  font-size: 0.92em;
+  color: #4f46e5;
+  background: #f9fafb;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+  list-style: none;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: "▸ ";
+  font-size: 0.8em;
+  margin-right: 4px;
+}
+details[open] summary::before { content: "▾ "; }
+details[open] summary {
+  border-bottom: 1px solid #e5e7eb;
+  background: #f3f4f6;
+}
+details .solution-body {
+  padding: 16px;
+}
+
+/* ── Proof rule blocks ────────────────────────────── */
+.rule-block {
+  margin: 1.2em 0;
+  padding: 0 0 0.5em;
+  border-bottom: 1px solid #f3f4f6;
+}
+.rule-block:last-child { border-bottom: none; }
+.rule-name {
+  font-weight: 600;
+  font-size: 0.95em;
+  color: #374151;
+  margin-bottom: 4px;
+}
+.rule-desc {
+  font-size: 0.9em;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+/* ── Exercise blocks ──────────────────────────────── */
+.exercise-box {
+  margin: 1.5em 0;
+  padding: 1em 1.2em;
+  background: #fefce8;
+  border-left: 4px solid #fbbf24;
+  border-radius: 0 8px 8px 0;
+}
+.exercise-box h4 {
+  margin: 0 0 0.4em;
+  font-size: 1em;
+  font-weight: 600;
+  color: #92400e;
+}
+.exercise-box p { margin: 0.3em 0; }
+
+/* ── Editor containers ────────────────────────────── */
+.editor-wrap {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0.8em 0;
+  min-height: 180px;
+}
+</style>
+
+<script>
+function openInPlayground(sexp, theory) {
+  var hash = '#proof=' + encodeURIComponent(sexp);
+  if (theory) hash += '&theory=' + encodeURIComponent(theory);
+  window.open('/cis352-s26/playground' + hash, '_blank');
+}
+
+var _bsConfig = ProofChecker.theoryConfig('big-step');
+</script>
+
+<hr />
+
+<h2 id="introduction">Introduction</h2>
+
+<p>In this lecture we will build an interpreter for a language that extends the λ-calculus with integers, arithmetic, <code class="language-plaintext highlighter-rouge">let</code>-binding, and <code class="language-plaintext highlighter-rouge">if0</code>. This lecture ties together several topics we have been studying—lambda calculus and natural deduction—and shows how to turn a mathematical specification directly into a working interpreter.</p>
+
+<p>By the end of the lecture, we will have a working, Turing-complete programming language.</p>
+
+<p>In the <a href="/cis352-s26/lambda">previous lecture</a>, we studied the λ-calculus as a <em>term rewriting system</em>. We will return to rewriting rules and substitution after Spring break. Today, instead, we take a different approach: we give an <em>environment-based</em> semantics using natural deduction, and translate it directly into a Racket interpreter.</p>
+
+<hr />
+
+<h2 id="the-language">The Language</h2>
+
+<p>We extend the λ-calculus with integers, unary negation, binary addition, <code class="language-plaintext highlighter-rouge">let</code>, and <code class="language-plaintext highlighter-rouge">if0</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>e ∈ Expr ::=
+    | x                              ← Variable reference
+    | i                              ← Integer literal
+    | (- e)                          ← Unary negation
+    | (+ e₀ e₁)                     ← Binary addition
+    | (if0 e_g e_t e_f)                ← Conditional (zero test)
+    | (let ([x e]) e_b)              ← Let binding
+    | (λ (x) e)                      ← Lambda abstraction
+    | (e₀ e₁)                       ← Application
+</code></pre></div></div>
+
+<p>The Racket predicate <code class="language-plaintext highlighter-rouge">expr?</code> checks membership in this language:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">expr?</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">e</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">symbol?</span> <span class="nv">x</span><span class="p">)</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e0</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e1</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">symbol?</span> <span class="nv">x</span><span class="p">))</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e-body</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">integer?</span> <span class="nv">i</span><span class="p">)</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nb">-</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nb">+</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e0</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e1</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">symbol?</span> <span class="nv">x</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e</span><span class="p">)])</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e-b</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">if0</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e-guard</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e-true</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e-false</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">_</span> <span class="no">#f</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p>Here are some example expressions in our language:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">'</span><span class="p">((</span><span class="k">λ</span> <span class="p">(</span><span class="nf">x</span><span class="p">)</span> <span class="nv">x</span><span class="p">)</span> <span class="mi">42</span><span class="p">)</span>
+<span class="o">'</span><span class="p">(</span><span class="nb">+</span> <span class="mi">10</span> <span class="p">(</span><span class="nb">-</span> <span class="mi">3</span><span class="p">))</span>
+<span class="o">'</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">x</span> <span class="mi">5</span><span class="p">])</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="nv">x</span><span class="p">))</span>
+<span class="o">'</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">x</span> <span class="mi">10</span><span class="p">])</span> <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">y</span> <span class="mi">7</span><span class="p">])</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">y</span><span class="p">))))</span>
+<span class="o">'</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">x</span> <span class="mi">100</span><span class="p">])</span> <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">f</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="nf">y</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">))])</span> <span class="p">(</span><span class="nf">f</span> <span class="mi">23</span><span class="p">)))</span>
+<span class="o">'</span><span class="p">(</span><span class="nf">if0</span> <span class="mi">0</span> <span class="mi">111</span> <span class="mi">222</span><span class="p">)</span>
+<span class="o">'</span><span class="p">(</span><span class="nf">if0</span> <span class="p">(</span><span class="nb">+</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">)</span> <span class="mi">0</span> <span class="p">(</span><span class="nb">+</span> <span class="mi">40</span> <span class="mi">2</span><span class="p">))</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="the-evaluation-relation">The Evaluation Relation</h2>
+
+<p>In previous lectures we used the judgement <strong>e ⇓ v</strong> (“expression <em>e</em> evaluates to value <em>v</em>”). Now our language has variables, so we need an <em>environment</em> ρ that maps variables to values:</p>
+
+<blockquote>
+  <p><strong>ρ ⊢ e ⇓ v</strong>   “In environment ρ, expression e evaluates to value v”</p>
+</blockquote>
+
+<p>The environment ρ is a finite map from variable names to values. We write <strong>ρ(x)</strong> for looking up <code class="language-plaintext highlighter-rouge">x</code> in ρ, and <strong>ρ[x ↦ v]</strong> for extending ρ with a new binding.</p>
+
+<hr />
+
+<h2 id="natural-deduction-rules">Natural Deduction Rules</h2>
+
+<p>We now give the natural deduction rules for the non-lambda fragment of the language. Each rule is shown as a proof tree.</p>
+
+<div class="rule-block">
+<div class="rule-name">Var</div>
+<div class="rule-desc">If x is bound to v in ρ, then x evaluates to v.</div>
+<div data-proof-tree="((Var :right) &quot;ρ(x) = v&quot; --- &quot;ρ ⊢ x ⇓ v&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">Int</div>
+<div class="rule-desc">Integer literals evaluate to themselves.</div>
+<div data-proof-tree="((Int :right) --- &quot;ρ ⊢ i ⇓ i&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">Neg</div>
+<div class="rule-desc">Evaluate e to an integer i, then negate it.</div>
+<div data-proof-tree="((Neg :right) &quot;ρ ⊢ e ⇓ i&quot; &quot;v = -i&quot; --- &quot;ρ ⊢ (- e) ⇓ v&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">Add</div>
+<div class="rule-desc">Evaluate both subexpressions and add the results.</div>
+<div data-proof-tree="((Add :right) &quot;ρ ⊢ e₀ ⇓ i₀&quot; &quot;ρ ⊢ e₁ ⇓ i₁&quot; &quot;v = i₀ + i₁&quot; --- &quot;ρ ⊢ (+ e₀ e₁) ⇓ v&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">If0-True</div>
+<div class="rule-desc">If the guard evaluates to 0, evaluate the true branch.</div>
+<div data-proof-tree="((&quot;If0-True&quot; :right) &quot;ρ ⊢ e_g ⇓ 0&quot; &quot;ρ ⊢ e_t ⇓ v&quot; --- &quot;ρ ⊢ (if0 e_g e_t e_f) ⇓ v&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">If0-False</div>
+<div class="rule-desc">If the guard evaluates to a nonzero integer, evaluate the false branch.</div>
+<div data-proof-tree="((&quot;If0-False&quot; :right) &quot;ρ ⊢ e_g ⇓ i&quot; &quot;i ≠ 0&quot; &quot;ρ ⊢ e_f ⇓ v&quot; --- &quot;ρ ⊢ (if0 e_g e_t e_f) ⇓ v&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">Let</div>
+<div class="rule-desc">Evaluate e to get v′, extend the environment with x ↦ v′, then evaluate the body.</div>
+<div data-proof-tree="((Let :right) &quot;ρ ⊢ e ⇓ v′&quot; &quot;ρ[x ↦ v′] ⊢ e_b ⇓ v&quot; --- &quot;ρ ⊢ (let ([x e]) e_b) ⇓ v&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<hr />
+
+<h2 id="exercise-1">Exercise 1</h2>
+
+<div class="exercise-box">
+<h4>QuickAnswer</h4>
+<p>Using the rules above, complete the following derivation as a proof tree:</p>
+<p><strong>{x ↦ 3} ⊢ (- x) ⇓ -3</strong></p>
+</div>
+
+<div class="editor-wrap" id="exercise1-editor"></div>
+
+<script>
+(function() {
+  var container = document.getElementById('exercise1-editor');
+  var editor = ProofTree.createEditor(container, {
+    tree: '(--- "{x ↦ 3} ⊢ (- x) ⇓ -3")',
+    theoryRules: _bsConfig.theoryRules,
+    onGeneratePremises: _bsConfig.onGeneratePremises,
+    onCheckApplicability: _bsConfig.onCheckApplicability
+  });
+  ProofChecker.createCheckButton(container, editor);
+})();
+</script>
+
+<details>
+<summary>Show solution</summary>
+<div class="solution-body">
+<div id="exercise1-solution"></div>
+<button class="cl-btn" onclick="openInPlayground(window._ex1sexp, 'big-step')" style="margin-top:10px;">Open in Playground</button>
+</div>
+<script>
+(function() {
+  window._ex1sexp = '((Neg :right) ((Var :right) "{x ↦ 3}(x) = 3" --- "{x ↦ 3} ⊢ x ⇓ 3") "v = -3" --- "{x ↦ 3} ⊢ (- x) ⇓ -3")';
+  var details = document.getElementById('exercise1-solution').closest('details');
+  var rendered = false;
+  details.addEventListener('toggle', function() {
+    if (details.open && !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._ex1sexp, document.getElementById('exercise1-solution'));
+    }
+  });
+})();
+</script>
+</details>
+
+<hr />
+
+<h2 id="exercise-2">Exercise 2</h2>
+
+<div class="exercise-box">
+<h4>QuickAnswer</h4>
+<p>Using the rules above, complete the following derivation:</p>
+<p><strong>{x ↦ 5} ⊢ (let ([y 3]) (+ y x)) ⇓ 8</strong></p>
+</div>
+
+<div class="editor-wrap" id="exercise2-editor"></div>
+
+<script>
+(function() {
+  var container = document.getElementById('exercise2-editor');
+  var editor = ProofTree.createEditor(container, {
+    tree: '(--- "{x ↦ 5} ⊢ (let ([y 3]) (+ y x)) ⇓ 8")',
+    theoryRules: _bsConfig.theoryRules,
+    onGeneratePremises: _bsConfig.onGeneratePremises,
+    onCheckApplicability: _bsConfig.onCheckApplicability
+  });
+  ProofChecker.createCheckButton(container, editor);
+})();
+</script>
+
+<details>
+<summary>Show solution</summary>
+<div class="solution-body">
+<div id="exercise2-solution"></div>
+<button class="cl-btn" onclick="openInPlayground(window._ex2sexp, 'big-step')" style="margin-top:10px;">Open in Playground</button>
+</div>
+<script>
+(function() {
+  window._ex2sexp = '((Let :right) ((Int :right) --- "{x ↦ 5} ⊢ 3 ⇓ 3") ((Add :right) ((Var :right) "{x ↦ 5, y ↦ 3}(y) = 3" --- "{x ↦ 5, y ↦ 3} ⊢ y ⇓ 3") ((Var :right) "{x ↦ 5, y ↦ 3}(x) = 5" --- "{x ↦ 5, y ↦ 3} ⊢ x ⇓ 5") "v = 3 + 5" --- "{x ↦ 5, y ↦ 3} ⊢ (+ y x) ⇓ 8") --- "{x ↦ 5} ⊢ (let ([y 3]) (+ y x)) ⇓ 8")';
+  var details = document.getElementById('exercise2-solution').closest('details');
+  var rendered = false;
+  details.addEventListener('toggle', function() {
+    if (details.open && !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._ex2sexp, document.getElementById('exercise2-solution'));
+    }
+  });
+})();
+</script>
+</details>
+
+<hr />
+
+<h2 id="from-rules-to-interpreter">From Rules to Interpreter</h2>
+
+<p>We can read the judgement ρ ⊢ e ⇓ v as a <em>function</em> from (ρ, e) to v. The structure of <code class="language-plaintext highlighter-rouge">e</code> tells us exactly which rule to use—if <code class="language-plaintext highlighter-rouge">e</code> is a variable, we must use Var; if it is <code class="language-plaintext highlighter-rouge">(+ e₀ e₁)</code>, we must use Add; and so on. Each premise that involves a recursive judgement becomes a recursive call.</p>
+
+<p>This gives us a direct strategy: pattern-match on <code class="language-plaintext highlighter-rouge">e</code>, and for each form, translate the corresponding natural deduction rule into code.</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; interp0 : Env × Expr → Value</span>
+<span class="c1">;; Handles everything except lambdas and application</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">interp0</span> <span class="nv">env</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">e</span>
+    <span class="c1">;; (Var)</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">symbol?</span> <span class="nv">x</span><span class="p">)</span>
+     <span class="p">(</span><span class="nf">hash-ref</span> <span class="nv">env</span> <span class="nv">x</span><span class="p">)]</span>
+    <span class="c1">;; (Int)</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">integer?</span> <span class="nv">i</span><span class="p">)</span> <span class="nv">i</span><span class="p">]</span>
+    <span class="c1">;; (Neg)</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nb">-</span> <span class="o">,</span><span class="nv">e</span><span class="p">)</span> <span class="p">(</span><span class="nb">-</span> <span class="p">(</span><span class="nf">interp0</span> <span class="nv">env</span> <span class="nv">e</span><span class="p">))]</span>
+    <span class="c1">;; (Add)</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nb">+</span> <span class="o">,</span><span class="nv">e0</span> <span class="o">,</span><span class="nv">e1</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">v0</span> <span class="p">(</span><span class="nf">interp0</span> <span class="nv">env</span> <span class="nv">e0</span><span class="p">)]</span>
+           <span class="p">[</span><span class="nf">v1</span> <span class="p">(</span><span class="nf">interp0</span> <span class="nv">env</span> <span class="nv">e1</span><span class="p">)])</span>
+       <span class="p">(</span><span class="nb">+</span> <span class="nv">v0</span> <span class="nv">v1</span><span class="p">))]</span>
+    <span class="c1">;; (If0-True) and (If0-False)</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">if0</span> <span class="o">,</span><span class="nv">e-guard</span> <span class="o">,</span><span class="nv">e-true</span> <span class="o">,</span><span class="nv">e-false</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">vg</span> <span class="p">(</span><span class="nf">interp0</span> <span class="nv">env</span> <span class="nv">e-guard</span><span class="p">)])</span>
+       <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">=</span> <span class="nv">vg</span> <span class="mi">0</span><span class="p">)</span>
+           <span class="p">(</span><span class="nf">interp0</span> <span class="nv">env</span> <span class="nv">e-true</span><span class="p">)</span>
+           <span class="p">(</span><span class="nf">interp0</span> <span class="nv">env</span> <span class="nv">e-false</span><span class="p">)))]</span>
+    <span class="c1">;; (Let)</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="o">,</span><span class="nv">x</span> <span class="o">,</span><span class="nv">e0</span><span class="p">])</span> <span class="o">,</span><span class="nv">e-body</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">v</span> <span class="p">(</span><span class="nf">interp0</span> <span class="nv">env</span> <span class="nv">e0</span><span class="p">)])</span>
+       <span class="p">(</span><span class="nf">interp0</span> <span class="p">(</span><span class="nf">hash-set</span> <span class="nv">env</span> <span class="nv">x</span> <span class="nv">v</span><span class="p">)</span> <span class="nv">e-body</span><span class="p">))]</span>
+    <span class="c1">;; Not done yet...</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span><span class="p">)</span> <span class="o">,</span><span class="nv">e</span><span class="p">)</span> <span class="ss">'todo</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">e0</span> <span class="o">,</span><span class="nv">e1</span><span class="p">)</span> <span class="ss">'todo</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p>We can already run this interpreter on the non-lambda fragment:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nf">interp0</span> <span class="p">(</span><span class="nb">hash</span><span class="p">)</span> <span class="o">'</span><span class="p">(</span><span class="nb">+</span> <span class="mi">10</span> <span class="p">(</span><span class="nb">-</span> <span class="mi">3</span><span class="p">)))</span>            <span class="c1">;; ⟹ 7</span>
+<span class="p">(</span><span class="nf">interp0</span> <span class="p">(</span><span class="nb">hash</span><span class="p">)</span> <span class="o">'</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">x</span> <span class="mi">5</span><span class="p">])</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="nv">x</span><span class="p">)))</span>   <span class="c1">;; ⟹ 10</span>
+<span class="p">(</span><span class="nf">interp0</span> <span class="p">(</span><span class="nb">hash</span><span class="p">)</span> <span class="o">'</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">x</span> <span class="mi">10</span><span class="p">])</span>
+                    <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">y</span> <span class="mi">7</span><span class="p">])</span>
+                      <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">y</span><span class="p">)))))</span>       <span class="c1">;; ⟹ 3</span>
+<span class="p">(</span><span class="nf">interp0</span> <span class="p">(</span><span class="nb">hash</span><span class="p">)</span> <span class="o">'</span><span class="p">(</span><span class="nf">if0</span> <span class="mi">0</span> <span class="mi">111</span> <span class="mi">222</span><span class="p">))</span>          <span class="c1">;; ⟹ 111</span>
+<span class="p">(</span><span class="nf">interp0</span> <span class="p">(</span><span class="nb">hash</span><span class="p">)</span> <span class="o">'</span><span class="p">(</span><span class="nf">if0</span> <span class="p">(</span><span class="nb">+</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">)</span> <span class="mi">0</span> <span class="p">(</span><span class="nb">+</span> <span class="mi">40</span> <span class="mi">2</span><span class="p">)))</span><span class="c1">;; ⟹ 42</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="the-closure-question">The Closure Question</h2>
+
+<p>Now comes the most important question of the lecture: <strong>how do we represent λ?</strong></p>
+
+<p>A first idea is to simply save the program text: represent <code class="language-plaintext highlighter-rouge">(λ (x) (+ x 3))</code> as exactly <code class="language-plaintext highlighter-rouge">(λ (x) (+ x 3))</code>. At runtime, this would correspond to a function pointer to compiled code.</p>
+
+<p>Unfortunately, this does not work. Consider:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">((</span><span class="k">λ</span> <span class="p">(</span><span class="nf">x</span><span class="p">)</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="nf">y</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">y</span> <span class="nv">x</span><span class="p">)))</span> <span class="mi">23</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The return value is <code class="language-plaintext highlighter-rouge">(λ (y) (+ y x))</code>, which <em>captures</em> the value of <code class="language-plaintext highlighter-rouge">x</code>. If we only save the text, we lose the fact that <code class="language-plaintext highlighter-rouge">x = 23</code>. Here is another example:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">x</span> <span class="mi">100</span><span class="p">])</span>
+  <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">f</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="nf">y</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">))])</span>
+    <span class="p">(</span><span class="nf">f</span> <span class="mi">23</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p>When <code class="language-plaintext highlighter-rouge">f</code> is called, its body <code class="language-plaintext highlighter-rouge">(+ x y)</code> needs <code class="language-plaintext highlighter-rouge">x = 100</code>, but <code class="language-plaintext highlighter-rouge">x</code> is not in scope at the call site—it was in scope when <code class="language-plaintext highlighter-rouge">f</code> was <em>defined</em>.</p>
+
+<p><strong>Substitution approach:</strong> The λ-calculus handles this via substitution: whenever we apply a function, we substitute the argument into the body. But substitution on a term of size <em>n</em> requires O(<em>n</em>) work, and we do it at <em>every</em> function call.</p>
+
+<p><strong>Closures approach:</strong> Instead, most languages use <em>closures</em>. A closure bundles together:</p>
+
+<ol>
+  <li>The raw text of the lambda: <code class="language-plaintext highlighter-rouge">(λ (x) e)</code></li>
+  <li>The environment ρ in which the lambda was defined</li>
+</ol>
+
+<p>We write closures as <strong>⟨λ (x) e , ρ⟩</strong>. Intuitively, a closure is a suspended computation together with the environment necessary to run it later.</p>
+
+<hr />
+
+<h2 id="lambda-and-application-rules">Lambda and Application Rules</h2>
+
+<div class="rule-block">
+<div class="rule-name">Lam</div>
+<div class="rule-desc">Evaluating a lambda does not evaluate its body—it packages the lambda with the current environment to form a closure.</div>
+<div data-proof-tree="((Lam :right) --- &quot;ρ ⊢ (λ (x) e) ⇓ ⟨λ (x) e , ρ⟩&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">App</div>
+<div class="rule-desc">Evaluate e₀ to get a closure, evaluate e₁ to get the argument, then evaluate the body in the closure's environment extended with the parameter binding.</div>
+<div data-proof-tree="((App :right) &quot;ρ ⊢ e₀ ⇓ ⟨λ (x) e′ , ρ′⟩&quot; &quot;ρ ⊢ e₁ ⇓ v′&quot; &quot;ρ′[x ↦ v′] ⊢ e′ ⇓ v&quot; --- &quot;ρ ⊢ (e₀ e₁) ⇓ v&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<p><strong>Important:</strong> we evaluate the body in <strong>ρ’</strong> (the environment from when the function was <em>defined</em>), <strong>not</strong> in ρ (the environment at the <em>call site</em>). This is called <strong>lexical scoping</strong>.</p>
+
+<hr />
+
+<h2 id="exercise-3">Exercise 3</h2>
+
+<div class="exercise-box">
+<h4>QuickAnswer</h4>
+<p>Using the Lam, App, and arithmetic rules, complete the following derivation:</p>
+<p><strong>{} ⊢ ((λ (x) (+ x 1)) 5) ⇓ 6</strong></p>
+<p><em>Hint:</em> Start with App at the root. The function evaluates to a closure via Lam, and the body is evaluated in the closure's environment extended with the argument binding.</p>
+</div>
+
+<div class="editor-wrap" id="exercise3-editor"></div>
+
+<script>
+(function() {
+  var container = document.getElementById('exercise3-editor');
+  var editor = ProofTree.createEditor(container, {
+    tree: '(--- "{} ⊢ ((λ (x) (+ x 1)) 5) ⇓ 6")',
+    theoryRules: _bsConfig.theoryRules,
+    onGeneratePremises: _bsConfig.onGeneratePremises,
+    onCheckApplicability: _bsConfig.onCheckApplicability
+  });
+  ProofChecker.createCheckButton(container, editor);
+})();
+</script>
+
+<details>
+<summary>Show solution</summary>
+<div class="solution-body">
+<div id="exercise3-solution"></div>
+<button class="cl-btn" onclick="openInPlayground(window._ex3sexp, 'big-step')" style="margin-top:10px;">Open in Playground</button>
+</div>
+<script>
+(function() {
+  window._ex3sexp = '((App :right) ((Lam :right) --- "{} ⊢ (λ (x) (+ x 1)) ⇓ ⟨λ (x) (+ x 1) , {}⟩") ((Int :right) --- "{} ⊢ 5 ⇓ 5") ((Add :right) ((Var :right) "{x ↦ 5}(x) = 5" --- "{x ↦ 5} ⊢ x ⇓ 5") ((Int :right) --- "{x ↦ 5} ⊢ 1 ⇓ 1") "v = 5 + 1" --- "{x ↦ 5} ⊢ (+ x 1) ⇓ 6") --- "{} ⊢ ((λ (x) (+ x 1)) 5) ⇓ 6")';
+  var details = document.getElementById('exercise3-solution').closest('details');
+  var rendered = false;
+  details.addEventListener('toggle', function() {
+    if (details.open && !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._ex3sexp, document.getElementById('exercise3-solution'));
+    }
+  });
+})();
+</script>
+</details>
+
+<hr />
+
+<h2 id="complete-interpreter">Complete Interpreter</h2>
+
+<p>Values in our language are now either integers or closures:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">value?</span> <span class="nv">v</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">v</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">integer?</span> <span class="nv">i</span><span class="p">)</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">clo</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span><span class="p">)</span> <span class="o">,</span><span class="nv">e</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">hash?</span> <span class="nv">env</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">_</span> <span class="no">#f</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p>The complete interpreter adds two cases—Lam and App—to <code class="language-plaintext highlighter-rouge">interp0</code>:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">interp1</span> <span class="nv">env</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">e</span>
+    <span class="c1">;; (Var)</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">symbol?</span> <span class="nv">x</span><span class="p">)</span> <span class="p">(</span><span class="nf">hash-ref</span> <span class="nv">env</span> <span class="nv">x</span><span class="p">)]</span>
+    <span class="c1">;; (Int)</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">integer?</span> <span class="nv">i</span><span class="p">)</span> <span class="nv">i</span><span class="p">]</span>
+    <span class="c1">;; (Neg)</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nb">-</span> <span class="o">,</span><span class="nv">e</span><span class="p">)</span> <span class="p">(</span><span class="nb">-</span> <span class="p">(</span><span class="nf">interp1</span> <span class="nv">env</span> <span class="nv">e</span><span class="p">))]</span>
+    <span class="c1">;; (Add)</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nb">+</span> <span class="o">,</span><span class="nv">e0</span> <span class="o">,</span><span class="nv">e1</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">v0</span> <span class="p">(</span><span class="nf">interp1</span> <span class="nv">env</span> <span class="nv">e0</span><span class="p">)]</span>
+           <span class="p">[</span><span class="nf">v1</span> <span class="p">(</span><span class="nf">interp1</span> <span class="nv">env</span> <span class="nv">e1</span><span class="p">)])</span>
+       <span class="p">(</span><span class="nb">+</span> <span class="nv">v0</span> <span class="nv">v1</span><span class="p">))]</span>
+    <span class="c1">;; (If0-True) and (If0-False)</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">if0</span> <span class="o">,</span><span class="nv">e-guard</span> <span class="o">,</span><span class="nv">e-true</span> <span class="o">,</span><span class="nv">e-false</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">vg</span> <span class="p">(</span><span class="nf">interp1</span> <span class="nv">env</span> <span class="nv">e-guard</span><span class="p">)])</span>
+       <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">=</span> <span class="nv">vg</span> <span class="mi">0</span><span class="p">)</span>
+           <span class="p">(</span><span class="nf">interp1</span> <span class="nv">env</span> <span class="nv">e-true</span><span class="p">)</span>
+           <span class="p">(</span><span class="nf">interp1</span> <span class="nv">env</span> <span class="nv">e-false</span><span class="p">)))]</span>
+    <span class="c1">;; (Let)</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="o">,</span><span class="nv">x</span> <span class="o">,</span><span class="nv">e0</span><span class="p">])</span> <span class="o">,</span><span class="nv">e-body</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">v</span> <span class="p">(</span><span class="nf">interp1</span> <span class="nv">env</span> <span class="nv">e0</span><span class="p">)])</span>
+       <span class="p">(</span><span class="nf">interp1</span> <span class="p">(</span><span class="nf">hash-set</span> <span class="nv">env</span> <span class="nv">x</span> <span class="nv">v</span><span class="p">)</span> <span class="nv">e-body</span><span class="p">))]</span>
+    <span class="c1">;; (Lam) — simply return a closure</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span><span class="p">)</span> <span class="o">,</span><span class="nv">e+</span><span class="p">)</span> <span class="o">`</span><span class="p">(</span><span class="nf">clo</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span><span class="p">)</span> <span class="o">,</span><span class="nv">e+</span><span class="p">)</span> <span class="o">,</span><span class="nv">env</span><span class="p">)]</span>
+    <span class="c1">;; (App) — expect e0 to evaluate to a closure</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">e0</span> <span class="o">,</span><span class="nv">e1</span><span class="p">)</span>
+     <span class="p">(</span><span class="nf">match</span> <span class="p">(</span><span class="nf">interp1</span> <span class="nv">env</span> <span class="nv">e0</span><span class="p">)</span>
+       <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">clo</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span><span class="p">)</span> <span class="o">,</span><span class="nv">e+</span><span class="p">)</span> <span class="o">,</span><span class="nv">env+</span><span class="p">)</span>
+        <span class="p">(</span><span class="k">define</span> <span class="nv">new-env</span> <span class="p">(</span><span class="nf">hash-set</span> <span class="nv">env+</span> <span class="nv">x</span> <span class="p">(</span><span class="nf">interp1</span> <span class="nv">env</span> <span class="nv">e1</span><span class="p">)))</span>
+        <span class="p">(</span><span class="nf">interp1</span> <span class="nv">new-env</span> <span class="nv">e+</span><span class="p">)])]))</span>
+</code></pre></div></div>
+
+<p>Let’s test it:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nf">interp1</span> <span class="p">(</span><span class="nb">hash</span><span class="p">)</span> <span class="o">'</span><span class="p">((</span><span class="k">λ</span> <span class="p">(</span><span class="nf">x</span><span class="p">)</span> <span class="nv">x</span><span class="p">)</span> <span class="mi">42</span><span class="p">))</span>
+<span class="c1">;; ⟹ 42</span>
+
+<span class="p">(</span><span class="nf">interp1</span> <span class="p">(</span><span class="nb">hash</span><span class="p">)</span> <span class="o">'</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">x</span> <span class="mi">100</span><span class="p">])</span>
+                    <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">f</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="nf">y</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">))])</span>
+                      <span class="p">(</span><span class="nf">f</span> <span class="mi">23</span><span class="p">))))</span>
+<span class="c1">;; ⟹ 123</span>
+
+<span class="p">(</span><span class="nf">interp1</span> <span class="p">(</span><span class="nb">hash</span><span class="p">)</span> <span class="o">'</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nb">apply</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="nf">f</span><span class="p">)</span> <span class="p">(</span><span class="nf">f</span> <span class="mi">5</span><span class="p">))])</span>
+                    <span class="p">(</span><span class="nb">apply</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="nf">x</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)))))</span>
+<span class="c1">;; ⟹ 6</span>
+
+<span class="p">(</span><span class="nf">interp1</span> <span class="p">(</span><span class="nb">hash</span><span class="p">)</span> <span class="o">'</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">make-adder</span>
+                         <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="nf">x</span><span class="p">)</span>
+                           <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="nf">y</span><span class="p">)</span>
+                             <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)))])</span>
+                    <span class="p">((</span><span class="nf">make-adder</span> <span class="mi">10</span><span class="p">)</span> <span class="mi">7</span><span class="p">)))</span>
+<span class="c1">;; ⟹ 17</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="optional-exercises">Optional Exercises</h2>
+
+<p>The following exercises are optional, for extra practice building proof trees.</p>
+
+<div class="exercise-box" style="border-left-color:#60a5fa; background:#eff6ff;">
+<h4 style="color:#1e40af;">Optional Exercise A</h4>
+<p>Complete the following derivation, which uses If0-True along with arithmetic:</p>
+<p><strong>{} ⊢ (if0 (+ 1 (- 1)) 42 0) ⇓ 42</strong></p>
+</div>
+
+<div class="editor-wrap" id="optA-editor"></div>
+
+<script>
+(function() {
+  var container = document.getElementById('optA-editor');
+  var editor = ProofTree.createEditor(container, {
+    tree: '(--- "{} ⊢ (if0 (+ 1 (- 1)) 42 0) ⇓ 42")',
+    theoryRules: _bsConfig.theoryRules,
+    onGeneratePremises: _bsConfig.onGeneratePremises,
+    onCheckApplicability: _bsConfig.onCheckApplicability
+  });
+  ProofChecker.createCheckButton(container, editor);
+})();
+</script>
+
+<details>
+<summary>Show solution</summary>
+<div class="solution-body">
+<div id="optA-solution"></div>
+<button class="cl-btn" onclick="openInPlayground(window._optAsexp, 'big-step')" style="margin-top:10px;">Open in Playground</button>
+</div>
+<script>
+(function() {
+  window._optAsexp = '(("If0-True" :right) ((Add :right) ((Int :right) --- "{} ⊢ 1 ⇓ 1") ((Neg :right) ((Int :right) --- "{} ⊢ 1 ⇓ 1") "v = -1" --- "{} ⊢ (- 1) ⇓ -1") "v = 1 + (-1)" --- "{} ⊢ (+ 1 (- 1)) ⇓ 0") ((Int :right) --- "{} ⊢ 42 ⇓ 42") --- "{} ⊢ (if0 (+ 1 (- 1)) 42 0) ⇓ 42")';
+  var details = document.getElementById('optA-solution').closest('details');
+  var rendered = false;
+  details.addEventListener('toggle', function() {
+    if (details.open && !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._optAsexp, document.getElementById('optA-solution'));
+    }
+  });
+})();
+</script>
+</details>
+
+<div class="exercise-box" style="border-left-color:#60a5fa; background:#eff6ff;">
+<h4 style="color:#1e40af;">Optional Exercise B</h4>
+<p>Complete the following derivation. Pay careful attention to which environment the lambda body is evaluated in—this is the key point about closures and lexical scoping.</p>
+<p><strong>{} ⊢ (let ([x 10]) ((λ (y) (+ x y)) 7)) ⇓ 17</strong></p>
+</div>
+
+<div class="editor-wrap" id="optB-editor"></div>
+
+<script>
+(function() {
+  var container = document.getElementById('optB-editor');
+  var editor = ProofTree.createEditor(container, {
+    tree: '(--- "{} ⊢ (let ([x 10]) ((λ (y) (+ x y)) 7)) ⇓ 17")',
+    theoryRules: _bsConfig.theoryRules,
+    onGeneratePremises: _bsConfig.onGeneratePremises,
+    onCheckApplicability: _bsConfig.onCheckApplicability
+  });
+  ProofChecker.createCheckButton(container, editor);
+})();
+</script>
+
+<details>
+<summary>Show solution</summary>
+<div class="solution-body">
+<div id="optB-solution"></div>
+<button class="cl-btn" onclick="openInPlayground(window._optBsexp, 'big-step')" style="margin-top:10px;">Open in Playground</button>
+</div>
+<script>
+(function() {
+  window._optBsexp = '((Let :right) ((Int :right) --- "{} ⊢ 10 ⇓ 10") ((App :right) ((Lam :right) --- "{x ↦ 10} ⊢ (λ (y) (+ x y)) ⇓ ⟨λ (y) (+ x y) , {x ↦ 10}⟩") ((Int :right) --- "{x ↦ 10} ⊢ 7 ⇓ 7") ((Add :right) ((Var :right) "{x ↦ 10, y ↦ 7}(x) = 10" --- "{x ↦ 10, y ↦ 7} ⊢ x ⇓ 10") ((Var :right) "{x ↦ 10, y ↦ 7}(y) = 7" --- "{x ↦ 10, y ↦ 7} ⊢ y ⇓ 7") "v = 10 + 7" --- "{x ↦ 10, y ↦ 7} ⊢ (+ x y) ⇓ 17") --- "{x ↦ 10} ⊢ ((λ (y) (+ x y)) 7) ⇓ 17") --- "{} ⊢ (let ([x 10]) ((λ (y) (+ x y)) 7)) ⇓ 17")';
+  var details = document.getElementById('optB-solution').closest('details');
+  var rendered = false;
+  details.addEventListener('toggle', function() {
+    if (details.open && !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._optBsexp, document.getElementById('optB-solution'));
+    }
+  });
+})();
+</script>
+</details>
+
+<hr />
+
+<h2 id="advanced-optional-certifying-interpreters">Advanced, Optional: Certifying Interpreters</h2>
+
+<p>Our interpreter directly mirrors the natural deduction rules: each <code class="language-plaintext highlighter-rouge">match</code> clause corresponds to exactly one rule, and each recursive call corresponds to a premise. Because of this tight correspondence, we can extend the interpreter to generate <em>proof trees</em>—certificates that the evaluation followed the rules correctly.</p>
+
+<p>The idea: instead of returning just a value, each clause also returns a proof tree node recording which rule was applied. The extension to <code class="language-plaintext highlighter-rouge">interp1</code> is minimal—every clause wraps its result in a pair <code class="language-plaintext highlighter-rouge">(cons value proof)</code>, and recursive calls destructure these pairs with <code class="language-plaintext highlighter-rouge">match-define</code>. (If you haven’t seen <code class="language-plaintext highlighter-rouge">match-define</code> before: <code class="language-plaintext highlighter-rouge">(match-define (cons a b) expr)</code> binds <code class="language-plaintext highlighter-rouge">a</code> to the car and <code class="language-plaintext highlighter-rouge">b</code> to the cdr of <code class="language-plaintext highlighter-rouge">expr</code>.)</p>
+
+<h3 id="formatting-helpers">Formatting helpers</h3>
+
+<p>Expressions are plain S-expression data, so Racket’s <code class="language-plaintext highlighter-rouge">~a</code> (display) prints them correctly. We only need custom formatters for environments (Racket hashes display as <code class="language-plaintext highlighter-rouge">#hash(...)</code>) and closures:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">fmt-env</span> <span class="nv">env</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nf">hash-empty?</span> <span class="nv">env</span><span class="p">)</span> <span class="s">"{}"</span>
+      <span class="p">(</span><span class="nb">format</span> <span class="s">"{~a}"</span>
+        <span class="p">(</span><span class="nf">string-join</span>
+          <span class="p">(</span><span class="nf">for/list</span> <span class="p">([</span><span class="nf">k</span> <span class="p">(</span><span class="nf">sort</span> <span class="p">(</span><span class="nf">hash-keys</span> <span class="nv">env</span><span class="p">)</span> <span class="nv">symbol&lt;?</span><span class="p">)])</span>
+            <span class="p">(</span><span class="nb">format</span> <span class="s">"~a ↦ ~a"</span> <span class="nv">k</span> <span class="p">(</span><span class="nf">fmt-val</span> <span class="p">(</span><span class="nf">hash-ref</span> <span class="nv">env</span> <span class="nv">k</span><span class="p">))))</span>
+          <span class="s">", "</span><span class="p">))))</span>
+
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">fmt-val</span> <span class="nv">v</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">v</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">integer?</span><span class="p">)</span> <span class="p">(</span><span class="nf">~a</span> <span class="nv">v</span><span class="p">)]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">clo</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span><span class="p">)</span> <span class="o">,</span><span class="nv">e</span><span class="p">)</span> <span class="o">,</span><span class="nv">env</span><span class="p">)</span>
+     <span class="p">(</span><span class="nb">format</span> <span class="s">"⟨λ (~a) ~a , ~a⟩"</span> <span class="nv">x</span> <span class="nv">e</span> <span class="p">(</span><span class="nf">fmt-env</span> <span class="nv">env</span><span class="p">))]))</span>
+
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">fmt-judge</span> <span class="nv">env</span> <span class="nv">e</span> <span class="nv">v</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">format</span> <span class="s">"~a ⊢ ~a ⇓ ~a"</span> <span class="p">(</span><span class="nf">fmt-env</span> <span class="nv">env</span><span class="p">)</span> <span class="nv">e</span> <span class="p">(</span><span class="nf">fmt-val</span> <span class="nv">v</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<h3 id="the-certifying-interpreter">The certifying interpreter</h3>
+
+<p>Compare each clause to <code class="language-plaintext highlighter-rouge">interp1</code>—the evaluation logic is identical. The only change is that each clause now returns <code class="language-plaintext highlighter-rouge">(cons value proof-node)</code>, where the proof node has the uniform shape <code class="language-plaintext highlighter-rouge">(RuleName premise ... --- conclusion)</code>:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">interp-cert</span> <span class="nv">env</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">e</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">symbol?</span> <span class="nv">x</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">define</span> <span class="nv">v</span> <span class="p">(</span><span class="nf">hash-ref</span> <span class="nv">env</span> <span class="nv">x</span><span class="p">))</span>
+     <span class="p">(</span><span class="nb">cons</span> <span class="nv">v</span> <span class="o">`</span><span class="p">(</span><span class="nf">Var</span> <span class="o">,</span><span class="p">(</span><span class="nb">format</span> <span class="s">"~a(~a) = ~a"</span> <span class="p">(</span><span class="nf">fmt-env</span> <span class="nv">env</span><span class="p">)</span> <span class="nv">x</span> <span class="p">(</span><span class="nf">fmt-val</span> <span class="nv">v</span><span class="p">))</span>
+                   <span class="nv">---</span> <span class="o">,</span><span class="p">(</span><span class="nf">fmt-judge</span> <span class="nv">env</span> <span class="nv">e</span> <span class="nv">v</span><span class="p">)))]</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">integer?</span> <span class="nv">i</span><span class="p">)</span>
+     <span class="p">(</span><span class="nb">cons</span> <span class="nv">i</span> <span class="o">`</span><span class="p">(</span><span class="nf">Int</span> <span class="nv">---</span> <span class="o">,</span><span class="p">(</span><span class="nf">fmt-judge</span> <span class="nv">env</span> <span class="nv">e</span> <span class="nv">i</span><span class="p">)))]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nb">-</span> <span class="o">,</span><span class="nv">e0</span><span class="p">)</span>
+     <span class="p">(</span><span class="nf">match-define</span> <span class="p">(</span><span class="nb">cons</span> <span class="nv">v0</span> <span class="nv">pf0</span><span class="p">)</span> <span class="p">(</span><span class="nf">interp-cert</span> <span class="nv">env</span> <span class="nv">e0</span><span class="p">))</span>
+     <span class="p">(</span><span class="k">define</span> <span class="nv">v</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">v0</span><span class="p">))</span>
+     <span class="p">(</span><span class="nb">cons</span> <span class="nv">v</span> <span class="o">`</span><span class="p">(</span><span class="nf">Neg</span> <span class="o">,</span><span class="nv">pf0</span> <span class="o">,</span><span class="p">(</span><span class="nb">format</span> <span class="s">"v = ~a"</span> <span class="nv">v</span><span class="p">)</span>
+                   <span class="nv">---</span> <span class="o">,</span><span class="p">(</span><span class="nf">fmt-judge</span> <span class="nv">env</span> <span class="nv">e</span> <span class="nv">v</span><span class="p">)))]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nb">+</span> <span class="o">,</span><span class="nv">e0</span> <span class="o">,</span><span class="nv">e1</span><span class="p">)</span>
+     <span class="p">(</span><span class="nf">match-define</span> <span class="p">(</span><span class="nb">cons</span> <span class="nv">v0</span> <span class="nv">pf0</span><span class="p">)</span> <span class="p">(</span><span class="nf">interp-cert</span> <span class="nv">env</span> <span class="nv">e0</span><span class="p">))</span>
+     <span class="p">(</span><span class="nf">match-define</span> <span class="p">(</span><span class="nb">cons</span> <span class="nv">v1</span> <span class="nv">pf1</span><span class="p">)</span> <span class="p">(</span><span class="nf">interp-cert</span> <span class="nv">env</span> <span class="nv">e1</span><span class="p">))</span>
+     <span class="p">(</span><span class="k">define</span> <span class="nv">v</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">v0</span> <span class="nv">v1</span><span class="p">))</span>
+     <span class="p">(</span><span class="nb">cons</span> <span class="nv">v</span> <span class="o">`</span><span class="p">(</span><span class="nf">Add</span> <span class="o">,</span><span class="nv">pf0</span> <span class="o">,</span><span class="nv">pf1</span> <span class="o">,</span><span class="p">(</span><span class="nb">format</span> <span class="s">"v = ~a + ~a"</span> <span class="nv">v0</span> <span class="nv">v1</span><span class="p">)</span>
+                   <span class="nv">---</span> <span class="o">,</span><span class="p">(</span><span class="nf">fmt-judge</span> <span class="nv">env</span> <span class="nv">e</span> <span class="nv">v</span><span class="p">)))]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">if0</span> <span class="o">,</span><span class="nv">e-guard</span> <span class="o">,</span><span class="nv">e-true</span> <span class="o">,</span><span class="nv">e-false</span><span class="p">)</span>
+     <span class="p">(</span><span class="nf">match-define</span> <span class="p">(</span><span class="nb">cons</span> <span class="nv">vg</span> <span class="nv">pfg</span><span class="p">)</span> <span class="p">(</span><span class="nf">interp-cert</span> <span class="nv">env</span> <span class="nv">e-guard</span><span class="p">))</span>
+     <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">=</span> <span class="nv">vg</span> <span class="mi">0</span><span class="p">)</span>
+         <span class="p">(</span><span class="nf">match</span> <span class="p">(</span><span class="nf">interp-cert</span> <span class="nv">env</span> <span class="nv">e-true</span><span class="p">)</span>
+           <span class="p">[(</span><span class="nb">cons</span> <span class="nv">v</span> <span class="nv">pf</span><span class="p">)</span>
+            <span class="p">(</span><span class="nb">cons</span> <span class="nv">v</span> <span class="o">`</span><span class="p">(</span><span class="nf">If0-True</span> <span class="o">,</span><span class="nv">pfg</span> <span class="o">,</span><span class="nv">pf</span>
+                               <span class="nv">---</span> <span class="o">,</span><span class="p">(</span><span class="nf">fmt-judge</span> <span class="nv">env</span> <span class="nv">e</span> <span class="nv">v</span><span class="p">)))])</span>
+         <span class="p">(</span><span class="nf">match</span> <span class="p">(</span><span class="nf">interp-cert</span> <span class="nv">env</span> <span class="nv">e-false</span><span class="p">)</span>
+           <span class="p">[(</span><span class="nb">cons</span> <span class="nv">v</span> <span class="nv">pf</span><span class="p">)</span>
+            <span class="p">(</span><span class="nb">cons</span> <span class="nv">v</span> <span class="o">`</span><span class="p">(</span><span class="nf">If0-False</span> <span class="o">,</span><span class="nv">pfg</span> <span class="o">,</span><span class="p">(</span><span class="nb">format</span> <span class="s">"~a ≠ 0"</span> <span class="nv">vg</span><span class="p">)</span> <span class="o">,</span><span class="nv">pf</span>
+                                <span class="nv">---</span> <span class="o">,</span><span class="p">(</span><span class="nf">fmt-judge</span> <span class="nv">env</span> <span class="nv">e</span> <span class="nv">v</span><span class="p">)))]))]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="o">,</span><span class="nv">x</span> <span class="o">,</span><span class="nv">e0</span><span class="p">])</span> <span class="o">,</span><span class="nv">e-body</span><span class="p">)</span>
+     <span class="p">(</span><span class="nf">match-define</span> <span class="p">(</span><span class="nb">cons</span> <span class="nv">v0</span> <span class="nv">pf0</span><span class="p">)</span> <span class="p">(</span><span class="nf">interp-cert</span> <span class="nv">env</span> <span class="nv">e0</span><span class="p">))</span>
+     <span class="p">(</span><span class="nf">match-define</span> <span class="p">(</span><span class="nb">cons</span> <span class="nv">v</span> <span class="nv">pf-body</span><span class="p">)</span>
+       <span class="p">(</span><span class="nf">interp-cert</span> <span class="p">(</span><span class="nf">hash-set</span> <span class="nv">env</span> <span class="nv">x</span> <span class="nv">v0</span><span class="p">)</span> <span class="nv">e-body</span><span class="p">))</span>
+     <span class="p">(</span><span class="nb">cons</span> <span class="nv">v</span> <span class="o">`</span><span class="p">(</span><span class="nf">Let</span> <span class="o">,</span><span class="nv">pf0</span> <span class="o">,</span><span class="nv">pf-body</span> <span class="nv">---</span> <span class="o">,</span><span class="p">(</span><span class="nf">fmt-judge</span> <span class="nv">env</span> <span class="nv">e</span> <span class="nv">v</span><span class="p">)))]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span><span class="p">)</span> <span class="o">,</span><span class="nv">e+</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">define</span> <span class="nv">v</span> <span class="o">`</span><span class="p">(</span><span class="nf">clo</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span><span class="p">)</span> <span class="o">,</span><span class="nv">e+</span><span class="p">)</span> <span class="o">,</span><span class="nv">env</span><span class="p">))</span>
+     <span class="p">(</span><span class="nb">cons</span> <span class="nv">v</span> <span class="o">`</span><span class="p">(</span><span class="nf">Lam</span> <span class="nv">---</span> <span class="o">,</span><span class="p">(</span><span class="nf">fmt-judge</span> <span class="nv">env</span> <span class="nv">e</span> <span class="nv">v</span><span class="p">)))]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">e0</span> <span class="o">,</span><span class="nv">e1</span><span class="p">)</span>
+     <span class="p">(</span><span class="nf">match-define</span> <span class="p">(</span><span class="nb">cons</span> <span class="nv">v0</span> <span class="nv">pf0</span><span class="p">)</span> <span class="p">(</span><span class="nf">interp-cert</span> <span class="nv">env</span> <span class="nv">e0</span><span class="p">))</span>
+     <span class="p">(</span><span class="nf">match-define</span> <span class="p">(</span><span class="nb">cons</span> <span class="nv">v1</span> <span class="nv">pf1</span><span class="p">)</span> <span class="p">(</span><span class="nf">interp-cert</span> <span class="nv">env</span> <span class="nv">e1</span><span class="p">))</span>
+     <span class="p">(</span><span class="nf">match</span> <span class="nv">v0</span>
+       <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">clo</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span><span class="p">)</span> <span class="o">,</span><span class="nv">e+</span><span class="p">)</span> <span class="o">,</span><span class="nv">env+</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">match-define</span> <span class="p">(</span><span class="nb">cons</span> <span class="nv">v</span> <span class="nv">pf-body</span><span class="p">)</span>
+          <span class="p">(</span><span class="nf">interp-cert</span> <span class="p">(</span><span class="nf">hash-set</span> <span class="nv">env+</span> <span class="nv">x</span> <span class="nv">v1</span><span class="p">)</span> <span class="nv">e+</span><span class="p">))</span>
+        <span class="p">(</span><span class="nb">cons</span> <span class="nv">v</span> <span class="o">`</span><span class="p">(</span><span class="nf">App</span> <span class="o">,</span><span class="nv">pf0</span> <span class="o">,</span><span class="nv">pf1</span> <span class="o">,</span><span class="nv">pf-body</span>
+                      <span class="nv">---</span> <span class="o">,</span><span class="p">(</span><span class="nf">fmt-judge</span> <span class="nv">env</span> <span class="nv">e</span> <span class="nv">v</span><span class="p">)))])]))</span>
+</code></pre></div></div>
+
+<h3 id="serializing-proofs">Serializing proofs</h3>
+
+<p>The proof trees produced by <code class="language-plaintext highlighter-rouge">interp-cert</code> are nested Racket lists. A small serializer converts them to the S-expression string format that the proof tree viewer understands:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">proof-&gt;sexp</span> <span class="nv">pf</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">pf</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">name</span> <span class="o">,@</span><span class="nv">rest</span><span class="p">)</span>
+     <span class="p">(</span><span class="nb">format</span> <span class="s">"(~a)"</span>
+       <span class="p">(</span><span class="nf">string-join</span>
+         <span class="p">(</span><span class="nb">cons</span> <span class="p">(</span><span class="nb">format</span> <span class="s">"(~a :right)"</span> <span class="nv">name</span><span class="p">)</span>
+               <span class="p">(</span><span class="nf">for/list</span> <span class="p">([</span><span class="nf">x</span> <span class="p">(</span><span class="nf">in-list</span> <span class="nv">rest</span><span class="p">)])</span>
+                 <span class="p">(</span><span class="k">cond</span>
+                   <span class="p">[(</span><span class="nb">equal?</span> <span class="nv">x</span> <span class="ss">'---</span><span class="p">)</span> <span class="s">"---"</span><span class="p">]</span>
+                   <span class="p">[(</span><span class="nb">string?</span> <span class="nv">x</span><span class="p">)</span> <span class="p">(</span><span class="nb">format</span> <span class="s">"\"~a\""</span> <span class="nv">x</span><span class="p">)]</span>
+                   <span class="p">[</span><span class="nf">else</span> <span class="p">(</span><span class="nf">proof-&gt;sexp</span> <span class="nv">x</span><span class="p">)])))</span>
+         <span class="s">" "</span><span class="p">))]))</span>
+
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">prove</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">proof-&gt;sexp</span> <span class="p">(</span><span class="nb">cdr</span> <span class="p">(</span><span class="nf">interp-cert</span> <span class="p">(</span><span class="nb">hash</span><span class="p">)</span> <span class="nv">e</span><span class="p">))))</span>
+</code></pre></div></div>
+
+<h3 id="try-it">Try it</h3>
+
+<p>Download the complete file (includes <code class="language-plaintext highlighter-rouge">interp1</code>, <code class="language-plaintext highlighter-rouge">interp-cert</code>, and the serializer): <a href="/cis352-s26/assets/code/closures.rkt">closures.rkt</a></p>
+
+<p>Run it in DrRacket or from the command line:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>racket closures.rkt
+</code></pre></div></div>
+
+<p>The output includes proof tree S-expressions like:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nb">displayln</span> <span class="p">(</span><span class="nf">prove</span> <span class="o">'</span><span class="p">(</span><span class="nb">+</span> <span class="mi">3</span> <span class="mi">5</span><span class="p">)))</span>
+<span class="p">(</span><span class="nb">displayln</span> <span class="p">(</span><span class="nf">prove</span> <span class="o">'</span><span class="p">((</span><span class="k">λ</span> <span class="p">(</span><span class="nf">x</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">))</span> <span class="mi">5</span><span class="p">)))</span>
+<span class="p">(</span><span class="nb">displayln</span> <span class="p">(</span><span class="nf">prove</span> <span class="o">'</span><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">x</span> <span class="mi">10</span><span class="p">])</span> <span class="p">((</span><span class="k">λ</span> <span class="p">(</span><span class="nf">y</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">))</span> <span class="mi">7</span><span class="p">))))</span>
+</code></pre></div></div>
+
+<p>Then paste the result into the viewer below to see the proof tree:</p>
+
+<div style="margin: 1.5em 0;">
+  <textarea id="cert-input" rows="4" style="width:100%; font-family:'SF Mono','Menlo','Consolas',monospace; font-size:0.85em; padding:10px; border:1px solid #d1d5db; border-radius:8px; resize:vertical;" placeholder="Paste proof tree S-expression here..."></textarea>
+  <div style="margin: 10px 0; display:flex; gap:8px; flex-wrap:wrap;">
+    <button id="cert-render-btn" type="button" class="cl-btn cl-btn-primary">Render Proof Tree</button>
+    <button id="cert-example-btn" type="button" class="cl-btn">Load Example</button>
+    <button id="cert-playground-btn" type="button" class="cl-btn">Open in Playground</button>
+  </div>
+  <div id="cert-output" style="border:1px solid #e5e7eb; border-radius:8px; min-height:60px;"></div>
+</div>
+
+<script>
+(function() {
+  var exampleSexp = '((App :right) ((Lam :right) --- "{} ⊢ (λ (x) (+ x 1)) ⇓ ⟨λ (x) (+ x 1) , {}⟩") ((Int :right) --- "{} ⊢ 5 ⇓ 5") ((Add :right) ((Var :right) "{x ↦ 5}(x) = 5" --- "{x ↦ 5} ⊢ x ⇓ 5") ((Int :right) --- "{x ↦ 5} ⊢ 1 ⇓ 1") "v = 5 + 1" --- "{x ↦ 5} ⊢ (+ x 1) ⇓ 6") --- "{} ⊢ ((λ (x) (+ x 1)) 5) ⇓ 6")';
+
+  document.getElementById('cert-render-btn').addEventListener('click', function() {
+    var input = document.getElementById('cert-input').value.trim();
+    var output = document.getElementById('cert-output');
+    output.innerHTML = '';
+    if (input) {
+      try {
+        ProofTree.renderReadonly(input, output);
+      } catch(e) {
+        output.textContent = 'Error: ' + e.message;
+      }
+    }
+  });
+
+  document.getElementById('cert-example-btn').addEventListener('click', function() {
+    document.getElementById('cert-input').value = exampleSexp;
+  });
+
+  document.getElementById('cert-playground-btn').addEventListener('click', function() {
+    var input = document.getElementById('cert-input').value.trim();
+    if (input) openInPlayground(input, 'big-step');
+  });
+})();
+</script>
+
+<hr />
+
+<h2 id="summary">Summary</h2>
+
+<ul>
+  <li>
+    <p>We introduced the judgement <strong>ρ ⊢ e ⇓ v</strong>, which extends big-step semantics with an environment for variable bindings.</p>
+  </li>
+  <li>
+    <p>We gave natural deduction rules for each syntactic form, and translated them directly into an interpreter by pattern-matching on the expression.</p>
+  </li>
+  <li>
+    <p>The key insight was the move from <strong>substitution</strong> to <strong>closures</strong>. A closure ⟨λ (x) e , ρ⟩ pairs a lambda with its defining environment, enabling efficient lexical scoping without rewriting program text.</p>
+  </li>
+  <li>
+    <p>After Spring break, we will return to the rewriting view of the λ-calculus (reduction rules and substitution) and connect it to the environment-based semantics developed today.</p>
+  </li>
+</ul>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '26) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src="/cis352-s26/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="/cis352-s26/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js"></script>
+
+
+  </body>
+
+</html>
