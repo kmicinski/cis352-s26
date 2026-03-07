@@ -1,0 +1,3 @@
+[submodule "lambda-playground"]
+	path = lambda-playground
+	url = git@github.com:kmicinski/lambda-playground.git
