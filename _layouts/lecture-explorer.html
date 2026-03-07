@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  {% include head.html %}
+  <body class="lecture-explorer-page">
+
+    {% include header.html %}
+
+    <div class="page-content">
+      <div class="wrapper">
+
+        <!-- Top bar -->
+        <div id="le-topbar">
+          <a href="{{ '/' | relative_url }}" class="le-back-link">
+            <i class="fas fa-arrow-left"></i> CIS352
+          </a>
+          <h1 class="le-title">{{ page.title }}</h1>
+          <div class="le-topbar-spacer"></div>
+          <button class="le-toggle-btn" id="le-toggle-explorer" title="Toggle explorer pane">
+            <i class="fas fa-flask"></i> Explorer
+          </button>
+        </div>
+
+        <!-- Split pane container -->
+        <div id="le-split">
+          <!-- Left pane: lecture notes -->
+          <div id="le-notes" class="le-pane">
+            <div class="le-notes-inner">
+              <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+                <div class="post-content" itemprop="articleBody">
+                  {{ content }}
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <!-- Draggable divider -->
+          <div id="le-divider" title="Drag to resize, double-click to reset">
+            <div class="le-divider-grip">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+
+          <!-- Right pane: lambda explorer -->
+          <div id="le-explorer" class="le-pane">
+            <iframe
+              id="le-explorer-iframe"
+              src="{{ '/lambda-playground/www/index.html' | relative_url }}"
+              allow="clipboard-write"
+              title="Lambda Calculus Explorer"
+            ></iframe>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+    {% include footer.html %}
+
+    <link rel="stylesheet" href="{{ '/css/lecture-explorer.css' | relative_url }}">
+    <script src="{{ '/assets/js/lecture-explorer.js' | relative_url }}"></script>
+  </body>
+</html>
