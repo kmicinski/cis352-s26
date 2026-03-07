@@ -292,6 +292,8 @@ var dragStartX = 0;
 var dragStartY = 0;
 var mouseDownX = 0;
 var mouseDownY = 0;
+var touchStartDist = 0;
+var touchStartZoom = 1;
 var stepCount = 0;
 var autoRunInterval = null;
 var contextMenuPath = null;
@@ -338,6 +340,7 @@ var drawer = $("#drawer");
 var drawerToggle = $("#drawer-toggle");
 var drawerClose = $("#drawer-close");
 var drawerBackdrop = $("#drawer-backdrop");
+var mobileStepFab = document.getElementById("mobile-step-fab");
 async function main() {
   await init();
   engine = new LambdaEngine();
@@ -392,6 +395,8 @@ async function main() {
     }
   });
   if (window.parent !== window) {
+    const fab = document.getElementById("tutorial-fab");
+    if (fab) fab.classList.add("hidden");
     window.parent.postMessage({ type: "ready" }, "*");
   }
 }
@@ -404,6 +409,7 @@ function loadNewTerm(input) {
     dtree.setRoot(display, renderTreeJson);
     stepCount = 0;
     treeNeedsAutoFit = true;
+    if (mobileStepFab) mobileStepFab.classList.remove("hidden");
     renderCurrentTerm();
   } catch (e) {
     flashError(String(e));
@@ -533,6 +539,9 @@ function setupEventListeners() {
   viewport.addEventListener("mousedown", onMouseDown);
   window.addEventListener("mousemove", onMouseMove);
   window.addEventListener("mouseup", onMouseUp);
+  viewport.addEventListener("touchstart", onTouchStart, { passive: false });
+  viewport.addEventListener("touchmove", onTouchMove, { passive: false });
+  viewport.addEventListener("touchend", onTouchEnd, { passive: false });
   termDisplay.addEventListener("mousemove", onTermHover);
   termDisplay.addEventListener("mouseleave", clearHover);
   termDisplay.addEventListener("click", onTermClick);
@@ -637,6 +646,9 @@ function setupEventListeners() {
   });
   runBtn.addEventListener("click", startAutoRun);
   stopBtn.addEventListener("click", stopAutoRun);
+  if (mobileStepFab) {
+    mobileStepFab.addEventListener("click", () => stepBtn.click());
+  }
   if (treeToggleBtn) {
     treeToggleBtn.addEventListener("click", () => {
       treeCollapsed = !treeCollapsed;
@@ -1404,6 +1416,9 @@ function updateStepInfo(info) {
     normalFormBadge.style.display = "none";
     stepBtn.disabled = false;
   }
+  if (mobileStepFab) {
+    mobileStepFab.disabled = stepBtn.disabled;
+  }
 }
 function setZoom(z) {
   zoom = Math.max(0.1, Math.min(5, z));
@@ -1469,6 +1484,68 @@ function onMouseMove(e) {
 function onMouseUp() {
   isDragging = false;
   viewport.classList.remove("dragging");
+}
+function touchDist(t) {
+  if (t.length < 2) return 0;
+  const dx = t[0].clientX - t[1].clientX;
+  const dy = t[0].clientY - t[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+function onTouchStart(e) {
+  if (e.touches.length === 2) {
+    e.preventDefault();
+    touchStartDist = touchDist(e.touches);
+    touchStartZoom = zoom;
+  } else if (e.touches.length === 1) {
+    const t = e.touches[0];
+    isDragging = true;
+    didDrag = false;
+    mouseDownX = t.clientX;
+    mouseDownY = t.clientY;
+    dragStartX = t.clientX - panX;
+    dragStartY = t.clientY - panY;
+  }
+}
+function onTouchMove(e) {
+  if (e.touches.length === 2 && touchStartDist > 0) {
+    e.preventDefault();
+    const dist = touchDist(e.touches);
+    const scale = dist / touchStartDist;
+    const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    const rect = viewport.getBoundingClientRect();
+    const mx = midX - rect.left;
+    const my = midY - rect.top;
+    const newZoom = Math.max(0.1, Math.min(5, touchStartZoom * scale));
+    const s = newZoom / zoom;
+    panX = mx - s * (mx - panX);
+    panY = my - s * (my - panY);
+    zoom = newZoom;
+    updateTransform();
+  } else if (e.touches.length === 1 && isDragging) {
+    const t = e.touches[0];
+    const dx = t.clientX - mouseDownX;
+    const dy = t.clientY - mouseDownY;
+    if (!didDrag && dx * dx + dy * dy < 16) return;
+    didDrag = true;
+    e.preventDefault();
+    panX = t.clientX - dragStartX;
+    panY = t.clientY - dragStartY;
+    updateTransform();
+  }
+}
+function onTouchEnd(e) {
+  if (e.touches.length === 0) {
+    isDragging = false;
+    touchStartDist = 0;
+  } else if (e.touches.length === 1) {
+    touchStartDist = 0;
+    const t = e.touches[0];
+    dragStartX = t.clientX - panX;
+    dragStartY = t.clientY - panY;
+    mouseDownX = t.clientX;
+    mouseDownY = t.clientY;
+  }
 }
 function updateStatusBar(info) {
   if (!info) {
@@ -1600,6 +1677,20 @@ function showTutorialStep() {
   tutorialIndicator.textContent = `${tutorialStep + 1} / ${TUTORIAL_STEPS.length}`;
   showTreeCallout(false);
   tutorialBody.innerHTML = `<div class="tutorial-title">${step.title}</div>${step.body}`;
+  if ("ontouchstart" in window) {
+    tutorialBody.querySelectorAll("kbd").forEach((kbd) => {
+      const text = kbd.textContent || "";
+      if (text === "Space") {
+        kbd.textContent = "\u25B6";
+        kbd.title = "Tap the step button";
+      } else if (text === "B" || text === "Tab" || text === "R" || text === "N" || text === "A" || text === "V" || text === "L" || text === "C" || text === "\u2191\u2193\u2190\u2192" || text === "\u2191" || text === "\u2193" || text === "\u2318Z") {
+        const parent = kbd.parentElement;
+        if (parent && parent.classList.contains("hint")) {
+          parent.style.display = "none";
+        }
+      }
+    });
+  }
   tutorialDots.innerHTML = "";
   for (let i = 0; i < TUTORIAL_STEPS.length; i++) {
     const dot = document.createElement("span");

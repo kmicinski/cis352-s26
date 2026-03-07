@@ -414,8 +414,10 @@ async function main(): Promise<void> {
         }
     });
 
-    // Notify parent that the explorer is ready
+    // When embedded in an iframe, hide tutorial FAB and notify parent
     if (window.parent !== window) {
+        const fab = document.getElementById('tutorial-fab');
+        if (fab) fab.classList.add('hidden');
         window.parent.postMessage({ type: 'ready' }, '*');
     }
 }
