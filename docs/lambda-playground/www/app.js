@@ -356,6 +356,44 @@ async function main() {
   } else {
     requestAnimationFrame(maybeShowWelcome);
   }
+  window.addEventListener("message", (event) => {
+    const data = event.data;
+    if (!data || typeof data.type !== "string") return;
+    switch (data.type) {
+      case "loadTerm":
+        if (typeof data.term === "string") {
+          termInput.value = data.term;
+          loadNewTerm(data.term);
+        }
+        break;
+      case "setStrategy":
+        if (typeof data.strategy === "string") {
+          engine.set_strategy(data.strategy);
+          renderCurrentTerm();
+        }
+        break;
+      case "step": {
+        try {
+          const preInfo = JSON.parse(engine.get_term_info());
+          const redexPath = preInfo.strategy_next || "";
+          engine.step_strategy();
+          const display = engine.get_display();
+          const renderTreeJson = engine.get_render_tree();
+          dtree.addChild(display, "\u03B2", renderTreeJson, redexPath);
+          stepCount++;
+          renderCurrentTerm();
+        } catch (_) {
+        }
+        break;
+      }
+      case "reset":
+        termInput.value = "";
+        break;
+    }
+  });
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: "ready" }, "*");
+  }
 }
 main().catch(console.error);
 function loadNewTerm(input) {
@@ -1773,6 +1811,7 @@ if (tutorialNext) tutorialNext.addEventListener("click", () => {
 });
 if (tutorialCloseBtn) tutorialCloseBtn.addEventListener("click", endTutorial);
 function maybeShowWelcome() {
+  if (window.parent !== window) return;
   try {
     if (sessionStorage.getItem("lambda_welcomed")) return;
   } catch (_) {

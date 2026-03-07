@@ -1,0 +1,231 @@
+/* ── Lecture Explorer: Split-pane structural layout only ── */
+/* Notes pane inherits all default post/site styling        */
+
+/* Hide Jekyll chrome */
+.lecture-explorer-page .site-header { display: none; }
+.lecture-explorer-page .site-footer { display: none; }
+.lecture-explorer-page .page-content { padding: 0; }
+.lecture-explorer-page .wrapper { max-width: none; padding: 0; }
+
+/* ── Top bar ─────────────────────────────────────── */
+#le-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 16px;
+  background: #000E54;
+  color: #fff;
+  font-size: 0.875rem;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.le-back-link {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.le-back-link:hover { color: #F76900; }
+
+.le-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.le-topbar-spacer { flex: 1; }
+
+.le-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 0.78rem;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.le-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+.le-toggle-btn.le-active {
+  background: #F76900;
+  border-color: #F76900;
+  color: #fff;
+}
+
+/* ── Split pane container ────────────────────────── */
+#le-split {
+  display: flex;
+  height: calc(100vh - 44px);
+  overflow: hidden;
+}
+
+.le-pane {
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ── Notes pane (left) ───────────────────────────── */
+#le-notes {
+  width: 40%;
+  min-width: 280px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* When explorer is off, notes take full width */
+#le-notes.le-full {
+  width: 100% !important;
+  min-width: 0;
+}
+
+.le-notes-inner {
+  padding: 20px 30px 64px;
+  max-width: 850px;
+}
+
+/* ── Clickable lambda terms ──────────────────────── */
+.le-lambda-clickable {
+  cursor: pointer;
+  position: relative;
+  border-bottom: 2px dashed rgba(247, 105, 0, 0.4);
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.le-lambda-clickable:hover {
+  border-bottom-color: #F76900;
+  background-color: rgba(247, 105, 0, 0.08);
+}
+
+.le-lambda-clickable::after {
+  content: "Load in explorer \2192";
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  background: #000E54;
+  color: #fff;
+  font-size: 0.72rem;
+  font-family: sans-serif;
+  font-style: normal;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 10;
+}
+.le-lambda-clickable:hover::after {
+  opacity: 1;
+}
+
+/* ── Divider ─────────────────────────────────────── */
+#le-divider {
+  width: 10px;
+  background: #f1f5f9;
+  border-left: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 5;
+  transition: background 0.15s;
+  touch-action: none;
+}
+
+#le-divider:hover,
+#le-divider.le-dragging {
+  background: #e2e8f0;
+}
+
+.le-divider-grip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.le-divider-grip span {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+#le-divider:hover .le-divider-grip span,
+#le-divider.le-dragging .le-divider-grip span {
+  background: #64748b;
+}
+
+/* ── Explorer pane (right) ───────────────────────── */
+#le-explorer {
+  flex: 1;
+  min-width: 300px;
+}
+
+#le-explorer-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ── Explorer hidden ─────────────────────────────── */
+#le-explorer.le-hidden {
+  display: none;
+}
+#le-divider.le-hidden {
+  display: none;
+}
+
+/* ── Prevent iframe from capturing mouse during drag */
+#le-split.le-resizing #le-explorer-iframe {
+  pointer-events: none;
+}
+
+/* ── Mobile: explorer off by default, toggle enables it ── */
+@media (max-width: 700px) {
+  #le-notes {
+    width: 100% !important;
+    min-width: 0;
+  }
+
+  #le-explorer {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .le-notes-inner {
+    padding: 16px 16px 40px;
+  }
+
+  /* When explorer is toggled on in mobile, stack vertically */
+  #le-split.le-mobile-split {
+    flex-direction: column;
+  }
+
+  #le-split.le-mobile-split #le-notes {
+    height: 50%;
+    overflow-y: auto;
+  }
+
+  #le-split.le-mobile-split #le-explorer {
+    height: 50%;
+  }
+
+  #le-divider { display: none; }
+}

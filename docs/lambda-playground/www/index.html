@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>λ-Calculus Explorer — CIS352 · Syracuse University</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -251,7 +253,7 @@
             </div>
         </div>
 
-        <!-- Hint bar -->
+        <!-- Hint bar (hidden on mobile) -->
         <div id="hint-bar">
             <span class="hint"><kbd>B</kbd> redexes</span>
             <span class="hint"><kbd>Space</kbd> step</span>
@@ -260,6 +262,11 @@
             <span class="hint"><kbd>R</kbd> random</span>
             <span class="hint"><kbd>Tab</kbd> controls</span>
         </div>
+
+        <!-- Mobile step FAB (visible only on touch devices) -->
+        <button id="mobile-step-fab" class="mobile-step-fab hidden" title="Step reduction">
+            <span class="mobile-step-icon">&#x25B6;</span>
+        </button>
 
         <!-- Status bar -->
         <footer id="status-bar">

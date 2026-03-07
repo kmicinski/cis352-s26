@@ -26,7 +26,7 @@
 
 /* --- Reset & Base --- */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; overflow: hidden; }
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -1749,6 +1749,8 @@ body {
 }
 
 /* --- Responsive --- */
+
+/* Tablet */
 @media (max-width: 700px) {
     #input-bar {
         max-width: calc(100vw - 24px);
@@ -1758,10 +1760,200 @@ body {
     #tree-panel { max-width: 220px; }
     .back-bar .back-text { display: none; }
     .back-bar { padding: 5px 8px; }
+
+    .main-node-card { font-size: 16px; line-height: 1.6; }
+
+    .tutorial { width: 440px; }
+    .tutorial-body { font-size: 0.84em; max-height: 240px; }
 }
 
-@media (max-width: 420px) {
-    #tree-panel { display: none; }
+/* Mobile */
+@media (max-width: 540px) {
+    /* Input bar: compact, avoid overlap with tutorial */
+    #input-bar {
+        max-width: calc(100vw - 16px);
+        gap: 6px;
+        padding: 5px 8px 5px 10px;
+        border-radius: 10px;
+    }
+    #input-bar .logo { font-size: 18px; }
+    .input-group { min-width: 0; }
+    .input-group input { height: 30px; font-size: 0.78em; }
+    .input-group .btn { height: 30px; padding: 0 10px; font-size: 0.78em; }
+    #input-bar .select { display: none; }
+
+    /* Term display: smaller for mobile screens */
+    .main-node-card {
+        font-size: 14px;
+        line-height: 1.5;
+        padding: 3px 6px;
+    }
+
+    /* Context menu: bigger touch targets */
+    .ctx-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3em;
+    }
+    #context-menu {
+        gap: 8px;
+        padding: 8px 10px;
+    }
+
+    /* Alpha popup: accommodate mobile keyboard */
+    .alpha-popup {
+        left: 50% !important;
+        transform: translateX(-50%);
+        top: auto !important;
+        bottom: 64px;
+    }
+    .alpha-input { width: 80px; height: 34px; font-size: 1em; }
+
+    /* Tutorial: fill width, above input bar */
+    .tutorial {
+        width: calc(100vw - 16px);
+        bottom: 56px;
+        border-radius: 12px;
+    }
+    .tutorial-body {
+        padding: 6px 14px 10px;
+        font-size: 0.82em;
+        max-height: 200px;
+        line-height: 1.5;
+    }
+    .tutorial-title { font-size: 1em; }
+    .tutorial-header { padding: 8px 12px 0; }
+    .tutorial-footer { padding: 6px 12px 8px; }
+    .tutorial-footer .btn { height: 30px; padding: 0 10px; font-size: 0.75em; }
+    .tutorial-dot { width: 8px; height: 8px; }
+    .tutorial-dot.active { transform: scale(1.2); }
+
+    /* Tutorial FAB: avoid overlap with back bar */
+    .tutorial-fab { top: 14px; right: 52px; }
+
+    /* Hint bar: hide on mobile (keyboard shortcuts not applicable) */
+    #hint-bar { display: none; }
+
+    /* Drawer: full width on mobile */
     .drawer { width: 100vw; }
+
+    /* Tree panel: smaller on mobile */
+    #tree-panel {
+        max-width: 200px;
+        max-height: 200px;
+        bottom: 56px;
+        left: 8px;
+    }
+    .dtree-text { max-width: 140px; font-size: 0.62em; }
+
+    /* Welcome nudge: below back bar, not overlapping tutorial fab */
+    .welcome-nudge {
+        top: auto;
+        bottom: 56px;
+        right: 8px;
+        left: 8px;
+        max-width: none;
+    }
+
+    /* Tree callout: repositioned for mobile */
+    .tree-callout {
+        bottom: 170px;
+        left: 8px;
+    }
+    .tree-callout-text { font-size: 0.72em; }
+
+    /* Branding: hide on small screens */
     #branding { display: none; }
+
+    /* Back bar: just arrow */
+    .back-bar .back-text { display: none; }
+    .back-bar { padding: 5px 8px; }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+    .main-node-card { font-size: 12px; }
+    .tutorial-body { max-height: 160px; }
+    #tree-panel { display: none; }
+}
+
+/* Touch-friendly: disable hover effects on touch devices */
+@media (hover: none) {
+    .term.has-op { cursor: default; }
+    .term.has-op.hovered {
+        background: rgba(247, 105, 0, 0.08);
+        box-shadow: 0 0 0 2.5px rgba(247, 105, 0, 0.18);
+    }
+    .ctx-btn:hover { transform: none; }
+    .ctx-btn:active { transform: scale(0.94); }
+    #viewport { cursor: default; touch-action: none; }
+    #viewport.dragging { cursor: default; }
+}
+
+/* Prevent double-tap zoom on interactive elements */
+.ctx-btn, .btn, .tutorial-dot, .dtree-label, .strategy-btn, .mobile-step-fab {
+    touch-action: manipulation;
+}
+
+/* --- Mobile Step FAB --- */
+.mobile-step-fab {
+    position: fixed;
+    bottom: 56px;
+    right: 14px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--brand-soft);
+    background: linear-gradient(135deg, #fff 0%, var(--brand-wash) 100%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(247, 105, 0, 0.18);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-step-fab:active {
+    transform: scale(0.9);
+    background: var(--brand-wash);
+}
+
+.mobile-step-fab:disabled {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+.mobile-step-fab.hidden { display: none; }
+
+.mobile-step-icon {
+    font-size: 20px;
+    color: var(--brand);
+    line-height: 1;
+    margin-left: 2px;
+}
+
+/* Show mobile FAB only on touch devices */
+@media (hover: none) {
+    .mobile-step-fab:not(.hidden) { display: flex; }
+}
+
+/* When tutorial is open on mobile, shift step FAB up */
+@media (max-width: 540px) {
+    .mobile-step-fab { bottom: 52px; right: 10px; width: 46px; height: 46px; }
+    .mobile-step-icon { font-size: 17px; }
+
+    /* Safe area support for iPhone notch/home indicator */
+    #input-bar {
+        bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    }
+    .tutorial {
+        bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+    }
+    .mobile-step-fab {
+        bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+    }
+    #tree-panel {
+        bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+    }
 }

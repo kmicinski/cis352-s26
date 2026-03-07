@@ -5,9 +5,20 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 07 Mar 2026 01:27:28 -0500</pubDate>
-    <lastBuildDate>Sat, 07 Mar 2026 01:27:28 -0500</lastBuildDate>
+    <pubDate>Sat, 07 Mar 2026 11:36:02 -0500</pubDate>
+    <lastBuildDate>Sat, 07 Mar 2026 11:36:02 -0500</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>λ-Calculus Reduction Strategies</title>
+        <description>
+</description>
+        <pubDate>Thu, 05 Mar 2026 00:00:00 -0500</pubDate>
+        <link>https://kmicinski.com/cis352-s26/reduction-strategies</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/reduction-strategies</guid>
+        
+        
+      </item>
     
       <item>
         <title>Closure-Creating Interpreters</title>

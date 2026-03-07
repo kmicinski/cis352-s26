@@ -305,6 +305,7 @@ let hoveredEl: HTMLElement | null = null;
 let zoom = 1, panX = 0, panY = 0;
 let isDragging = false, didDrag = false;
 let dragStartX = 0, dragStartY = 0, mouseDownX = 0, mouseDownY = 0;
+let touchStartDist = 0, touchStartZoom = 1;
 let stepCount = 0;
 let autoRunInterval: ReturnType<typeof setInterval> | null = null;
 let contextMenuPath: string | null = null;
@@ -353,6 +354,7 @@ const drawer = $<HTMLElement>('#drawer');
 const drawerToggle = $<HTMLButtonElement>('#drawer-toggle');
 const drawerClose = $<HTMLButtonElement>('#drawer-close');
 const drawerBackdrop = $<HTMLElement>('#drawer-backdrop');
+const mobileStepFab = document.getElementById('mobile-step-fab') as HTMLButtonElement | null;
 
 // --- Initialization ---
 async function main(): Promise<void> {
@@ -375,6 +377,47 @@ async function main(): Promise<void> {
     } else {
         requestAnimationFrame(maybeShowWelcome);
     }
+
+    // Listen for postMessage commands from parent frame (lecture-explorer)
+    window.addEventListener('message', (event: MessageEvent) => {
+        const data = event.data;
+        if (!data || typeof data.type !== 'string') return;
+        switch (data.type) {
+            case 'loadTerm':
+                if (typeof data.term === 'string') {
+                    termInput.value = data.term;
+                    loadNewTerm(data.term);
+                }
+                break;
+            case 'setStrategy':
+                if (typeof data.strategy === 'string') {
+                    engine.set_strategy(data.strategy);
+                    renderCurrentTerm();
+                }
+                break;
+            case 'step': {
+                try {
+                    const preInfo: TermInfo = JSON.parse(engine.get_term_info());
+                    const redexPath = preInfo.strategy_next || '';
+                    engine.step_strategy();
+                    const display = engine.get_display();
+                    const renderTreeJson = engine.get_render_tree();
+                    dtree.addChild(display, '\u03b2', renderTreeJson, redexPath);
+                    stepCount++;
+                    renderCurrentTerm();
+                } catch (_) { /* no redex available */ }
+                break;
+            }
+            case 'reset':
+                termInput.value = '';
+                break;
+        }
+    });
+
+    // Notify parent that the explorer is ready
+    if (window.parent !== window) {
+        window.parent.postMessage({ type: 'ready' }, '*');
+    }
 }
 
 main().catch(console.error);
@@ -388,6 +431,7 @@ function loadNewTerm(input: string): void {
         dtree.setRoot(display, renderTreeJson);
         stepCount = 0;
         treeNeedsAutoFit = true;
+        if (mobileStepFab) mobileStepFab.classList.remove('hidden');
         renderCurrentTerm();
     } catch (e) {
         flashError(String(e));
@@ -525,10 +569,15 @@ function setupEventListeners(): void {
     zoomResetBtn.addEventListener('click', () => { zoom = 1; panX = 0; panY = 0; updateTransform(); });
     viewport.addEventListener('wheel', onWheel, { passive: false });
 
-    // Pan
+    // Pan (mouse)
     viewport.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
+
+    // Pan & pinch-zoom (touch)
+    viewport.addEventListener('touchstart', onTouchStart, { passive: false });
+    viewport.addEventListener('touchmove', onTouchMove, { passive: false });
+    viewport.addEventListener('touchend', onTouchEnd, { passive: false });
 
     // Term interaction
     termDisplay.addEventListener('mousemove', onTermHover);
@@ -632,6 +681,11 @@ function setupEventListeners(): void {
     });
     runBtn.addEventListener('click', startAutoRun);
     stopBtn.addEventListener('click', stopAutoRun);
+
+    // Mobile step FAB
+    if (mobileStepFab) {
+        mobileStepFab.addEventListener('click', () => stepBtn.click());
+    }
 
     // Tree panel
     if (treeToggleBtn) {
@@ -1519,6 +1573,9 @@ function updateStepInfo(info: TermInfo | null): void {
         normalFormBadge.style.display = 'none';
         stepBtn.disabled = false;
     }
+    if (mobileStepFab) {
+        mobileStepFab.disabled = stepBtn.disabled;
+    }
 }
 
 // --- Zoom & Pan ---
@@ -1590,6 +1647,74 @@ function onMouseMove(e: MouseEvent): void {
 function onMouseUp(): void {
     isDragging = false;
     viewport.classList.remove('dragging');
+}
+
+// --- Touch support for pan & pinch-zoom ---
+function touchDist(t: TouchList): number {
+    if (t.length < 2) return 0;
+    const dx = t[0]!.clientX - t[1]!.clientX;
+    const dy = t[0]!.clientY - t[1]!.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function onTouchStart(e: TouchEvent): void {
+    if (e.touches.length === 2) {
+        e.preventDefault();
+        touchStartDist = touchDist(e.touches);
+        touchStartZoom = zoom;
+    } else if (e.touches.length === 1) {
+        const t = e.touches[0]!;
+        isDragging = true;
+        didDrag = false;
+        mouseDownX = t.clientX;
+        mouseDownY = t.clientY;
+        dragStartX = t.clientX - panX;
+        dragStartY = t.clientY - panY;
+    }
+}
+
+function onTouchMove(e: TouchEvent): void {
+    if (e.touches.length === 2 && touchStartDist > 0) {
+        e.preventDefault();
+        const dist = touchDist(e.touches);
+        const scale = dist / touchStartDist;
+        const midX = (e.touches[0]!.clientX + e.touches[1]!.clientX) / 2;
+        const midY = (e.touches[0]!.clientY + e.touches[1]!.clientY) / 2;
+        const rect = viewport.getBoundingClientRect();
+        const mx = midX - rect.left;
+        const my = midY - rect.top;
+        const newZoom = Math.max(0.1, Math.min(5, touchStartZoom * scale));
+        const s = newZoom / zoom;
+        panX = mx - s * (mx - panX);
+        panY = my - s * (my - panY);
+        zoom = newZoom;
+        updateTransform();
+    } else if (e.touches.length === 1 && isDragging) {
+        const t = e.touches[0]!;
+        const dx = t.clientX - mouseDownX;
+        const dy = t.clientY - mouseDownY;
+        if (!didDrag && (dx * dx + dy * dy) < 16) return;
+        didDrag = true;
+        e.preventDefault();
+        panX = t.clientX - dragStartX;
+        panY = t.clientY - dragStartY;
+        updateTransform();
+    }
+}
+
+function onTouchEnd(e: TouchEvent): void {
+    if (e.touches.length === 0) {
+        isDragging = false;
+        touchStartDist = 0;
+    } else if (e.touches.length === 1) {
+        // Went from pinch back to single finger — reset drag anchor
+        touchStartDist = 0;
+        const t = e.touches[0]!;
+        dragStartX = t.clientX - panX;
+        dragStartY = t.clientY - panY;
+        mouseDownX = t.clientX;
+        mouseDownY = t.clientY;
+    }
 }
 
 // --- Status Bar ---
@@ -1733,6 +1858,25 @@ function showTutorialStep(): void {
     showTreeCallout(false);
 
     tutorialBody.innerHTML = `<div class="tutorial-title">${step.title}</div>${step.body}`;
+
+    // On touch devices, replace keyboard hints with touch-friendly language
+    if ('ontouchstart' in window) {
+        tutorialBody.querySelectorAll('kbd').forEach(kbd => {
+            const text = kbd.textContent || '';
+            if (text === 'Space') {
+                kbd.textContent = '\u25b6';
+                kbd.title = 'Tap the step button';
+            } else if (text === 'B' || text === 'Tab' || text === 'R' ||
+                       text === 'N' || text === 'A' || text === 'V' || text === 'L' ||
+                       text === 'C' || text === '\u2191\u2193\u2190\u2192' ||
+                       text === '\u2191' || text === '\u2193' || text === '\u2318Z') {
+                const parent = kbd.parentElement;
+                if (parent && parent.classList.contains('hint')) {
+                    parent.style.display = 'none';
+                }
+            }
+        });
+    }
 
     tutorialDots.innerHTML = '';
     for (let i = 0; i < TUTORIAL_STEPS.length; i++) {
@@ -1955,6 +2099,8 @@ if (tutorialCloseBtn) tutorialCloseBtn.addEventListener('click', endTutorial);
 
 // --- Welcome Nudge ---
 function maybeShowWelcome(): void {
+    // Don't show welcome when embedded in an iframe (e.g., lecture-explorer)
+    if (window.parent !== window) return;
     try {
         if (sessionStorage.getItem('lambda_welcomed')) return;
     } catch (_) { /* private browsing */ }
