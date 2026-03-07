@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "Lambda Calculus Explorer"
-permalink: /lambda
+permalink: /lambda-explorer
 ---
 
 <style>
