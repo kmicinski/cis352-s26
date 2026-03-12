@@ -5,8 +5,8 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 12 Mar 2026 01:05:46 -0400</pubDate>
-    <lastBuildDate>Thu, 12 Mar 2026 01:05:46 -0400</lastBuildDate>
+    <pubDate>Thu, 12 Mar 2026 11:57:29 -0400</pubDate>
+    <lastBuildDate>Thu, 12 Mar 2026 11:57:29 -0400</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -855,7 +855,12 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
         <title>Project 3: Scheme Interpreter</title>
         <description>&lt;p&gt;&lt;strong&gt;Due&lt;/strong&gt;: Monday, March 24, 11:59PM&lt;/p&gt;
 
-&lt;p&gt;Available on http://autograde.org. Use your credentials to login.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Starter code&lt;/strong&gt;: &lt;a href=&quot;https://kmicinski.com/cis352-s26/assets/p3-public.tar.gz&quot;&gt;p3-public.tar.gz&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Syracuse students: submit via &lt;a href=&quot;http://autograde.org&quot;&gt;autograde.org&lt;/a&gt;
+using your Syracuse credentials. If you are not enrolled at Syracuse,
+you can still work through this project using the public starter code
+and tests above.&lt;/p&gt;
 
 &lt;p&gt;In this project you will build an interpreter for a Turing-complete
 subset of Racket/Scheme, including lambdas (of fixed and variable
