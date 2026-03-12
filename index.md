@@ -515,12 +515,16 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-code project-icon"></i>
-          Homework P3: TBA -- Released (Due 3/24)
+          Homework P3: <a href="https://kmicinski.com/cis352-s26/projects/3">Scheme Interpreter</a> -- Released (Due 3/24)
         </div>
         <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://www.youtube.com/watch?v=-TN--YqcJhI&ab_channel=KristopherMicinski">Homework Video</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="https://kmicinski.com/cis352-s26/projects/3">Project Instructions</a>
           </li>
         </ul>
       </div>
