@@ -90,11 +90,11 @@ impl Lexer {
 }
 
 fn is_ident_start(c: char) -> bool {
-    c.is_alphabetic() || c == '_'
+    c.is_alphabetic() || c == '_' || c == '-'
 }
 
 fn is_ident_char(c: char) -> bool {
-    c.is_alphanumeric() || c == '_' || c == '\''
+    c.is_alphanumeric() || c == '_' || c == '\'' || c == '-'
 }
 
 struct Parser {
@@ -265,6 +265,19 @@ mod tests {
     #[test]
     fn parse_var_with_prime() {
         assert_eq!(parse("x'").unwrap(), Term::var("x'"));
+    }
+
+    #[test]
+    fn parse_var_with_hyphen() {
+        assert_eq!(parse("e-b").unwrap(), Term::var("e-b"));
+    }
+
+    #[test]
+    fn parse_hyphenated_vars_in_term() {
+        assert_eq!(
+            parse("((\\ (x) e-b) e-a)").unwrap(),
+            Term::app(Term::abs("x", Term::var("e-b")), Term::var("e-a"))
+        );
     }
 
     #[test]

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Project 3: Scheme Interpreter</title>
+  <meta name="description" content="Due: Monday, March 24, 11:59PM">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://kmicinski.com/cis352-s26/css/main.css">
+  <link rel="canonical" href="https://kmicinski.com/cis352-s26/projects/3">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="https://kmicinski.com/cis352-s26/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  
+</head>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="https://kmicinski.com//cis352-s26/">CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/#schedule">Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/syllabus">Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/playground">Proof Playground</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/lambda-explorer">Lambda Explorer</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/playground">Proof Tree Playground</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Project 3: Scheme Interpreter</h1>
+    <h3><b>Project due date: <time datetime="2026-03-24T00:00:00-04:00">Mar 24,
+    2026 (11:59PM Eastern)</time></b></h3>
+  </header>
+
+  <div class="post-content writeup-content" itemprop="articleBody">
+    <p><strong>Due</strong>: Monday, March 24, 11:59PM</p>
+
+<p>Available on http://autograde.org. Use your credentials to login.</p>
+
+<p>In this project you will build an interpreter for a Turing-complete
+subset of Racket/Scheme, including lambdas (of fixed and variable
+arity), <code class="language-plaintext highlighter-rouge">if</code>, <code class="language-plaintext highlighter-rouge">let</code>, <code class="language-plaintext highlighter-rouge">let*</code>, <code class="language-plaintext highlighter-rouge">and</code>/<code class="language-plaintext highlighter-rouge">or</code>, and a set of ten primitives
+over numbers and lists.</p>
+
+<p>The central challenge in building an interpreter for a higher-order
+(or object-oriented) language is the run-time representation of
+functions (or objects, in the OOP setting). In this project, you will
+follow the “closure-creating interpreter” lecture–ensure you have a
+firm understanding of that lecture/video before attempting this
+project. We include a bit of starter code here, as inspiration, in the
+form of the function <code class="language-plaintext highlighter-rouge">interp-ce-lambda</code>. Make sure you fully
+understand how <code class="language-plaintext highlighter-rouge">interp-ce-lambda</code> works before you try to construct
+your solution: the way it uses environments is subtle and important.</p>
+
+<p>For this project in particular, it will be crucial you know how to
+read the public tests and run them on your own. I recommend starting
+with the easiest tests you can possibly find: things like <code class="language-plaintext highlighter-rouge">(and #t
+#f)</code>, <code class="language-plaintext highlighter-rouge">(+ 1 2)</code>, etc… before moving on to the larger test cases.</p>
+
+<p>Our reference solution is roughly 40 lines of Racket, all in the
+<code class="language-plaintext highlighter-rouge">interp-ce</code> function, but you may consider writing various “helper”
+functions to do various things (e.g., bind variables in preparation to
+call a function). Reasonable solutions would be expected to be around
+50 to 150 lines of code–if you’re doing way more work than that, it
+probably indicates a mistaken approach. For example, multiple parts of
+this project will be made easier by implementing a bulk assignment
+operator to set multiple keys/values of a hash, which may be
+implemented using foldl:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(define (assign-keys-vals h keys vals)
+  (foldl (λ (k v h) (hash-set h k v)) h keys vals))
+;; e.g., (assign-keys-vals (hash 'x 2 'y 3) '(x y z) '(5 2 3))
+</code></pre></div></div>
+
+<h2 id="the-language-syntax">The Language: Syntax</h2>
+
+<p>Below is the full syntax of the language you must support:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Primitives
+prim = {+, -, *, =, equal?, cons, car, cdr, list, null?}
+
+x is a metavariable
+exp ::= (lambda (x ...) exp)         -- Fixed-arity lambda
+      | (if exp exp exp)             -- Conditional
+      | (let ([x0 exp0] ...) exp)    -- let-binding
+      | (let* ([x0 exp0] ...) exp)   -- "Sequenced" let
+      | (and e0 ...)                 -- Polyadic and (0 or more args)
+      | (or e0 ...)                  -- Polyadic or (0 or more args)
+      | (exp0 ...)                   -- Function application
+      | datum                        -- Datums
+
+Extra credit (encouraged, see below):
+      | (lambda x exp)               -- Arbitrary-arity lambda
+      | (apply exp0 exp1)            -- Apply variadic lambda to arg list
+
+datum:
+  | '()                              -- Empty list
+  | n                                -- Literal numbers
+  | #t | #f                          -- Literal booleans
+</code></pre></div></div>
+
+<p>Your interpreter, <code class="language-plaintext highlighter-rouge">interp-ce</code>, must correctly interpret any valid
+<code class="language-plaintext highlighter-rouge">scheme-ir?</code> program and yield the same value as it would in DrRacket,
+except for closures (generated by lambdas) which must be represented
+as <code class="language-plaintext highlighter-rouge">`(closure ,lambda ,environment)</code>. For example, <code class="language-plaintext highlighter-rouge">(+ 1 2)</code> must
+evaluate to <code class="language-plaintext highlighter-rouge">3</code>, <code class="language-plaintext highlighter-rouge">(cons 1 (cons 2 '()))</code> must yield <code class="language-plaintext highlighter-rouge">'(1 2)</code>, and
+<code class="language-plaintext highlighter-rouge">(lambda (x) (+ x 1))</code> must yield something like
+<code class="language-plaintext highlighter-rouge">'(closure (lambda (x) (+ x 1)) #hash((+ . ...)))</code>. For
+programs that result in a runtime error, you should return `(error
+,message)—giving some reasonable string error message.  Handling
+errors and some trickier cases will give bonus points.</p>
+
+<p>Note that while your language does not explicitly include recursion in
+its syntax, it does allow untyped lambdas, which allow recursion via a
+fixed-point combinator. For example, <code class="language-plaintext highlighter-rouge">public-factorial</code> uses this
+functionality to implement the factorial function using your
+interpreter.</p>
+
+<p>Note that to match the empty list <code class="language-plaintext highlighter-rouge">'()</code>, your match pattern should use <code class="language-plaintext highlighter-rouge">''()</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(match (first '('())) ['() "wrong"] [''() "right"])
+</code></pre></div></div>
+
+<h2 id="builtin-functions">Builtin Functions</h2>
+
+<p>Supporting built-in functions may be done in a variety of ways. My
+reference solution takes the following strategy: construct the initial
+environment so that it maps each builtin to a closure (with an empty
+environment) that looks something like <code class="language-plaintext highlighter-rouge">'(lambda primargs (apply-prim
+,op primargs)</code>, where <code class="language-plaintext highlighter-rouge">op</code> is the relevant primitive. This then
+naturally gets applied by <code class="language-plaintext highlighter-rouge">interp-ce</code>, where I add a special case for
+<code class="language-plaintext highlighter-rouge">apply-prim</code> (<em>not</em> a scheme-ir? expression), which uses Racket’s
+<code class="language-plaintext highlighter-rouge">apply</code> to apply the necessary function (obtained via either <code class="language-plaintext highlighter-rouge">(eval op
+(make-base-namespace))</code>, or something like <code class="language-plaintext highlighter-rouge">(hash-ref (hash '+ + ...) op)</code>, this is the one place using <code class="language-plaintext highlighter-rouge">eval</code>
+is acceptable).</p>
+
+<p>You may be tempted to specifically recognize each built-in function
+and handle them separately. This will kind of work, but we have some
+tests that do things like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((lambda (+) (+ 1)) (lambda (x) 25))
+</code></pre></div></div>
+
+<p>Naive solutions will not account for this kind of shadowing–handling
+shadowing requires that you allow builtins to live in the environment,
+just as other bindings. However, you may want to start at a naive
+solution if you cannot figure out a more general strategy–as this
+will allow you to still pass most of the tests.</p>
+
+<h2 id="warnings-and-hints">WARNINGS and Hints</h2>
+
+<ul>
+  <li>
+    <p>Do <em>not</em> try to use Racket’s <code class="language-plaintext highlighter-rouge">eval</code> to write the whole
+interpreter. It will not correctly produce or work with closures,
+and will thus not provide a general solution.</p>
+  </li>
+  <li>
+    <p>Be <em>very careful</em> to understand the difference a quote
+makes. Calling <code class="language-plaintext highlighter-rouge">(interp-ce (let ([x (+ 1 2)]) x))</code> is essentially
+the same as calling <code class="language-plaintext highlighter-rouge">(interp-ce 3)</code>, i.e., you are <em>not even
+running</em> your interpreter. Instead, you want <code class="language-plaintext highlighter-rouge">(interp-ce '(let ([x
+(+ 1 2)]) x))</code></p>
+  </li>
+  <li>
+    <p>Make sure you handle cases where various bindings may be empty!
+Things like <code class="language-plaintext highlighter-rouge">(and)</code>, <code class="language-plaintext highlighter-rouge">(or)</code>, <code class="language-plaintext highlighter-rouge">(let* () 1)</code>, etc… Following
+Racket’s behavior, <code class="language-plaintext highlighter-rouge">(and)</code> evaluates to <code class="language-plaintext highlighter-rouge">#t</code> and <code class="language-plaintext highlighter-rouge">(or)</code> evaluates
+to <code class="language-plaintext highlighter-rouge">#f</code>.</p>
+  </li>
+  <li>
+    <p>You may want to call <code class="language-plaintext highlighter-rouge">interp-ce</code> on synthetic syntax (not present in
+the original program). For example, our reference implementation
+defines <code class="language-plaintext highlighter-rouge">let*</code> by interpreting “one let at a time,” and finishing up
+in the <code class="language-plaintext highlighter-rouge">(let () ,body)</code> case. Doing this can avoid a <em>lot</em> of work!</p>
+  </li>
+  <li>
+    <p>You don’t need to worry about errors unless you want to pass some of
+the harder bonus tests. If you want to try those, consider using
+Racket’s <code class="language-plaintext highlighter-rouge">with-handlers</code>.</p>
+  </li>
+  <li>
+    <p>Use <code class="language-plaintext highlighter-rouge">foldl</code> to accumulate an environment and bind variables. You
+will likely need to do this in <code class="language-plaintext highlighter-rouge">let*</code>, <code class="language-plaintext highlighter-rouge">let</code>, and application (but
+likely not with <code class="language-plaintext highlighter-rouge">apply</code>)</p>
+  </li>
+  <li>
+    <p>To evaluate a function, evaluate each of its arguments, bind them
+into variables, and then evaluate the body with the new environment
+(updated with bindings for each argument).</p>
+  </li>
+  <li>
+    <p>To <code class="language-plaintext highlighter-rouge">apply</code> a function, evaluate each of its arguments, and then bind
+them (as a list) to the necessary variable.</p>
+  </li>
+  <li>
+    <p>If you support <code class="language-plaintext highlighter-rouge">apply</code>: be careful to match the closure’s lambda to
+determine whether you need to construct a list or bind named
+arguments.</p>
+  </li>
+  <li>
+    <p>Be careful to think about the difference between <code class="language-plaintext highlighter-rouge">let</code> and
+<code class="language-plaintext highlighter-rouge">let*</code>. At some point, you will need to iterate over the bindings to
+translate them into values before you create a new environment: in
+the case of <code class="language-plaintext highlighter-rouge">let</code> you need to reference the <em>original</em> environment,
+in the case of <code class="language-plaintext highlighter-rouge">let*</code> you need to <em>accumulate</em> an environment. Both
+of these can be done with <code class="language-plaintext highlighter-rouge">foldl</code>, but some care must be taken to
+ensure the correct behavior.</p>
+  </li>
+</ul>
+
+<h2 id="grading">Grading</h2>
+
+<p>Tests prefixed with <code class="language-plaintext highlighter-rouge">public-</code> and <code class="language-plaintext highlighter-rouge">server-</code> (excluding <code class="language-plaintext highlighter-rouge">bonus</code>) are
+standard. Tests with <code class="language-plaintext highlighter-rouge">bonus</code> in their name (e.g., <code class="language-plaintext highlighter-rouge">server-bonus-apply</code>,
+<code class="language-plaintext highlighter-rouge">server-bonus-runtime-error</code>) are extra credit.</p>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '26) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src="/cis352-s26/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="/cis352-s26/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js"></script>
+
+
+  </body>
+
+</html>

@@ -5,12 +5,12 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 07 Mar 2026 11:48:04 -0500</pubDate>
-    <lastBuildDate>Sat, 07 Mar 2026 11:48:04 -0500</lastBuildDate>
+    <pubDate>Thu, 12 Mar 2026 01:05:46 -0400</pubDate>
+    <lastBuildDate>Thu, 12 Mar 2026 01:05:46 -0400</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
-        <title>λ-Calculus Reduction Strategies</title>
+        <title>λ-Calculus: Reduction Strategies</title>
         <description>
 </description>
         <pubDate>Thu, 05 Mar 2026 00:00:00 -0500</pubDate>
@@ -848,6 +848,200 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
         <link>https://kmicinski.com/cis352-s26/closures</link>
         <guid isPermaLink="true">https://kmicinski.com/cis352-s26/closures</guid>
         
+        
+      </item>
+    
+      <item>
+        <title>Project 3: Scheme Interpreter</title>
+        <description>&lt;p&gt;&lt;strong&gt;Due&lt;/strong&gt;: Monday, March 24, 11:59PM&lt;/p&gt;
+
+&lt;p&gt;Available on http://autograde.org. Use your credentials to login.&lt;/p&gt;
+
+&lt;p&gt;In this project you will build an interpreter for a Turing-complete
+subset of Racket/Scheme, including lambdas (of fixed and variable
+arity), &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let*&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;and&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;or&lt;/code&gt;, and a set of ten primitives
+over numbers and lists.&lt;/p&gt;
+
+&lt;p&gt;The central challenge in building an interpreter for a higher-order
+(or object-oriented) language is the run-time representation of
+functions (or objects, in the OOP setting). In this project, you will
+follow the “closure-creating interpreter” lecture–ensure you have a
+firm understanding of that lecture/video before attempting this
+project. We include a bit of starter code here, as inspiration, in the
+form of the function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;interp-ce-lambda&lt;/code&gt;. Make sure you fully
+understand how &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;interp-ce-lambda&lt;/code&gt; works before you try to construct
+your solution: the way it uses environments is subtle and important.&lt;/p&gt;
+
+&lt;p&gt;For this project in particular, it will be crucial you know how to
+read the public tests and run them on your own. I recommend starting
+with the easiest tests you can possibly find: things like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(and #t
+#f)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ 1 2)&lt;/code&gt;, etc… before moving on to the larger test cases.&lt;/p&gt;
+
+&lt;p&gt;Our reference solution is roughly 40 lines of Racket, all in the
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;interp-ce&lt;/code&gt; function, but you may consider writing various “helper”
+functions to do various things (e.g., bind variables in preparation to
+call a function). Reasonable solutions would be expected to be around
+50 to 150 lines of code–if you’re doing way more work than that, it
+probably indicates a mistaken approach. For example, multiple parts of
+this project will be made easier by implementing a bulk assignment
+operator to set multiple keys/values of a hash, which may be
+implemented using foldl:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(define (assign-keys-vals h keys vals)
+  (foldl (λ (k v h) (hash-set h k v)) h keys vals))
+;; e.g., (assign-keys-vals (hash &apos;x 2 &apos;y 3) &apos;(x y z) &apos;(5 2 3))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;the-language-syntax&quot;&gt;The Language: Syntax&lt;/h2&gt;
+
+&lt;p&gt;Below is the full syntax of the language you must support:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Primitives
+prim = {+, -, *, =, equal?, cons, car, cdr, list, null?}
+
+x is a metavariable
+exp ::= (lambda (x ...) exp)         -- Fixed-arity lambda
+      | (if exp exp exp)             -- Conditional
+      | (let ([x0 exp0] ...) exp)    -- let-binding
+      | (let* ([x0 exp0] ...) exp)   -- &quot;Sequenced&quot; let
+      | (and e0 ...)                 -- Polyadic and (0 or more args)
+      | (or e0 ...)                  -- Polyadic or (0 or more args)
+      | (exp0 ...)                   -- Function application
+      | datum                        -- Datums
+
+Extra credit (encouraged, see below):
+      | (lambda x exp)               -- Arbitrary-arity lambda
+      | (apply exp0 exp1)            -- Apply variadic lambda to arg list
+
+datum:
+  | &apos;()                              -- Empty list
+  | n                                -- Literal numbers
+  | #t | #f                          -- Literal booleans
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Your interpreter, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;interp-ce&lt;/code&gt;, must correctly interpret any valid
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;scheme-ir?&lt;/code&gt; program and yield the same value as it would in DrRacket,
+except for closures (generated by lambdas) which must be represented
+as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(closure ,lambda ,environment)&lt;/code&gt;. For example, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ 1 2)&lt;/code&gt; must
+evaluate to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;3&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(cons 1 (cons 2 &apos;()))&lt;/code&gt; must yield &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;(1 2)&lt;/code&gt;, and
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (x) (+ x 1))&lt;/code&gt; must yield something like
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;(closure (lambda (x) (+ x 1)) #hash((+ . ...)))&lt;/code&gt;. For
+programs that result in a runtime error, you should return `(error
+,message)—giving some reasonable string error message.  Handling
+errors and some trickier cases will give bonus points.&lt;/p&gt;
+
+&lt;p&gt;Note that while your language does not explicitly include recursion in
+its syntax, it does allow untyped lambdas, which allow recursion via a
+fixed-point combinator. For example, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-factorial&lt;/code&gt; uses this
+functionality to implement the factorial function using your
+interpreter.&lt;/p&gt;
+
+&lt;p&gt;Note that to match the empty list &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;()&lt;/code&gt;, your match pattern should use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;&apos;()&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(match (first &apos;(&apos;())) [&apos;() &quot;wrong&quot;] [&apos;&apos;() &quot;right&quot;])
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;builtin-functions&quot;&gt;Builtin Functions&lt;/h2&gt;
+
+&lt;p&gt;Supporting built-in functions may be done in a variety of ways. My
+reference solution takes the following strategy: construct the initial
+environment so that it maps each builtin to a closure (with an empty
+environment) that looks something like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;(lambda primargs (apply-prim
+,op primargs)&lt;/code&gt;, where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;op&lt;/code&gt; is the relevant primitive. This then
+naturally gets applied by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;interp-ce&lt;/code&gt;, where I add a special case for
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apply-prim&lt;/code&gt; (&lt;em&gt;not&lt;/em&gt; a scheme-ir? expression), which uses Racket’s
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apply&lt;/code&gt; to apply the necessary function (obtained via either &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(eval op
+(make-base-namespace))&lt;/code&gt;, or something like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(hash-ref (hash &apos;+ + ...) op)&lt;/code&gt;, this is the one place using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eval&lt;/code&gt;
+is acceptable).&lt;/p&gt;
+
+&lt;p&gt;You may be tempted to specifically recognize each built-in function
+and handle them separately. This will kind of work, but we have some
+tests that do things like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((lambda (+) (+ 1)) (lambda (x) 25))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Naive solutions will not account for this kind of shadowing–handling
+shadowing requires that you allow builtins to live in the environment,
+just as other bindings. However, you may want to start at a naive
+solution if you cannot figure out a more general strategy–as this
+will allow you to still pass most of the tests.&lt;/p&gt;
+
+&lt;h2 id=&quot;warnings-and-hints&quot;&gt;WARNINGS and Hints&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Do &lt;em&gt;not&lt;/em&gt; try to use Racket’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eval&lt;/code&gt; to write the whole
+interpreter. It will not correctly produce or work with closures,
+and will thus not provide a general solution.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Be &lt;em&gt;very careful&lt;/em&gt; to understand the difference a quote
+makes. Calling &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(interp-ce (let ([x (+ 1 2)]) x))&lt;/code&gt; is essentially
+the same as calling &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(interp-ce 3)&lt;/code&gt;, i.e., you are &lt;em&gt;not even
+running&lt;/em&gt; your interpreter. Instead, you want &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(interp-ce &apos;(let ([x
+(+ 1 2)]) x))&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Make sure you handle cases where various bindings may be empty!
+Things like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(and)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(or)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(let* () 1)&lt;/code&gt;, etc… Following
+Racket’s behavior, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(and)&lt;/code&gt; evaluates to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(or)&lt;/code&gt; evaluates
+to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;You may want to call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;interp-ce&lt;/code&gt; on synthetic syntax (not present in
+the original program). For example, our reference implementation
+defines &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let*&lt;/code&gt; by interpreting “one let at a time,” and finishing up
+in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(let () ,body)&lt;/code&gt; case. Doing this can avoid a &lt;em&gt;lot&lt;/em&gt; of work!&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;You don’t need to worry about errors unless you want to pass some of
+the harder bonus tests. If you want to try those, consider using
+Racket’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;with-handlers&lt;/code&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;foldl&lt;/code&gt; to accumulate an environment and bind variables. You
+will likely need to do this in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let*&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt;, and application (but
+likely not with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apply&lt;/code&gt;)&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;To evaluate a function, evaluate each of its arguments, bind them
+into variables, and then evaluate the body with the new environment
+(updated with bindings for each argument).&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;To &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apply&lt;/code&gt; a function, evaluate each of its arguments, and then bind
+them (as a list) to the necessary variable.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;If you support &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apply&lt;/code&gt;: be careful to match the closure’s lambda to
+determine whether you need to construct a list or bind named
+arguments.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Be careful to think about the difference between &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt; and
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let*&lt;/code&gt;. At some point, you will need to iterate over the bindings to
+translate them into values before you create a new environment: in
+the case of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt; you need to reference the &lt;em&gt;original&lt;/em&gt; environment,
+in the case of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let*&lt;/code&gt; you need to &lt;em&gt;accumulate&lt;/em&gt; an environment. Both
+of these can be done with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;foldl&lt;/code&gt;, but some care must be taken to
+ensure the correct behavior.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;grading&quot;&gt;Grading&lt;/h2&gt;
+
+&lt;p&gt;Tests prefixed with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;server-&lt;/code&gt; (excluding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bonus&lt;/code&gt;) are
+standard. Tests with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bonus&lt;/code&gt; in their name (e.g., &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;server-bonus-apply&lt;/code&gt;,
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;server-bonus-runtime-error&lt;/code&gt;) are extra credit.&lt;/p&gt;
+</description>
+        <pubDate>Tue, 03 Mar 2026 00:00:00 -0500</pubDate>
+        <link>https://kmicinski.com/cis352-s26/projects/3</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/projects/3</guid>
+        
+        
+        <category>assignment</category>
+        
+        <category>project</category>
         
       </item>
     
