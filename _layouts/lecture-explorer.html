@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   {% include head.html %}
+  <link rel="stylesheet" href="{{ '/css/lecture-explorer.css' | relative_url }}">
   <body class="lecture-explorer-page">
 
     {% include header.html %}
@@ -44,7 +45,7 @@
           <div id="le-explorer" class="le-pane">
             <iframe
               id="le-explorer-iframe"
-              src="{{ '/lambda-playground/www/index.html' | relative_url }}"
+              src="{{ '/lambda-playground/www/index.html' | relative_url }}?term="
               allow="clipboard-write"
               title="Lambda Calculus Explorer"
             ></iframe>
@@ -57,7 +58,6 @@
 
     {% include footer.html %}
 
-    <link rel="stylesheet" href="{{ '/css/lecture-explorer.css' | relative_url }}">
     <script src="{{ '/assets/js/lecture-explorer.js' | relative_url }}"></script>
   </body>
 </html>

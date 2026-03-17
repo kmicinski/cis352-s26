@@ -104,15 +104,15 @@ To evaluate a function call, `(e-f e0 e1 ...)`, we:
 
 - Evaluate the function's body, awaiting a return value.
 
-**QuickAnswer**
-
-What is printed? Reminder: `(begin e0 ... en)` evaluates `e0 ...` for their effect, then returns the result of evaluating `en`.
-
-```racket
-(displayln
- ((begin (displayln 2) (lambda (x) (begin (displayln x) (+ x 3))))
-  (begin (displayln 5) 3)))
-```
+> QuickAnswer
+>
+> What is printed? Reminder: `(begin e0 ... en)` evaluates `e0 ...` for their effect, then returns the result of evaluating `en`.
+>
+> ```racket
+> (displayln
+>  ((begin (displayln 2) (lambda (x) (begin (displayln x) (+ x 3))))
+>   (begin (displayln 5) 3)))
+> ```
 
 To facilitate calling a function, the computer has to remember where to return. For example, consider the following functions:
 
@@ -177,17 +177,17 @@ Notice how in `demo-anf`, we have "flattened" the order of evaluation, to make i
       (* a0 a3))))
 ```
 
-**QuickAnswer**
-
-Transform the following function, `baz`, into `baz+`, a version of the function that satisfies the following constraint: every function's argument can only be a variable / constant.
-
-```racket
-(define (baz x l)
-  (list-set l x (+ (list-ref l x) 10)))
-
-(define (baz+ x l)
-  'todo) ;; introduce new lets, think carefully about evaluation order
-```
+> QuickAnswer
+>
+> Transform the following function, `baz`, into `baz+`, a version of the function that satisfies the following constraint: every function's argument can only be a variable / constant.
+>
+> ```racket
+> (define (baz x l)
+>   (list-set l x (+ (list-ref l x) 10)))
+>
+> (define (baz+ x l)
+>   'todo) ;; introduce new lets, think carefully about evaluation order
+> ```
 
 ---
 
@@ -243,26 +243,26 @@ Notice how the expressions grow horizontally as the computation proceeds. This r
 
 The key thing to understand is this: generally (there is an exception we'll discuss in a minute), when you call a function, you are *saving* a return point on the stack. This will genuinely cost memory: if you have a large operation with a lot of deep recursions, that could start to be quite expensive. In fact, this was considered a major contributor to why functional languages (LISP, etc.) were seen as slow: in a functional language, you use recursion in place of iteration. Loops are fast, and generally use `jump` or `goto` instructions: no matter how many elements the loop processes, it doesn't have any effect on the stack.
 
-**QuickAnswer**
+> QuickAnswer
+>
+> Compared to the input, `n`, what will the maximum stack depth of the following function be (give a worst-case bound, i.e., big-O):
+>
+> ```racket
+> (define (example l)
+>   (if (< l 1)
+>       1
+>       (example (/ l 2))))
+> ```
 
-Compared to the input, `n`, what will the maximum stack depth of the following function be (give a worst-case bound, i.e., big-O):
-
-```racket
-(define (example l)
-  (if (< l 1)
-      1
-      (example (/ l 2))))
-```
-
-**QuickAnswer**
-
-Consider the following code:
-
-```
-(g (+ 1 (f x)) 5)
-```
-
-Assume that we are evaluating the call `(f x)`. Describe, in plain English, what the stack will look like. Be as descriptive as possible, and try (if possible) to give enough information that we would know how to do the rest of the execution without seeing the term itself.
+> QuickAnswer
+>
+> Consider the following code:
+>
+> ```
+> (g (+ 1 (f x)) 5)
+> ```
+>
+> Assume that we are evaluating the call `(f x)`. Describe, in plain English, what the stack will look like. Be as descriptive as possible, and try (if possible) to give enough information that we would know how to do the rest of the execution without seeing the term itself.
 
 ---
 
@@ -315,16 +315,16 @@ To make this more clear, let's rewrite the code to make the evaluation order exp
 
 We can see now how `*` is the very last call in the `let` form.
 
-**QuickAnswer**
-
-Consider *all* possible calls in the code below, which calls are in tail position (we call these "tail calls")?
-
-```racket
-#;
-(cond [(equal? x 3) (add1 x)]
-      [(f x) (sub1 x)]
-      [else (g (+ x 1))])
-```
+> QuickAnswer
+>
+> Consider *all* possible calls in the code below, which calls are in tail position (we call these "tail calls")?
+>
+> ```racket
+> #;
+> (cond [(equal? x 3) (add1 x)]
+>       [(f x) (sub1 x)]
+>       [else (g (+ x 1))])
+> ```
 
 ---
 
@@ -403,39 +403,39 @@ Compared to the direct-style implementation...
 
 - The direct-version builds up a large chain of `(+ 1 ...)` stack frames, waiting until the recursion finally bottoms out to "unwind" the stack, finally doing all of the `(+ 1 ...)`s.
 
-**QuickAnswer**
+> QuickAnswer
+>
+> Which of the following is tail recursive?
+>
+> ```racket
+> (define (h+ x y)
+>   (if (equal? x y)
+>       (+ 1 (h+ y x))
+>       (h+ y x)))
+>
+> (define (g+ x y)
+>   (cond [(x y) (g+ y x)]
+>         [else y]))
+> ```
 
-Which of the following is tail recursive?
-
-```racket
-(define (h+ x y)
-  (if (equal? x y)
-      (+ 1 (h+ y x))
-      (h+ y x)))
-
-(define (g+ x y)
-  (cond [(x y) (g+ y x)]
-        [else y]))
-```
-
-**QuickAnswer**
-
-Consider the following direct-style implementation of `(list-sum l)`:
-
-```racket
-(define (list-sum l)
-  (match l
-    ['() 0]
-    [`(,hd ,tl ...) (+ hd (list-sum tl))]))
-```
-
-Please write `(list-sum-tail l acc)`, which takes an additional argument as an accumulator.
-
-NOTE: In general, we *don't* want to expose the extra accumulator argument--it exposes an implementation detail to the caller of the function (they have to pass in 0 everywhere). But I am making it explicit to show the trick: make sure you make the recursive call in tail position, update the accumulator *before* (as an argument to) the call.
-
-```racket
-(define (list-sum-tail l acc)
-  (match l
-    ['() 'todo]
-    [`(,hd ,tl ...) 'todo]))
-```
+> QuickAnswer
+>
+> Consider the following direct-style implementation of `(list-sum l)`:
+>
+> ```racket
+> (define (list-sum l)
+>   (match l
+>     ['() 0]
+>     [`(,hd ,tl ...) (+ hd (list-sum tl))]))
+> ```
+>
+> Please write `(list-sum-tail l acc)`, which takes an additional argument as an accumulator.
+>
+> NOTE: In general, we *don't* want to expose the extra accumulator argument--it exposes an implementation detail to the caller of the function (they have to pass in 0 everywhere). But I am making it explicit to show the trick: make sure you make the recursive call in tail position, update the accumulator *before* (as an argument to) the call.
+>
+> ```racket
+> (define (list-sum-tail l acc)
+>   (match l
+>     ['() 'todo]
+>     [`(,hd ,tl ...) 'todo]))
+> ```

@@ -7,16 +7,6 @@ layout: mainpage
 </div>
 <div class="week-schedule">
   <ul>
-    <!-- Session 1: 1/13 -->
-    <li class="session-item">
-      <div class="date-col">Week 1</div>
-      <div class="session-col">
-        <div class="session-title">
-          <i class="fa-solid fa-book-open reading-icon"></i>
-          <a>Week 1 Lecture notes (to be posted...)</a>
-        </div>
-      </div>
-    </li>
     <li class="session-item">
       <div class="date-col">1/13</div>
       <div class="session-col">
@@ -24,29 +14,29 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Course Introduction, Basic Racket, and Dr. Racket
         </div>
-        <ul class="resources-list">
+        <ul class="resources-inline">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://www.youtube.com/watch?v=zFzNhjFv22A&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=3">
-              Racket Basics
+              Basics
             </a>
           </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://youtu.be/bMaMFRBp6ZM">
-              Lecture 1 -- Video Course Notes (NEW 'S26)
+              Course Notes
             </a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
             <a href="https://gist.github.com/kmicinski/369d966d1fc1d1b7f35e1f1d699ac48e">
-              Lecture Notes -- Taken during class 1/13/26
+              Notes (1/13)
             </a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/firstday.pdf">
-              Lecture Slides 
+            <a href="{{ site.baseurl }}/assets/slides/firstday.pdf">
+              Slides
             </a>
           </li>
         </ul>
@@ -60,35 +50,35 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Racket Forms, Callsites, and Definitions
         </div>
-       <ul class="resources-list">
+       <ul class="resources-inline">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://www.youtube.com/watch?v=kMOgrVjEuk8">
-              Racket Forms and Callsites
+              Forms and Callsites
             </a>
           </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://www.youtube.com/watch?v=bnzjganKVgU">
-              Definitions and the Environment
+              Definitions
             </a>
           </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://www.youtube.com/watch?v=Z0T8kwlTNqY">
-              (NEW 'S26) [Course Notes] Lecture 2 Video Notes
+              Course Notes
             </a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
             <a href="https://gist.github.com/kmicinski/4fa69394a59e776fe9c661ca64f51fad">
-              Lecture Notes -- Taken during class 1/15/26
+              Notes (1/15)
             </a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/cis352-f22-l1.pdf">
-              Lecture Slides
+            <a href="{{ site.baseurl }}/assets/slides/cis352-f22-l1.pdf">
+              Slides
             </a>
           </li>
         </ul>
@@ -123,18 +113,18 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Conditional Statements and Linked Lists
         </div>
-        <ul class="resources-list">
+        <ul class="resources-inline">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://www.youtube.com/watch?v=4HPjJ4M6XVc">Textual Reduction</a>
           </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=WVmomIoxBZM&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=6&amp;ab_channel=KristopherMicinski">Case Splitting and Lists Intro</a>
+            <a href="https://www.youtube.com/watch?v=WVmomIoxBZM&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=6&amp;ab_channel=KristopherMicinski">Case Splitting and Lists</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/cis352-f22-l2.pdf">Lecture Slides</a>
+            <a href="{{ site.baseurl }}/assets/slides/cis352-f22-l2.pdf">Slides</a>
           </li>
         </ul>
       </div>
@@ -189,14 +179,14 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Procedural Abstraction and Lambdas (Higher-Order Functions)
         </div>
-        <ul class="resources-list">
+        <ul class="resources-inline">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=OqZleNZto0A&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=9">Lecture Video</a>
+            <a href="https://www.youtube.com/watch?v=OqZleNZto0A&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=9">Video</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambdas.pdf">Lecture Slides</a>
+            <a href="{{ site.baseurl }}/assets/slides/lambdas.pdf">Slides</a>
           </li>
         </ul>
       </div>
@@ -210,34 +200,24 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Tree-Shaped (Algebraic) Data and Pattern Matching
         </div>
-        <ul class="resources-list">
+        <ul class="resources-inline">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=7NA9HZdlR0g&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=10">Lecture Video (Cons Diagrams)</a>
+            <a href="https://www.youtube.com/watch?v=7NA9HZdlR0g&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=10">Cons Diagrams</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/cons.pdf">Lecture Slides (Cons)</a>
+            <a href="{{ site.baseurl }}/assets/slides/cons.pdf">Slides (Cons)</a>
           </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=RJFkmh9Wo8o&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=12">Lecture Video (Matching)</a>
+            <a href="https://www.youtube.com/watch?v=RJFkmh9Wo8o&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=12">Matching</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/maps-matches.pdf">Lecture Slides (Matching)</a>
+            <a href="{{ site.baseurl }}/assets/slides/maps-matches.pdf">Slides (Matching)</a>
           </li>
         </ul>
-      </div>
-    </li>
-    <!-- Week 3 Notes -->
-    <li class="session-item">
-      <div class="date-col">Week 3</div>
-      <div class="session-col">
-        <div class="session-title">
-          <i class="fa-solid fa-book-open reading-icon"></i>
-          <a href="https://kmicinski.com/cis352-s26/notes/week/4">(OLD) Week 3 Lecture notes</a>
-        </div>
       </div>
     </li>
   </ul>
@@ -257,20 +237,10 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Pattern Matching and Algebraic Data 
         </div>
-        <ul class="resources-list">
-          <li>
-            <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/patterns">Lecture Notes</a>
-          </li>
-          <!-- <li> -->
-          <!--   <i class="fa-brands fa-youtube youtube-icon"></i> -->
-          <!--   <a href="https://www.youtube.com/watch?v=kAskgLplQgw&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=13">Lecture Video</a> -->
-          <!-- </li> -->
-          <!-- <li> -->
-          <!--   <i class="fa-solid fa-file-lines notes-icon"></i> -->
-          <!--   <a href="https://kmicinski.com/cis352-s26/assets/slides/tailcalls.pdf">Lecture Slides</a> -->
-          <!-- </li> -->
-        </ul>
+        <div class="resource-notes">
+          <i class="fa-solid fa-file-lines notes-icon"></i>
+          <a href="{{ site.baseurl }}/patterns">Lecture Notes</a>
+        </div>
       </div>
     </li>
     <li class="session-item deadline">
@@ -283,19 +253,9 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-upload"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/1">Submit Homework by 2/3</a>
+            <a href="{{ site.baseurl }}/projects/1">Submit Homework by 2/3</a>
           </li>
         </ul>
-      </div>
-    </li>
-
-    <li class="session-item">
-      <div class="date-col">2/3</div>
-      <div class="session-col">
-        <div class="session-title">
-          <i class="fa-solid fa-book-open reading-icon"></i>
-          <a href="https://gist.github.com/kmicinski/0e0ed7ac52c1fea9873e4d52ef5dc2d0">Code from Class, 2/3</a>
-        </div>
       </div>
     </li>
 
@@ -307,18 +267,18 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Programming with Algebra, Foldr
         </div>
-        <ul class="resources-list">
-          <li>
-            <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/algebra">Lecture Notes</a>
-          </li>
+        <div class="resource-notes">
+          <i class="fa-solid fa-file-lines notes-icon"></i>
+          <a href="{{ site.baseurl }}/algebra">Lecture Notes</a>
+        </div>
+        <ul class="resources-inline">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=kAskgLplQgw&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=15">Lecture Video (Folding over Lists)</a>
+            <a href="https://www.youtube.com/watch?v=kAskgLplQgw&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=15">Folding over Lists</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/folds.pdf">Fold Lecture Slides</a>
+            <a href="{{ site.baseurl }}/assets/slides/folds.pdf">Slides (Folds)</a>
           </li>
         </ul>
       </div>
@@ -340,12 +300,10 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Evaluation Order and Tail Recursion
         </div>
-        <ul class="resources-list">
-          <li>
-			  <i class="fa-solid fa-file-lines notes-icon"></i>
-			  <a href="https://kmicinski.com/cis352-s26/evaluation-order">Lecture Notes for 2/10 - 2/12</a>
-		  </li>
-        </ul>
+        <div class="resource-notes">
+          <i class="fa-solid fa-file-lines notes-icon"></i>
+          <a href="{{ site.baseurl }}/evaluation-order">Lecture Notes</a>
+        </div>
       </div>
     </li>
     <!-- Session: 2/12 Homework P2 -->
@@ -359,7 +317,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/2">Homework Details</a>
+            <a href="{{ site.baseurl }}/projects/2">Homework Details</a>
           </li>
         </ul>
       </div>
@@ -372,7 +330,7 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
 		  Finish up / review previous topics -- Homework 2 Discussion
         </div>
-        <ul class="resources-list">
+        <ul class="resources-inline">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://www.youtube.com/watch?v=vhOH2GmuYrQ&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG&amp;index=16">Interpreting IfArith</a>
@@ -404,7 +362,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/stack-smashing.pdf">Stack Smashing (Short Lecture Slides)</a>
+            <a href="{{ site.baseurl }}/assets/slides/stack-smashing.pdf">Stack Smashing (Short Lecture Slides)</a>
           </li>
         </ul>
       </div>
@@ -438,14 +396,18 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Natural Deduction, Proof Trees, and Interpreters Intro
         </div>
-        <ul class="resources-list">
+        <div class="resource-notes">
+          <i class="fa-solid fa-file-lines notes-icon"></i>
+          <a href="{{ site.baseurl }}/natural-deduction">Lecture Notes</a>
+        </div>
+        <ul class="resources-inline">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=neCrsTf8h7Y&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Natural Deduction)</a>
+            <a href="https://www.youtube.com/watch?v=neCrsTf8h7Y&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Natural Deduction</a>
           </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=vhOH2GmuYrQ&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Interpreting IfArith)</a>
+            <a href="https://www.youtube.com/watch?v=vhOH2GmuYrQ&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Interpreting IfArith</a>
           </li>
         </ul>
       </div>
@@ -461,7 +423,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-upload"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/2">Submit Homework by 2/26</a>
+            <a href="{{ site.baseurl }}/projects/2">Submit Homework by 2/26</a>
           </li>
         </ul>
       </div>
@@ -494,18 +456,18 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Lambda Calculus (Introduction)
         </div>
-        <ul class="resources-list">
-          <li>
-            <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/lambda">NEW Lecture Notes</a>
-          </li>
+        <div class="resource-notes">
+          <i class="fa-solid fa-file-lines notes-icon"></i>
+          <a href="{{ site.baseurl }}/lambda">Lecture Notes</a>
+        </div>
+        <ul class="resources-inline">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=RqA-m_QMJYc&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Lambda Calculus Introduction)</a>
+            <a href="https://www.youtube.com/watch?v=RqA-m_QMJYc&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lambda Calculus Intro</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambda-intro.pdf">(Optional) Lecture Slides</a>
+            <a href="{{ site.baseurl }}/assets/slides/lambda-intro.pdf">Slides (Optional)</a>
           </li>
         </ul>
       </div>
@@ -515,16 +477,16 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-code project-icon"></i>
-          Homework P3: <a href="https://kmicinski.com/cis352-s26/projects/3">Scheme Interpreter</a> -- Released (Due 3/24)
+          Homework P3: <a href="{{ site.baseurl }}/projects/3">Scheme Interpreter</a> -- Released (Due 3/24)
         </div>
-        <ul class="resources-list">
+        <ul class="resources-inline">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=-TN--YqcJhI&ab_channel=KristopherMicinski">Homework Video</a>
+            <a href="https://www.youtube.com/watch?v=-TN--YqcJhI&ab_channel=KristopherMicinski">Video</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/3">Project Instructions</a>
+            <a href="{{ site.baseurl }}/projects/3">Instructions</a>
           </li>
         </ul>
       </div>
@@ -537,12 +499,10 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Closure-Creating Interpreters
         </div>
-        <ul class="resources-list">
-          <li>
-            <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/closures">Lecture Notes</a>
-          </li>
-        </ul>
+        <div class="resource-notes">
+          <i class="fa-solid fa-file-lines notes-icon"></i>
+          <a href="{{ site.baseurl }}/closures">Lecture Notes</a>
+        </div>
       </div>
     </li>
   </ul>
@@ -562,22 +522,26 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Lambda Calculus Reduction Rules and Substitution
         </div>
-        <ul class="resources-list">
+        <div class="resource-notes">
+          <i class="fa-solid fa-file-lines notes-icon"></i>
+          <a href="{{ '/reduction-strategies' | relative_url }}">Lecture Notes</a>
+        </div>
+        <ul class="resources-inline">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=Paxvaq0Q-S0&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Reductions and Substitution)</a>
+            <a href="https://www.youtube.com/watch?v=Paxvaq0Q-S0&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Reductions and Substitution</a>
           </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=GNkQrqAGB-o&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Lecture Video (Reduction Strategies)</a>
+            <a href="https://www.youtube.com/watch?v=GNkQrqAGB-o&amp;list=PLXaqTeMx01E-l20YhTNwN4xncM-1jweqG">Reduction Strategies</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/lambda-reductions.pdf">Lecture Slides (Reductions)</a>
+            <a href="{{ '/assets/slides/lambda-reductions.pdf' | relative_url }}">Slides (Reductions)</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/reduction-strategies.pdf">Lecture Slides (Strategies)</a>
+            <a href="{{ '/assets/slides/reduction-strategies.pdf' | relative_url }}">Slides (Strategies)</a>
           </li>
         </ul>
       </div>
@@ -590,30 +554,30 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Church Numerals, Church Encoding, and the Y Combinator
         </div>
-        <ul class="resources-list">
+        <ul class="resources-inline">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=DC-9wWgXQTc&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=24">Lecture Video (Numerals)</a>
+            <a href="https://www.youtube.com/watch?v=DC-9wWgXQTc&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=24">Numerals</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/churchnum.pdf">Lecture Slides (Numerals)</a>
+            <a href="{{ site.baseurl }}/assets/slides/churchnum.pdf">Slides (Numerals)</a>
           </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=izfoxmSAQ28">Lecture Video (Encoding)</a>
+            <a href="https://www.youtube.com/watch?v=izfoxmSAQ28">Encoding</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/p4.pdf">Lecture Slides (Encoding)</a>
+            <a href="{{ site.baseurl }}/assets/slides/p4.pdf">Slides (Encoding)</a>
           </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=GJi4H2UMaRU&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=27">Lecture Video (Y Combinator)</a>
+            <a href="https://www.youtube.com/watch?v=GJi4H2UMaRU&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=27">Y Combinator</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/y-comb.pdf">Lecture Slides (Y Combinator)</a>
+            <a href="{{ site.baseurl }}/assets/slides/y-comb.pdf">Slides (Y Combinator)</a>
           </li>
         </ul>
       </div>
@@ -638,7 +602,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-upload"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/3">Submit Homework by 3/24</a>
+            <a href="{{ site.baseurl }}/projects/3">Submit Homework by 3/24</a>
           </li>
         </ul>
       </div>
@@ -683,7 +647,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/types-part1.pdf">Lecture Slides</a>
+            <a href="{{ site.baseurl }}/assets/slides/types-part1.pdf">Lecture Slides</a>
           </li>
         </ul>
       </div>
@@ -708,7 +672,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/4">Homework Details</a>
+            <a href="{{ site.baseurl }}/projects/4">Homework Details</a>
           </li>
         </ul>
       </div>
@@ -743,7 +707,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="https://kmicinski.com/cis352-s26/assets/slides/types-part2.pdf">Lecture Slides (provisional...)</a>
+            <a href="{{ site.baseurl }}/assets/slides/types-part2.pdf">Lecture Slides</a>
           </li>
         </ul>
       </div>
@@ -797,7 +761,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-upload"></i>
-            <a href="https://kmicinski.com/cis352-s26/projects/4">Submit Homework by 4/21</a>
+            <a href="{{ site.baseurl }}/projects/4">Submit Homework by 4/21</a>
           </li>
         </ul>
       </div>

@@ -949,15 +949,24 @@ var ProofTree = (function() {
             saveUndo();
             var node = getNodeAtPath(path);
             if (!node) return;
+            var oldConclusion = node.conclusion;
             var input = document.createElement('input');
             input.type = 'text';
             input.className = 'proof-formula-edit';
             input.value = node.conclusion;
             var committed = false;
+            function clearStaleIfChanged() {
+                if (node.conclusion !== oldConclusion && (node.rule_name || node.premises.length > 0)) {
+                    node.rule_name = null;
+                    node.rule_label_left = null;
+                    node.premises = [];
+                }
+            }
             input.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     committed = true;
                     node.conclusion = input.value;
+                    clearStaleIfChanged();
                     commitAndRerender();
                 } else if (e.key === 'Escape') {
                     rerender();
@@ -966,6 +975,7 @@ var ProofTree = (function() {
             input.addEventListener('blur', function() {
                 if (!committed) {
                     node.conclusion = input.value;
+                    clearStaleIfChanged();
                     rerender();
                 }
             });

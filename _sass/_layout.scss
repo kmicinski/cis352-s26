@@ -331,6 +331,47 @@
   margin: 0.3rem 0;
 }
 
+/* Primary notes link — prominent standalone row */
+.resource-notes {
+  margin: 0.3rem 0 0.15rem 0;
+  font-weight: 500;
+}
+.resource-notes a {
+  text-decoration: none;
+  color: #1a56db;
+  border-bottom: 1.5px solid rgba(26, 86, 219, 0.25);
+  transition: border-color 0.15s, color 0.15s;
+}
+.resource-notes a:hover {
+  color: #F76900;
+  border-bottom-color: #F76900;
+}
+
+/* Compact inline row for secondary resources (videos, slides) */
+.resources-inline {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0.1rem 0 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+}
+.resources-inline li {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85em;
+  color: #6b7280;
+}
+.resources-inline li a {
+  color: #6b7280;
+  text-decoration: none;
+}
+.resources-inline li a:hover {
+  color: #374151;
+}
+
 /*********************************************/
 /** Font Awesome Icon Colors               **/
 /*********************************************/
