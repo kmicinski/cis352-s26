@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <title>Evaluation Order</title>
-  <meta name="description" content="CIS352 – Spring 2026">
+  <meta name="description" content="Topics">
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -94,24 +94,23 @@
       <div class="wrapper">
         <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
 
-  <!-- <header class="post-header"> -->
-  <!--   <h1 class="post-title" itemprop="name headline">Evaluation Order</h1> -->
-  <!-- </header> -->
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Evaluation Order</h1>
+  </header>
 
   <div class="post-content" itemprop="articleBody">
-    <h1 id="cis352--spring-2026">CIS352 – Spring 2026</h1>
+    <h2 id="topics">Topics</h2>
 
-<p><a href="https://gist.github.com/kmicinski/7042e0c2143f3fa2236cfc4517a684e8">Link to code for these lecture notes</a></p>
-
-<h2 id="todays-agenda">Today’s agenda…</h2>
 <ul>
-  <li>□ Evaluation Order</li>
-  <li>□ Printf-style debugging and reachability hypotheses</li>
-  <li>□ Evaluation of function call</li>
-  <li>□ The Stack</li>
-  <li>□ Tail Position and Tail Calls</li>
-  <li>□ Tail Call Optimization (TCO) and Tail Recursive Functions</li>
+  <li>Evaluation Order</li>
+  <li>Printf-style debugging and reachability hypotheses</li>
+  <li>Evaluation of function calls</li>
+  <li>The Stack</li>
+  <li>Tail Position and Tail Calls</li>
+  <li>Tail Call Optimization (TCO) and Tail Recursive Functions</li>
 </ul>
+
+<p><a href="https://gist.github.com/kmicinski/7042e0c2143f3fa2236cfc4517a684e8">Code for these lecture notes</a></p>
 
 <hr />
 
@@ -119,9 +118,12 @@
 
 <p>Evaluation order refers to the order in which certain subexpressions in our program are <em>evaluated</em>. Evaluation happens in small steps: at the most basic level, the machine executes instructions on a multi-GHz clock. It is crucial for debugging and code comprehension to have a firm understanding of evaluation order. Exactly when and where expressions in our code are evaluated is something we need to make rigorous. We will do so soon by writing interpreters, but we will talk about it informally for now.</p>
 
-<p><strong>QuickAnswer:</strong> what is printed to the console for the following fragment?</p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; displayln x to the console, then return y</span>
+  <p>What is printed to the console for the following fragment?</p>
+
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; displayln x to the console, then return y</span>
 <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">display-and-return</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
   <span class="p">(</span><span class="nb">displayln</span> <span class="nv">x</span><span class="p">)</span>
   <span class="nv">y</span><span class="p">)</span> <span class="c1">;; note: the above definition builds an implicit (begin ...)</span>
@@ -132,7 +134,8 @@
 
 <span class="p">(</span><span class="nb">displayln</span> <span class="p">(</span><span class="nf">my-plus</span> <span class="p">(</span><span class="nf">display-and-return</span> <span class="mi">5</span> <span class="mi">3</span><span class="p">)</span>
                     <span class="p">(</span><span class="nf">display-and-return</span> <span class="mi">10</span> <span class="mi">4</span><span class="p">)))</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <p>When we refer to “control” in the context of programming languages, we are often appealing to the idea that we are “focusing” on some subcomputation at each point. In functional languages, the notion of control is generally: what subexpression is being evaluated. In assembly language, the notion of control is %rip, i.e., the instruction pointer, which always points at the instruction currently being executed.
 It is a crucial skill to be able to trace through the program’s control flow and to be able to identify what is happening.</p>

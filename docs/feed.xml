@@ -5,8 +5,8 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 17 Mar 2026 17:28:40 -0400</pubDate>
-    <lastBuildDate>Tue, 17 Mar 2026 17:28:40 -0400</lastBuildDate>
+    <pubDate>Tue, 17 Mar 2026 17:42:57 -0400</pubDate>
+    <lastBuildDate>Tue, 17 Mar 2026 17:42:57 -0400</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -717,9 +717,7 @@ approach.&lt;/p&gt;
     
       <item>
         <title>Closure-Creating Interpreters</title>
-        <description>&lt;h1 id=&quot;closure-creating-interpreters&quot;&gt;Closure-Creating Interpreters&lt;/h1&gt;
-
-&lt;h4 style=&quot;margin-top:0.5em; color:#6b7280; font-weight:500;&quot;&gt;Topics&lt;/h4&gt;
+        <description>&lt;h2 id=&quot;topics&quot;&gt;Topics&lt;/h2&gt;
 
 &lt;ul&gt;
   &lt;li&gt;Environment-based evaluation: ρ ⊢ e ⇓ v&lt;/li&gt;
@@ -727,6 +725,8 @@ approach.&lt;/p&gt;
   &lt;li&gt;From rules to a working interpreter&lt;/li&gt;
   &lt;li&gt;Closures: capturing the environment at definition time&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;hr /&gt;
 
 &lt;style&gt;
 /* ── Buttons ──────────────────────────────────────── */
@@ -2548,19 +2548,18 @@ closures, and environments.&lt;/p&gt;
     
       <item>
         <title>Evaluation Order</title>
-        <description>&lt;h1 id=&quot;cis352--spring-2026&quot;&gt;CIS352 – Spring 2026&lt;/h1&gt;
+        <description>&lt;h2 id=&quot;topics&quot;&gt;Topics&lt;/h2&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://gist.github.com/kmicinski/7042e0c2143f3fa2236cfc4517a684e8&quot;&gt;Link to code for these lecture notes&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;todays-agenda&quot;&gt;Today’s agenda…&lt;/h2&gt;
 &lt;ul&gt;
-  &lt;li&gt;□ Evaluation Order&lt;/li&gt;
-  &lt;li&gt;□ Printf-style debugging and reachability hypotheses&lt;/li&gt;
-  &lt;li&gt;□ Evaluation of function call&lt;/li&gt;
-  &lt;li&gt;□ The Stack&lt;/li&gt;
-  &lt;li&gt;□ Tail Position and Tail Calls&lt;/li&gt;
-  &lt;li&gt;□ Tail Call Optimization (TCO) and Tail Recursive Functions&lt;/li&gt;
+  &lt;li&gt;Evaluation Order&lt;/li&gt;
+  &lt;li&gt;Printf-style debugging and reachability hypotheses&lt;/li&gt;
+  &lt;li&gt;Evaluation of function calls&lt;/li&gt;
+  &lt;li&gt;The Stack&lt;/li&gt;
+  &lt;li&gt;Tail Position and Tail Calls&lt;/li&gt;
+  &lt;li&gt;Tail Call Optimization (TCO) and Tail Recursive Functions&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://gist.github.com/kmicinski/7042e0c2143f3fa2236cfc4517a684e8&quot;&gt;Code for these lecture notes&lt;/a&gt;&lt;/p&gt;
 
 &lt;hr /&gt;
 
@@ -2568,9 +2567,12 @@ closures, and environments.&lt;/p&gt;
 
 &lt;p&gt;Evaluation order refers to the order in which certain subexpressions in our program are &lt;em&gt;evaluated&lt;/em&gt;. Evaluation happens in small steps: at the most basic level, the machine executes instructions on a multi-GHz clock. It is crucial for debugging and code comprehension to have a firm understanding of evaluation order. Exactly when and where expressions in our code are evaluated is something we need to make rigorous. We will do so soon by writing interpreters, but we will talk about it informally for now.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer:&lt;/strong&gt; what is printed to the console for the following fragment?&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; displayln x to the console, then return y&lt;/span&gt;
+  &lt;p&gt;What is printed to the console for the following fragment?&lt;/p&gt;
+
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; displayln x to the console, then return y&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;display-and-return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;displayln&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; note: the above definition builds an implicit (begin ...)&lt;/span&gt;
@@ -2581,7 +2583,8 @@ closures, and environments.&lt;/p&gt;
 
 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;displayln&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;my-plus&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;display-and-return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
                     &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;display-and-return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;p&gt;When we refer to “control” in the context of programming languages, we are often appealing to the idea that we are “focusing” on some subcomputation at each point. In functional languages, the notion of control is generally: what subexpression is being evaluated. In assembly language, the notion of control is %rip, i.e., the instruction pointer, which always points at the instruction currently being executed.
 It is a crucial skill to be able to trace through the program’s control flow and to be able to identify what is happening.&lt;/p&gt;
@@ -3032,9 +3035,17 @@ can only emit logging statements).&lt;/p&gt;
     
       <item>
         <title>Programming with Algebra</title>
-        <description>&lt;h1 id=&quot;programming-with-algebra&quot;&gt;Programming with Algebra&lt;/h1&gt;
+        <description>&lt;h2 id=&quot;topics&quot;&gt;Topics&lt;/h2&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://gist.github.com/kmicinski/3219342bd9fa3aac5feff74288b41e14&quot;&gt;Link to code&lt;/a&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Term algebras and equational reasoning&lt;/li&gt;
+  &lt;li&gt;Natural numbers as an algebraic data type&lt;/li&gt;
+  &lt;li&gt;Foldr and structural recursion&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://gist.github.com/kmicinski/3219342bd9fa3aac5feff74288b41e14&quot;&gt;Code for these lecture notes&lt;/a&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
 
 &lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
 
@@ -3595,9 +3606,7 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
     
       <item>
         <title>Pattern Matching</title>
-        <description>&lt;h1 id=&quot;pattern-matching-cis352-s26&quot;&gt;Pattern Matching (CIS352 ‘S26)&lt;/h1&gt;
-
-&lt;h2 id=&quot;topics&quot;&gt;Topics&lt;/h2&gt;
+        <description>&lt;h2 id=&quot;topics&quot;&gt;Topics&lt;/h2&gt;
 
 &lt;ul&gt;
   &lt;li&gt;Trees, manually&lt;/li&gt;
