@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Natural Deduction and Language Semantics</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://kmicinski.com/cis352-s26/css/main.css">
+  <link rel="canonical" href="https://kmicinski.com/cis352-s26/natural-deduction">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="https://kmicinski.com/cis352-s26/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  
+  <link rel="stylesheet" href="/cis352-s26/assets/proof-tree.css">
+  <script src="/cis352-s26/assets/proof-tree.js"></script>
+  <link rel="stylesheet" href="/cis352-s26/assets/proof-checker.css">
+  <script src="/cis352-s26/assets/proof-checker-glue.js"></script>
+  
+</head>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="https://kmicinski.com//cis352-s26/">CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/#schedule">Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/syllabus">Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/playground">Proof Playground</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/lambda-explorer">Lambda Explorer</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/playground">Proof Tree Playground</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <!-- <header class="post-header"> -->
+  <!--   <h1 class="post-title" itemprop="name headline">Natural Deduction and Language Semantics</h1> -->
+  <!-- </header> -->
+
+  <div class="post-content" itemprop="articleBody">
+    <style>
+/* ── Buttons ──────────────────────────────────────── */
+.cl-btn {
+  display: inline-block;
+  padding: 7px 18px;
+  font-size: 0.85em;
+  font-weight: 500;
+  font-family: inherit;
+  color: #374151;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+.cl-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* ── Solutions ────────────────────────────────────── */
+details {
+  margin: 1em 0 1.5em;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+details summary {
+  padding: 10px 16px;
+  font-weight: 500;
+  font-size: 0.92em;
+  color: #4f46e5;
+  background: #f9fafb;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+  list-style: none;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: "▸ ";
+  font-size: 0.8em;
+  margin-right: 4px;
+}
+details[open] summary::before { content: "▾ "; }
+details[open] summary {
+  border-bottom: 1px solid #e5e7eb;
+  background: #f3f4f6;
+}
+details .solution-body {
+  padding: 16px;
+}
+
+/* ── Proof rule blocks ────────────────────────────── */
+.rule-block {
+  margin: 1.2em 0;
+  padding: 0 0 0.5em;
+  border-bottom: 1px solid #f3f4f6;
+}
+.rule-block:last-child { border-bottom: none; }
+.rule-name {
+  font-weight: 600;
+  font-size: 0.95em;
+  color: #374151;
+  margin-bottom: 4px;
+}
+.rule-desc {
+  font-size: 0.9em;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+/* ── Exercise blocks ──────────────────────────────── */
+.exercise-box {
+  margin: 1.5em 0;
+  padding: 1em 1.2em;
+  background: #fefce8;
+  border-left: 4px solid #fbbf24;
+  border-radius: 0 8px 8px 0;
+}
+.exercise-box h4 {
+  margin: 0 0 0.4em;
+  font-size: 1em;
+  font-weight: 600;
+  color: #92400e;
+}
+.exercise-box p { margin: 0.3em 0; }
+
+/* ── Editor containers ────────────────────────────── */
+.editor-wrap {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0.8em 0;
+  min-height: 180px;
+}
+</style>
+
+<script>
+// Rule name lists for editor dropdowns
+var _natRules = ['Zero', 'Add1'];
+var _boolTypeRules = ['True', 'False', 'And', 'Or'];
+var _boolEvalRules = ['True', 'False', 'And', 'Or'];
+</script>
+
+<h2 id="topics">Topics</h2>
+
+<ul>
+  <li>Natural Deduction</li>
+  <li>Language Semantics via Natural Deduction</li>
+  <li>From natural semantics to interpreters</li>
+</ul>
+
+<p><a href="https://gist.github.com/kmicinski/99b757a5009cfb7749948c90aa923159">Lecture notes in Racket (.rkt)</a></p>
+
+<hr />
+
+<h2 id="natural-deduction">Natural Deduction</h2>
+
+<p>Natural deduction is a style of mathematical reasoning which has an
+especially close relationship with computing. We will use natural
+deduction in this class to write proofs, specifications, and define
+the semantics of programming languages which we build.</p>
+
+<p>Our goal today is to learn the format of natural deduction
+proofs. We define natural deduction as a method for
+defining both specifications and proofs of propositions (rigorous
+statements).</p>
+
+<p>We will learn natural deduction in a way which also introduces
+the upcoming homework on transitive closure.</p>
+
+<h3 id="defining-the-natural-numbers">Defining the Natural Numbers</h3>
+
+<p>Let’s start by defining proofs for natural numbers. There are two ways
+to build any natural number:</p>
+
+<ol>
+  <li>The constant 0 is a natural number.</li>
+  <li>If <code class="language-plaintext highlighter-rouge">n</code> is a natural number, <code class="language-plaintext highlighter-rouge">(S n)</code> is also a natural number.</li>
+</ol>
+
+<p>We saw how to define the natural numbers via a term algebra over
+signature {0 &amp;mapsto; 0, S &amp;mapsto; 1}. Now we’ll see another way: using
+natural deduction rules.</p>
+
+<div class="rule-block">
+<div class="rule-name">Zero</div>
+<div class="rule-desc">The constant 0 is a natural number.</div>
+<div data-proof-tree="((Zero :right) --- &quot;0 : nat&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">Add1</div>
+<div class="rule-desc">If n is a natural number, then (S n) is also a natural number.</div>
+<div data-proof-tree="((Add1 :right) (--- &quot;n : nat&quot;) --- &quot;(S n) : nat&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<p>In natural deduction, rules have the following format:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>         Assumption 0, Assumption 1, ...
+  Name  -----------------------------------
+                    Conclusion
+</code></pre></div></div>
+
+<p>The rule says: “If we can prove Assumption 0, Assumption 1, …,
+then applying rule <code class="language-plaintext highlighter-rouge">Name</code> allows us to prove the Conclusion.” Some
+rules have no assumptions above the line – we call these
+“axioms,” because they represent statements we can make
+without requiring any proof.</p>
+
+<p>The assumptions and conclusions are “propositions:” mathematical
+statements. In this case, propositions are of the form <code class="language-plaintext highlighter-rouge">_ : nat</code>
+which means “some object <em>has type</em> nat.” You should read <code class="language-plaintext highlighter-rouge">:</code> as
+“has type” and <code class="language-plaintext highlighter-rouge">nat</code> as “natural number.”</p>
+
+<h3 id="example-proving-s-s-s-0--nat">Example: Proving (S (S (S 0))) : nat</h3>
+
+<p>Let’s use these rules to prove that <code class="language-plaintext highlighter-rouge">(S (S (S 0))) : nat</code> (i.e.,
+“3 is a natural number”):</p>
+
+<div data-proof-tree="((Add1 :right) ((Add1 :right) ((Add1 :right) ((Zero :right) --- &quot;0 : nat&quot;) --- &quot;(S 0) : nat&quot;) --- &quot;(S (S 0)) : nat&quot;) --- &quot;(S (S (S 0))) : nat&quot;)"></div>
+
+<h3 id="reading-rules-forward-and-backward">Reading Rules Forward and Backward</h3>
+
+<p>The tricky part about natural deduction is that rules can be read
+either forward <em>or</em> backward. Consider the <code class="language-plaintext highlighter-rouge">Add1</code> rule:</p>
+
+<ul>
+  <li>
+    <p>(Reading “forward,” top-to-bottom): “If we have a proof of
+<code class="language-plaintext highlighter-rouge">n : nat</code>, then we can apply Add1 and prove <code class="language-plaintext highlighter-rouge">(S n) : nat</code>.”</p>
+  </li>
+  <li>
+    <p>(Reading “backward,” bottom-to-top): “If we want to prove
+<code class="language-plaintext highlighter-rouge">(S n) : nat</code> for some <code class="language-plaintext highlighter-rouge">n</code>, then we can apply Add1 and simplify our
+task to proving <code class="language-plaintext highlighter-rouge">n : nat</code> – which may or may not be possible.”</p>
+  </li>
+</ul>
+
+<p>To build a complete proof using natural deduction, we need two things:</p>
+
+<ol>
+  <li><strong>(Local correctness)</strong> Each rule must be applied correctly</li>
+  <li><strong>(Completeness)</strong> All leaves of the proof tree must be axioms</li>
+</ol>
+
+<p>Here is an example that breaks <em>local correctness</em>:</p>
+
+<div data-proof-tree="((&quot;Add1 (WRONG)&quot; :right) ((Zero :right) --- &quot;0 : nat&quot;) --- &quot;(S (S (S 0))) : nat&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>This is not a valid usage of Add1: if we have <code class="language-plaintext highlighter-rouge">(S n)</code> on the
+bottom, we need <code class="language-plaintext highlighter-rouge">n</code> on the top. Here the top is <code class="language-plaintext highlighter-rouge">0</code>, so the bottom
+should be <code class="language-plaintext highlighter-rouge">(S 0)</code> – instead, it has <code class="language-plaintext highlighter-rouge">(S (S (S 0)))</code>.</p>
+
+<p>Here is an example that breaks <em>completeness</em>:</p>
+
+<div data-proof-tree="((Add1 :right) ((Add1 :right) (--- &quot;(S B) : nat&quot;) --- &quot;(S (S B)) : nat&quot;) --- &quot;(S (S (S B))) : nat&quot;)"></div>
+
+<p>The top of this proof is incomplete: <code class="language-plaintext highlighter-rouge">(S B) : nat</code> has not been
+proven. Each local application of <code class="language-plaintext highlighter-rouge">Add1</code> is correct, but we’d
+eventually need to prove <code class="language-plaintext highlighter-rouge">B : nat</code>, which is not possible by any rule.</p>
+
+<hr />
+
+<h2 id="exercise-1">Exercise 1</h2>
+
+<div class="exercise-box">
+<h4>QuickAnswer</h4>
+<p>Apply the Add1 rule "forwards," deriving a conclusion from the
+premise <code>(S (S (S n))) : nat</code>.</p>
+</div>
+
+<h2 id="exercise-2">Exercise 2</h2>
+
+<div class="exercise-box">
+<h4>QuickAnswer</h4>
+<p>Apply the Add1 rule "backwards," deriving a proof obligation from the
+conclusion <code>(S (S 0)) : nat</code>.</p>
+</div>
+
+<h2 id="exercise-3">Exercise 3</h2>
+
+<div class="exercise-box">
+<h4>QuickAnswer</h4>
+<p>Using the rules Zero and Add1, build a complete proof of <strong>(S (S 0)) : nat</strong></p>
+</div>
+
+<div class="editor-wrap" id="nat-exercise"></div>
+
+<script>
+(function() {
+  var container = document.getElementById('nat-exercise');
+  ProofTree.createEditor(container, {
+    tree: '(--- "(S (S 0)) : nat")',
+    theoryRules: _natRules
+  });
+})();
+</script>
+
+<details>
+<summary>Show solution</summary>
+<div class="solution-body">
+<div id="nat-exercise-solution"></div>
+</div>
+<script>
+(function() {
+  window._natExSexp = '((Add1 :right) ((Add1 :right) ((Zero :right) --- "0 : nat") --- "(S 0) : nat") --- "(S (S 0)) : nat")';
+  var details = document.getElementById('nat-exercise-solution').closest('details');
+  var rendered = false;
+  details.addEventListener('toggle', function() {
+    if (details.open && !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._natExSexp, document.getElementById('nat-exercise-solution'));
+    }
+  });
+})();
+</script>
+</details>
+
+<hr />
+
+<h2 id="booleans">Booleans</h2>
+
+<p>Let’s do another short example. We’ll define rules for constructing
+boolean expressions:</p>
+
+<div class="rule-block">
+<div class="rule-name">True</div>
+<div data-proof-tree="((True :right) --- &quot;#t : bool&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">False</div>
+<div data-proof-tree="((False :right) --- &quot;#f : bool&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">And</div>
+<div class="rule-desc">To show (and e0 e1) : bool, we must prove both e0 : bool and e1 : bool.</div>
+<div data-proof-tree="((And :right) (--- &quot;e0 : bool&quot;) (--- &quot;e1 : bool&quot;) --- &quot;(and e0 e1) : bool&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">Or</div>
+<div class="rule-desc">To show (or e0 e1) : bool, we must prove both e0 : bool and e1 : bool.</div>
+<div data-proof-tree="((Or :right) (--- &quot;e0 : bool&quot;) (--- &quot;e1 : bool&quot;) --- &quot;(or e0 e1) : bool&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<h2 id="exercise-4">Exercise 4</h2>
+
+<div class="exercise-box">
+<h4>QuickAnswer</h4>
+<p>Using the rules above, build a proof of <strong>(and (or #t #f) #t) : bool</strong></p>
+</div>
+
+<div class="editor-wrap" id="bool-exercise"></div>
+
+<script>
+(function() {
+  var container = document.getElementById('bool-exercise');
+  ProofTree.createEditor(container, {
+    tree: '(--- "(and (or #t #f) #t) : bool")',
+    theoryRules: _boolTypeRules
+  });
+})();
+</script>
+
+<details>
+<summary>Show solution</summary>
+<div class="solution-body">
+<div id="bool-exercise-solution"></div>
+</div>
+<script>
+(function() {
+  window._boolExSexp = '((And :right) ((Or :right) ((True :right) --- "#t : bool") ((False :right) --- "#f : bool") --- "(or #t #f) : bool") ((True :right) --- "#t : bool") --- "(and (or #t #f) #t) : bool")';
+  var details = document.getElementById('bool-exercise-solution').closest('details');
+  var rendered = false;
+  details.addEventListener('toggle', function() {
+    if (details.open && !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._boolExSexp, document.getElementById('bool-exercise-solution'));
+    }
+  });
+})();
+</script>
+</details>
+
+<hr />
+
+<h2 id="language-semantics-via-natural-deduction">Language Semantics via Natural Deduction</h2>
+
+<p>We will use natural deduction to specify the semantics (meaning) of
+programming languages. This will allow us to rigorously make clear
+<em>exactly</em> how programs are evaluated, to a degree that we could
+rigorously test or even <em>prove</em> properties about programs in our
+language.</p>
+
+<p>Programming language semantics is a core topic in CIS352. There are
+several methods for specifying semantics:</p>
+
+<ol>
+  <li><strong>Reference interpreter:</strong> “The semantics is whatever Python does.”
+    <ul>
+      <li><em>Upside:</em> scales to complex languages</li>
+      <li><em>Downside:</em> the host language may not have a well-defined meaning
+itself (e.g., C++ has undefined behavior)</li>
+    </ul>
+  </li>
+  <li><strong>Denotational semantics:</strong> Map the program into a mathematical
+domain.
+    <ul>
+      <li><em>Upside:</em> mathematics is well-developed</li>
+      <li><em>Downside:</em> complex for nontrivial features like loops</li>
+    </ul>
+  </li>
+  <li><strong>“Big-step” / natural semantics:</strong> Specify semantics via natural
+deduction.
+    <ul>
+      <li><em>Upside:</em> we can often take the specification and directly build
+an interpreter (or compiler)</li>
+      <li><em>Downside:</em> requires fully specifying the language, which may be
+impractical for truly production-grade languages</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="a-small-boolean-language">A Small Boolean Language</h3>
+
+<p>When we specify a language by natural deduction, we define a
+“reduction relation:”</p>
+
+<blockquote>
+  <p><strong>e ⇓ v</strong>   “expression e evaluates to value v”</p>
+</blockquote>
+
+<p>where <code class="language-plaintext highlighter-rouge">e</code> is an expression (something to be evaluated) and <code class="language-plaintext highlighter-rouge">v</code> is a
+value (a result). As our first example, consider a small boolean
+language:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">expr?</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">e</span>
+    <span class="p">[</span><span class="ss">'true</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="ss">'false</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">&amp;&amp;</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e0</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e1</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">||</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e0</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e1</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">_</span> <span class="no">#f</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p>This is the term algebra over {<code class="language-plaintext highlighter-rouge">true</code> arity 0, <code class="language-plaintext highlighter-rouge">false</code> arity 0,
+<code class="language-plaintext highlighter-rouge">&amp;&amp;</code> arity 2, <code class="language-plaintext highlighter-rouge">||</code> arity 2}. For example:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nf">expr?</span> <span class="o">'</span><span class="p">(</span><span class="nf">&amp;&amp;</span> <span class="p">(</span><span class="nf">||</span> <span class="nv">false</span> <span class="nv">true</span><span class="p">)</span> <span class="p">(</span><span class="nf">||</span> <span class="nv">true</span> <span class="nv">false</span><span class="p">)))</span> <span class="c1">;; =&gt; #t</span>
+</code></pre></div></div>
+
+<p>Values will be Racket’s booleans (<code class="language-plaintext highlighter-rouge">#t</code> and <code class="language-plaintext highlighter-rouge">#f</code>).
+Now we define the semantics – precisely when we can prove <code class="language-plaintext highlighter-rouge">e ⇓ v</code>:</p>
+
+<div class="rule-block">
+<div class="rule-name">True</div>
+<div data-proof-tree="((True :right) --- &quot;true ⇓ #t&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">False</div>
+<div data-proof-tree="((False :right) --- &quot;false ⇓ #f&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">And</div>
+<div class="rule-desc">Evaluate both subexpressions and combine with <code>and</code>.</div>
+<div data-proof-tree="((And :right) (--- &quot;e0 ⇓ v0&quot;) (--- &quot;e1 ⇓ v1&quot;) &quot;v = (and v0 v1)&quot; --- &quot;(&amp;&amp; e0 e1) ⇓ v&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<div class="rule-block">
+<div class="rule-name">Or</div>
+<div class="rule-desc">Evaluate both subexpressions and combine with <code>or</code>.</div>
+<div data-proof-tree="((Or :right) (--- &quot;e0 ⇓ v0&quot;) (--- &quot;e1 ⇓ v1&quot;) &quot;v = (or v0 v1)&quot; --- &quot;(|| e0 e1) ⇓ v&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+
+<p>Notice how in the <code class="language-plaintext highlighter-rouge">And</code>/<code class="language-plaintext highlighter-rouge">Or</code> rules we assume that there is a
+definition of <em>and</em>/<em>or</em> above the line. We are implicitly assuming
+a definition in the <em>metalanguage</em> (the language we use to define the
+language). In this case, we use Racket’s <code class="language-plaintext highlighter-rouge">and</code>/<code class="language-plaintext highlighter-rouge">or</code> as the
+metalanguage, but in general the metalanguage will be “mathematics.”</p>
+
+<h2 id="exercise-5">Exercise 5</h2>
+
+<div class="exercise-box">
+<h4>QuickAnswer</h4>
+<p>Write a proof that: <strong>(&amp;&amp; true true) ⇓ #t</strong></p>
+</div>
+
+<div class="editor-wrap" id="eval-exercise1"></div>
+
+<script>
+(function() {
+  var container = document.getElementById('eval-exercise1');
+  ProofTree.createEditor(container, {
+    tree: '(--- "(&& true true) ⇓ #t")',
+    theoryRules: _boolEvalRules
+  });
+})();
+</script>
+
+<details>
+<summary>Show solution</summary>
+<div class="solution-body">
+<div id="eval-exercise1-solution"></div>
+</div>
+<script>
+(function() {
+  window._eval1Sexp = '((And :right) ((True :right) --- "true ⇓ #t") ((True :right) --- "true ⇓ #t") "#t = (and #t #t)" --- "(&& true true) ⇓ #t")';
+  var details = document.getElementById('eval-exercise1-solution').closest('details');
+  var rendered = false;
+  details.addEventListener('toggle', function() {
+    if (details.open && !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._eval1Sexp, document.getElementById('eval-exercise1-solution'));
+    }
+  });
+})();
+</script>
+</details>
+
+<h2 id="exercise-6">Exercise 6</h2>
+
+<div class="exercise-box">
+<h4>QuickAnswer</h4>
+<p>Write a proof that: <strong>(&amp;&amp; true (|| false false)) ⇓ #f</strong></p>
+</div>
+
+<div class="editor-wrap" id="eval-exercise2"></div>
+
+<script>
+(function() {
+  var container = document.getElementById('eval-exercise2');
+  ProofTree.createEditor(container, {
+    tree: '(--- "(&& true (|| false false)) ⇓ #f")',
+    theoryRules: _boolEvalRules
+  });
+})();
+</script>
+
+<details>
+<summary>Show solution</summary>
+<div class="solution-body">
+<div id="eval-exercise2-solution"></div>
+</div>
+<script>
+(function() {
+  window._eval2Sexp = '((And :right) ((True :right) --- "true ⇓ #t") ((Or :right) ((False :right) --- "false ⇓ #f") ((False :right) --- "false ⇓ #f") "#f = (or #f #f)" --- "(|| false false) ⇓ #f") "#f = (and #t #f)" --- "(&& true (|| false false)) ⇓ #f")';
+  var details = document.getElementById('eval-exercise2-solution').closest('details');
+  var rendered = false;
+  details.addEventListener('toggle', function() {
+    if (details.open && !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._eval2Sexp, document.getElementById('eval-exercise2-solution'));
+    }
+  });
+})();
+</script>
+</details>
+
+<hr />
+
+<h2 id="from-natural-semantics-to-interpreters">From Natural Semantics to Interpreters</h2>
+
+<p>A key insight of this course is that big-step natural deduction rules
+can be read as a <em>recursive function</em>. Each rule tells us: “to
+evaluate this kind of expression, evaluate the subexpressions and
+combine the results.” This is exactly what an interpreter does.</p>
+
+<p>For our boolean language, the interpreter follows directly from the
+rules:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; interp : Expr → Value</span>
+<span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">interp</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">e</span>
+    <span class="p">[</span><span class="ss">'true</span>  <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="ss">'false</span> <span class="no">#f</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">&amp;&amp;</span> <span class="o">,</span><span class="nv">e0</span> <span class="o">,</span><span class="nv">e1</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">and</span> <span class="p">(</span><span class="nf">interp</span> <span class="nv">e0</span><span class="p">)</span> <span class="p">(</span><span class="nf">interp</span> <span class="nv">e1</span><span class="p">))]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">||</span> <span class="o">,</span><span class="nv">e0</span> <span class="o">,</span><span class="nv">e1</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">or</span> <span class="p">(</span><span class="nf">interp</span> <span class="nv">e0</span><span class="p">)</span> <span class="p">(</span><span class="nf">interp</span> <span class="nv">e1</span><span class="p">))]))</span>
+</code></pre></div></div>
+
+<p>Notice the direct correspondence:</p>
+
+<ul>
+  <li>The <code class="language-plaintext highlighter-rouge">True</code> rule says <code class="language-plaintext highlighter-rouge">true ⇓ #t</code> – the interpreter returns <code class="language-plaintext highlighter-rouge">#t</code>
+for <code class="language-plaintext highlighter-rouge">'true</code>.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">And</code> rule says: evaluate <code class="language-plaintext highlighter-rouge">e0</code> to <code class="language-plaintext highlighter-rouge">v0</code>, evaluate <code class="language-plaintext highlighter-rouge">e1</code> to <code class="language-plaintext highlighter-rouge">v1</code>,
+return <code class="language-plaintext highlighter-rouge">(and v0 v1)</code> – the interpreter does exactly that with
+recursive calls.</li>
+</ul>
+
+<p>This pattern – writing natural deduction rules, then translating
+them directly into an interpreter – is the central technique we will
+use throughout the rest of CIS352. In our lecture on
+<a href="/cis352-s26/closures">closure-creating interpreters</a>, we
+extend this idea to a much richer language with variables, lambdas,
+closures, and environments.</p>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '26) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src="/cis352-s26/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="/cis352-s26/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js"></script>
+
+
+  </body>
+
+</html>

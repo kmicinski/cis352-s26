@@ -116,14 +116,16 @@
 
 <h2 id="warmup">Warmup</h2>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Let’s write <code class="language-plaintext highlighter-rouge">(interleave l0 l1)</code>, a function that takes two lists l0/l1 and returns the elements of l0 interleaved with the elements of l1. Assume l0/l1 have the same length.</p>
+  <p>Let’s write <code class="language-plaintext highlighter-rouge">(interleave l0 l1)</code>, a function that takes two lists l0/l1 and returns the elements of l0 interleaved with the elements of l1. Assume l0/l1 have the same length.</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (interleave '(0 1 2) '(x y z)) =&gt; '(0 x 1 y 2 z)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (interleave '(0 1 2) '(x y z)) =&gt; '(0 x 1 y 2 z)</span>
 <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">interleave</span> <span class="nv">l0</span> <span class="nv">l1</span><span class="p">)</span>
   <span class="ss">'todo</span><span class="p">)</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <hr />
 
@@ -181,17 +183,19 @@
        <span class="p">(</span><span class="nf">node</span> <span class="mi">10</span> <span class="p">(</span><span class="nf">node</span> <span class="mi">7</span> <span class="nv">empty</span> <span class="nv">empty</span><span class="p">)</span> <span class="p">(</span><span class="nf">node</span> <span class="mi">12</span> <span class="nv">empty</span> <span class="nv">empty</span><span class="p">)))</span>
 </code></pre></div></div>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Write the tree:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>         20
+  <p>Write the tree:</p>
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>         20
         /  \
        10  30
-</code></pre></div></div>
-<p>in a manner that satisfies <code class="language-plaintext highlighter-rouge">tree?</code>:</p>
+</code></pre></div>  </div>
+  <p>in a manner that satisfies <code class="language-plaintext highlighter-rouge">tree?</code>:</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (node ...)</span>
-</code></pre></div></div>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (node ...)</span>
+</code></pre></div>  </div>
+</blockquote>
 
 <p>One fact about trees in Racket: they are <em>just lists</em>. We can build them entirely out of cons cells. We don’t need any fancy machinery to define trees, other than recursion and lists. Once we have recursion and lists, we will see we can build the rest of computation.</p>
 
@@ -227,18 +231,20 @@
 
 <p>In the above definition, we used <code class="language-plaintext highlighter-rouge">(third t)</code> and <code class="language-plaintext highlighter-rouge">(fourth t)</code> to manually extract t0/t1. Today, we’ll learn about pattern matching, which will make this much easier. But for now, let’s work another example in the same style as the previous:</p>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Define <code class="language-plaintext highlighter-rouge">(tree-sum t)</code>, assuming t satisfies <code class="language-plaintext highlighter-rouge">tree?</code>:</p>
-<ul>
-  <li>If t is <code class="language-plaintext highlighter-rouge">'empty</code>, return 0</li>
-  <li>If t is a node, return <code class="language-plaintext highlighter-rouge">(second t)</code> + tree-sum applied to the left/right subtree (use <code class="language-plaintext highlighter-rouge">(third t)</code> and <code class="language-plaintext highlighter-rouge">(fourth t)</code> to get them).</li>
-</ul>
+  <p>Define <code class="language-plaintext highlighter-rouge">(tree-sum t)</code>, assuming t satisfies <code class="language-plaintext highlighter-rouge">tree?</code>:</p>
+  <ul>
+    <li>If t is <code class="language-plaintext highlighter-rouge">'empty</code>, return 0</li>
+    <li>If t is a node, return <code class="language-plaintext highlighter-rouge">(second t)</code> + tree-sum applied to the left/right subtree (use <code class="language-plaintext highlighter-rouge">(third t)</code> and <code class="language-plaintext highlighter-rouge">(fourth t)</code> to get them).</li>
+  </ul>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (tree-sum '(node 5 (node 10 empty empty) (node -5 empty empty))) =&gt; 10</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (tree-sum '(node 5 (node 10 empty empty) (node -5 empty empty))) =&gt; 10</span>
 <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">tree-sum</span> <span class="nv">t</span><span class="p">)</span>
   <span class="ss">'todo</span><span class="p">)</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <hr />
 
@@ -305,18 +311,20 @@
     <span class="p">[</span><span class="nf">_</span> <span class="mi">3</span><span class="p">]))</span>
 </code></pre></div></div>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Translate the following function, <code class="language-plaintext highlighter-rouge">bar</code>, to use match:</p>
+  <p>Translate the following function, <code class="language-plaintext highlighter-rouge">bar</code>, to use match:</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">bar</span> <span class="nv">x</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">bar</span> <span class="nv">x</span><span class="p">)</span>
   <span class="p">(</span><span class="k">cond</span> <span class="p">[(</span><span class="nb">equal?</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)</span> <span class="mi">1</span><span class="p">]</span>
         <span class="p">[(</span><span class="nb">equal?</span> <span class="nv">x</span> <span class="mi">-1</span><span class="p">)</span> <span class="mi">-1</span><span class="p">]</span>
         <span class="p">[</span><span class="nf">else</span> <span class="p">(</span><span class="nf">bar</span> <span class="p">(</span><span class="nb">-</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)))]))</span>
 
 <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">bar-match</span> <span class="nv">x</span><span class="p">)</span>
   <span class="ss">'todo</span><span class="p">)</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <hr />
 
@@ -382,11 +390,12 @@
   <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">1</span> <span class="mi">2</span> <span class="o">,</span><span class="nv">x</span><span class="p">)</span> <span class="nv">x</span><span class="p">])</span> <span class="c1">;; returns 3</span>
 </code></pre></div></div>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Use match to define a function, <code class="language-plaintext highlighter-rouge">(every-other l)</code>, which returns every other element in l.</p>
+  <p>Use match to define a function, <code class="language-plaintext highlighter-rouge">(every-other l)</code>, which returns every other element in l.</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (every-other '()) =&gt; '()</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (every-other '()) =&gt; '()</span>
 <span class="c1">;; (every-other '(1)) =&gt; '(1)</span>
 <span class="c1">;; (every-other '(1 2)) =&gt; '(1)</span>
 <span class="c1">;; (every-other '(1 2 3)) =&gt; '(1 3)</span>
@@ -394,7 +403,8 @@
 <span class="c1">;; `(,x0 ,x1 ,x-rest ...), `(,x0), and '()</span>
 <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">every-other</span> <span class="nv">l</span><span class="p">)</span>
   <span class="ss">'todo</span><span class="p">)</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <hr />
 
@@ -427,15 +437,17 @@
 <span class="p">(</span><span class="nf">evens-or-odds?</span> <span class="o">'</span><span class="p">(</span><span class="nf">2</span> <span class="mi">4</span> <span class="mi">6</span><span class="p">))</span>
 </code></pre></div></div>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Describe the behavior of <code class="language-plaintext highlighter-rouge">mystery-function</code>. What does it return? Consider all possible inputs, but describe its behavior as precisely as you can.</p>
+  <p>Describe the behavior of <code class="language-plaintext highlighter-rouge">mystery-function</code>. What does it return? Consider all possible inputs, but describe its behavior as precisely as you can.</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">mystery-function</span> <span class="nv">l</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">mystery-function</span> <span class="nv">l</span><span class="p">)</span>
   <span class="p">(</span><span class="nf">match</span> <span class="nv">l</span>
     <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">1</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">zero?</span> <span class="nv">xs</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span> <span class="p">(</span><span class="nb">length</span> <span class="nv">xs</span><span class="p">)]</span>
     <span class="p">[</span><span class="nf">_</span> <span class="s">"error"</span><span class="p">]))</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <hr />
 
@@ -467,19 +479,21 @@
     <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">node</span> <span class="o">,</span><span class="nv">v</span> <span class="o">,</span><span class="nv">t0</span> <span class="o">,</span><span class="nv">t1</span><span class="p">)</span> <span class="p">(</span><span class="nb">max</span> <span class="nv">v</span> <span class="p">(</span><span class="nf">max-tree</span> <span class="nv">t0</span><span class="p">)</span> <span class="p">(</span><span class="nf">max-tree</span> <span class="nv">t1</span><span class="p">))]))</span>
 </code></pre></div></div>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>A tree satisfies the BST (binary search tree) property whenever every subtree <code class="language-plaintext highlighter-rouge">`(node ,v ,t0 ,t1)</code> has that <code class="language-plaintext highlighter-rouge">(max t0) &lt; v &lt; (min t1)</code>.</p>
+  <p>A tree satisfies the BST (binary search tree) property whenever every subtree <code class="language-plaintext highlighter-rouge">`(node ,v ,t0 ,t1)</code> has that <code class="language-plaintext highlighter-rouge">(max t0) &lt; v &lt; (min t1)</code>.</p>
 
-<p>Basic idea: match t</p>
-<ul>
-  <li>If it’s <code class="language-plaintext highlighter-rouge">'empty</code>, return <code class="language-plaintext highlighter-rouge">#t</code></li>
-  <li>If it’s <code class="language-plaintext highlighter-rouge">`(node ,v ,t0 ,t1)</code>, call <code class="language-plaintext highlighter-rouge">(max-tree t)</code> (above) to calculate the maximum of t0 and t1, then check the necessary properties.</li>
-</ul>
+  <p>Basic idea: match t</p>
+  <ul>
+    <li>If it’s <code class="language-plaintext highlighter-rouge">'empty</code>, return <code class="language-plaintext highlighter-rouge">#t</code></li>
+    <li>If it’s <code class="language-plaintext highlighter-rouge">`(node ,v ,t0 ,t1)</code>, call <code class="language-plaintext highlighter-rouge">(max-tree t)</code> (above) to calculate the maximum of t0 and t1, then check the necessary properties.</li>
+  </ul>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">bst-property?</span> <span class="nv">t</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">bst-property?</span> <span class="nv">t</span><span class="p">)</span>
   <span class="ss">'todo</span><span class="p">)</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
   </div>
 

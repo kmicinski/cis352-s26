@@ -14,12 +14,27 @@
   var MIN_EXPLORER = 300;
   var DEFAULT_RATIO = 0.4;
 
+  // ── Explorer ready state ─────────────────────────
+  var explorerReady = false;
+  var pendingMessages = [];
+
+  window.addEventListener("message", function (e) {
+    if (e.data && e.data.type === "ready") {
+      explorerReady = true;
+      pendingMessages.forEach(function (msg) {
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage(msg, "*");
+        }
+      });
+      pendingMessages = [];
+    }
+  });
+
   // ── Explorer visibility ──────────────────────────
   var isMobile = window.innerWidth <= 700;
 
   function isExplorerVisible() {
     if (isMobile) {
-      // Off by default on mobile; user can toggle on
       try { return localStorage.getItem(EXPLORER_KEY + "-mobile") === "true"; }
       catch (e) { return false; }
     }
@@ -143,6 +158,19 @@
     }, 100);
   });
 
+  // ── Post a message to the explorer (queues if not ready) ──
+  function postToExplorer(msg) {
+    if (explorer.classList.contains("le-hidden")) {
+      setExplorerVisible(true);
+    }
+    if (!iframe || !iframe.contentWindow) return;
+    if (explorerReady) {
+      iframe.contentWindow.postMessage(msg, "*");
+    } else {
+      pendingMessages.push(msg);
+    }
+  }
+
   // ── Lambda term detection & click-to-load ────────
 
   var LAMBDA_RE = /^\s*\([\s\S]*λ[\s\S]*\)\s*$/;
@@ -159,13 +187,19 @@
   }
 
   function sendTermToExplorer(term) {
-    // If explorer is hidden, show it first
-    if (explorer.classList.contains("le-hidden")) {
-      setExplorerVisible(true);
+    postToExplorer({ type: "loadTerm", term: term });
+    // Focus the iframe so keyboard shortcuts (Space to step) work immediately
+    if (iframe) {
+      setTimeout(function () { iframe.focus(); }, 200);
     }
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage({ type: "loadTerm", term: term }, "*");
-    }
+  }
+
+  function setStrategy(strategy) {
+    postToExplorer({ type: "setStrategy", strategy: strategy });
+  }
+
+  function stepExplorer() {
+    postToExplorer({ type: "step" });
   }
 
   function makeClickable(el) {
@@ -174,7 +208,11 @@
       e.preventDefault();
       e.stopPropagation();
       var term = normalizeTerm(el.textContent);
+      var strategy = el.getAttribute("data-strategy");
       sendTermToExplorer(term);
+      if (strategy) {
+        setTimeout(function () { setStrategy(strategy); }, 150);
+      }
     });
   }
 
@@ -193,6 +231,105 @@
     if (lines.length === 1 && isLambdaTerm(lines[0])) {
       makeClickable(code.parentElement);
     }
+  });
+
+  // ── Explicit clickable terms: .le-term ───────────────────
+  var explicitTerms = notesEl.querySelectorAll(".le-term");
+  explicitTerms.forEach(function (el) {
+    makeClickable(el);
+  });
+
+  // ── Interactive buttons: [data-term], [data-strategy] ────
+
+  var interactiveBtns = notesEl.querySelectorAll("[data-term]");
+  interactiveBtns.forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      var term = btn.getAttribute("data-term").replace(/λ/g, "\\");
+      var strategy = btn.getAttribute("data-strategy");
+
+      sendTermToExplorer(term);
+
+      if (strategy) {
+        // Small delay so term loads first
+        setTimeout(function () { setStrategy(strategy); }, 150);
+      }
+
+      var stepCount = parseInt(btn.getAttribute("data-steps"), 10);
+      if (stepCount > 0) {
+        var delay = strategy ? 300 : 150;
+        for (var i = 0; i < stepCount; i++) {
+          (function (j) {
+            setTimeout(function () { stepExplorer(); }, delay + j * 800);
+          })(i);
+        }
+      }
+
+      // Visual feedback
+      btn.classList.add("le-btn-active");
+      setTimeout(function () { btn.classList.remove("le-btn-active"); }, 600);
+    });
+  });
+
+  // ── Strategy-only buttons: [data-set-strategy] ──────────
+  var stratBtns = notesEl.querySelectorAll("[data-set-strategy]");
+  stratBtns.forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      setStrategy(btn.getAttribute("data-set-strategy"));
+      // Update active state within group
+      var group = btn.closest(".le-strategy-group");
+      if (group) {
+        group.querySelectorAll("[data-set-strategy]").forEach(function (b) {
+          b.classList.remove("le-strat-active");
+        });
+      }
+      btn.classList.add("le-strat-active");
+    });
+  });
+
+  // ── Church-Rosser demo widget ───────────────────────────
+  var crDemos = notesEl.querySelectorAll(".le-cr-demo");
+  crDemos.forEach(function (demo) {
+    var term = demo.getAttribute("data-term").replace(/λ/g, "\\");
+    var loadBtn = demo.querySelector(".le-cr-load");
+    var strat1Btn = demo.querySelector(".le-cr-strat1");
+    var strat2Btn = demo.querySelector(".le-cr-strat2");
+    var statusEl = demo.querySelector(".le-cr-status");
+    var stepBtns = demo.querySelectorAll(".le-cr-step");
+
+    if (loadBtn) {
+      loadBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        sendTermToExplorer(term);
+        if (statusEl) statusEl.textContent = "Term loaded. Choose a strategy and step through.";
+      });
+    }
+
+    if (strat1Btn) {
+      strat1Btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        sendTermToExplorer(term);
+        setTimeout(function () { setStrategy(strat1Btn.getAttribute("data-strategy") || "normal"); }, 150);
+        if (statusEl) statusEl.textContent = "Strategy: " + (strat1Btn.textContent) + ". Press Step or hit Space in the explorer.";
+      });
+    }
+
+    if (strat2Btn) {
+      strat2Btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        sendTermToExplorer(term);
+        setTimeout(function () { setStrategy(strat2Btn.getAttribute("data-strategy") || "applicative"); }, 150);
+        if (statusEl) statusEl.textContent = "Strategy: " + (strat2Btn.textContent) + ". Press Step or hit Space in the explorer.";
+      });
+    }
+
+    stepBtns.forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        stepExplorer();
+      });
+    });
   });
 
 })();

@@ -162,18 +162,20 @@
   <li>Recursion mirrors the inductive structure of terms</li>
 </ol>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Now, let’s have you write this up in Racket: Write a type predicate, <code class="language-plaintext highlighter-rouge">add-expr?</code>, which characterizes the set of expressions over the constants 1/0 and the two-argument +:</p>
+  <p>Now, let’s have you write this up in Racket: Write a type predicate, <code class="language-plaintext highlighter-rouge">add-expr?</code>, which characterizes the set of expressions over the constants 1/0 and the two-argument +:</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">add-expr?</span> <span class="nv">e</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">add-expr?</span> <span class="nv">e</span><span class="p">)</span>
   <span class="p">(</span><span class="nf">match</span> <span class="nv">e</span>
     <span class="p">[</span><span class="nf">0</span> <span class="ss">'todo</span><span class="p">]</span>               <span class="c1">;; 0 is an add-expr?</span>
     <span class="p">[</span><span class="nf">1</span> <span class="ss">'todo</span><span class="p">]</span>               <span class="c1">;; 1 is an add-expr?</span>
     <span class="c1">;; Hint: possible to use a predicate pattern: ,(? p? e0)</span>
     <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nb">+</span> <span class="o">,</span><span class="nv">e0</span> <span class="o">,</span><span class="nv">e1</span><span class="p">)</span> <span class="ss">'todo</span><span class="p">]</span>    <span class="c1">;; (+ e0 e1) is an add-expr? if e0 / e1 are add-expr?s</span>
     <span class="p">[</span><span class="nf">_</span> <span class="no">#f</span><span class="p">]))</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <p>Now, given an expression, e, we may write a Racket function that evaluates the expression <code class="language-plaintext highlighter-rouge">e</code> down to a <em>number</em>. In fact, if we construe <code class="language-plaintext highlighter-rouge">add-expr?</code> to define a programming language, then we are writing our first <em>interpreter</em>. We will use recursion and matching to build our interpreter, following a common style we will learn about later. We will not focus extensively on interpreters in today’s class, but we <em>will</em> use algebraic data types to define the <em>abstract syntax</em> of programming languages frequently.</p>
 
@@ -206,13 +208,15 @@
     <span class="p">[</span><span class="nf">_</span> <span class="no">#f</span><span class="p">]))</span>
 </code></pre></div></div>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Define a function that converts a <code class="language-plaintext highlighter-rouge">bool?</code> to a Racket <code class="language-plaintext highlighter-rouge">boolean?</code> (i.e., just #t/#f).</p>
+  <p>Define a function that converts a <code class="language-plaintext highlighter-rouge">bool?</code> to a Racket <code class="language-plaintext highlighter-rouge">boolean?</code> (i.e., just #t/#f).</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">bool?-&gt;racket</span> <span class="nv">b</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">bool?-&gt;racket</span> <span class="nv">b</span><span class="p">)</span>
   <span class="ss">'todo</span><span class="p">)</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <hr />
 
@@ -247,29 +251,33 @@
     <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">S</span> <span class="p">(</span><span class="nf">S</span> <span class="o">,</span><span class="nv">n</span><span class="p">))</span> <span class="p">(</span><span class="nf">nat-even?</span> <span class="nv">n</span><span class="p">)]))</span>
 </code></pre></div></div>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p><em>Don’t</em> use <code class="language-plaintext highlighter-rouge">nat-&gt;num</code> or <code class="language-plaintext highlighter-rouge">nat-even?</code>:</p>
+  <p><em>Don’t</em> use <code class="language-plaintext highlighter-rouge">nat-&gt;num</code> or <code class="language-plaintext highlighter-rouge">nat-even?</code>:</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">nat-odd?</span> <span class="nv">n</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">nat-odd?</span> <span class="nv">n</span><span class="p">)</span>
   <span class="ss">'todo</span><span class="p">)</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Assume n0 and n1 are <em>both</em> <code class="language-plaintext highlighter-rouge">nat?</code>. Now, define <code class="language-plaintext highlighter-rouge">(&lt;= n0 n1)</code>.</p>
+  <p>Assume n0 and n1 are <em>both</em> <code class="language-plaintext highlighter-rouge">nat?</code>. Now, define <code class="language-plaintext highlighter-rouge">(&lt;= n0 n1)</code>.</p>
 
-<p>Basic approach: use recursion over n0 / n1:</p>
-<ul>
-  <li>Match n0, if n0 is 0 then return <code class="language-plaintext highlighter-rouge">#t</code></li>
-  <li>If n0 not 0, then what do you do…?</li>
-</ul>
+  <p>Basic approach: use recursion over n0 / n1:</p>
+  <ul>
+    <li>Match n0, if n0 is 0 then return <code class="language-plaintext highlighter-rouge">#t</code></li>
+    <li>If n0 not 0, then what do you do…?</li>
+  </ul>
 
-<p>DON’T use <code class="language-plaintext highlighter-rouge">nat-&gt;num</code> (which makes this easier):</p>
+  <p>DON’T use <code class="language-plaintext highlighter-rouge">nat-&gt;num</code> (which makes this easier):</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">nat-lte</span> <span class="nv">n0</span> <span class="nv">n1</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">nat-lte</span> <span class="nv">n0</span> <span class="nv">n1</span><span class="p">)</span>
   <span class="ss">'todo</span><span class="p">)</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <hr />
 
@@ -328,40 +336,44 @@
     <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="nf">S</span> <span class="o">,</span><span class="nv">n</span><span class="p">)</span> <span class="o">`</span><span class="p">(</span><span class="nf">S</span> <span class="o">,</span><span class="p">(</span><span class="nf">plus</span> <span class="nv">n</span> <span class="nv">n1</span><span class="p">))]))</span>
 </code></pre></div></div>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Idea: recursion on n0</p>
+  <p>Idea: recursion on n0</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(times 0 k) = 0
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(times 0 k) = 0
 (times (S n) k) = k + (times n k)
-</code></pre></div></div>
+</code></pre></div>  </div>
 
-<p>Remember:</p>
+  <p>Remember:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(nat-&gt;num (times n0 n1)) = (* (nat-&gt;num n0) (nat-&gt;num n1))
-</code></pre></div></div>
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(nat-&gt;num (times n0 n1)) = (* (nat-&gt;num n0) (nat-&gt;num n1))
+</code></pre></div>  </div>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">times</span> <span class="nv">n0</span> <span class="nv">n1</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">times</span> <span class="nv">n0</span> <span class="nv">n1</span><span class="p">)</span>
   <span class="ss">'todo</span><span class="p">)</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Now, we use recursion on <code class="language-plaintext highlighter-rouge">nat?</code> to define the factorial function:</p>
+  <p>Now, we use recursion on <code class="language-plaintext highlighter-rouge">nat?</code> to define the factorial function:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(fac 0) =&gt; 1
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(fac 0) =&gt; 1
 (fac (S n)) =&gt; (S n) * (fac n)
-</code></pre></div></div>
+</code></pre></div>  </div>
 
-<p>Remember, we must produce a <code class="language-plaintext highlighter-rouge">nat?</code>:</p>
+  <p>Remember, we must produce a <code class="language-plaintext highlighter-rouge">nat?</code>:</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">factorial</span> <span class="nv">n</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">factorial</span> <span class="nv">n</span><span class="p">)</span>
   <span class="ss">'todo</span><span class="p">)</span>
 
 <span class="c1">;; (factorial '(S (S (S (S 0)))))</span>
 <span class="c1">;;   =&gt; '(S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S 0))))))))))))))))))))))))</span>
 <span class="c1">;; (nat-&gt;num (factorial '(S (S (S (S 0)))))) =&gt; 24</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <hr />
 
@@ -468,18 +480,20 @@
                      = 6
 </code></pre></div></div>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Using the standard rules of arithmetic for <code class="language-plaintext highlighter-rouge">*</code>, <code class="language-plaintext highlighter-rouge">+</code>, etc., and also the two rules:</p>
+  <p>Using the standard rules of arithmetic for <code class="language-plaintext highlighter-rouge">*</code>, <code class="language-plaintext highlighter-rouge">+</code>, etc., and also the two rules:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(fold-1)   (foldr f z '()) = z
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(fold-1)   (foldr f z '()) = z
 (fold-2)   (foldr f z (cons hd tl)) = (f hd (foldr f z tl))
-</code></pre></div></div>
+</code></pre></div>  </div>
 
-<p>Rigorously prove–via a series of equalities (annotate fold-1/2 when appropriate)–the following:</p>
+  <p>Rigorously prove–via a series of equalities (annotate fold-1/2 when appropriate)–the following:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(foldr * 1 '(2 3 4)) = 24
-</code></pre></div></div>
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(foldr * 1 '(2 3 4)) = 24
+</code></pre></div>  </div>
+</blockquote>
 
 <h3 id="the-identity-l--foldr-cons--l">The identity: <code class="language-plaintext highlighter-rouge">l = (foldr cons '() l)</code></h3>
 
@@ -528,16 +542,18 @@
          <span class="nv">l</span><span class="p">))</span>
 </code></pre></div></div>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Use foldr to add all <em>even</em> numbers in the list l:</p>
+  <p>Use foldr to add all <em>even</em> numbers in the list l:</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (add-evens '(0 1 2 3 4 5)) =&gt; 6</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">;; (add-evens '(0 1 2 3 4 5)) =&gt; 6</span>
 <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">add-evens</span> <span class="nv">l</span><span class="p">)</span>
   <span class="p">(</span><span class="nf">foldr</span> <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">x</span> <span class="nv">acc</span><span class="p">)</span> <span class="ss">'todo</span><span class="p">)</span>
          <span class="mi">0</span>
          <span class="nv">l</span><span class="p">))</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <h3 id="fold-in-other-languages">Fold in other languages</h3>
 
@@ -576,12 +592,14 @@ for (elt in list.reverse) { acc = f(elt,acc); }
 <p>Also, fold forms the basis for MapReduce, a popular distributed / parallel computing framework:
 https://www.ibm.com/think/topics/mapreduce</p>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>What is the result of…</p>
+  <p>What is the result of…</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nf">foldr</span> <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">x</span> <span class="nv">acc</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">acc</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">x</span><span class="p">)))</span> <span class="mi">0</span> <span class="o">'</span><span class="p">(</span><span class="nf">10</span> <span class="mi">10</span> <span class="mi">10</span><span class="p">))</span>
-</code></pre></div></div>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nf">foldr</span> <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">x</span> <span class="nv">acc</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">acc</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">x</span><span class="p">)))</span> <span class="mi">0</span> <span class="o">'</span><span class="p">(</span><span class="nf">10</span> <span class="mi">10</span> <span class="mi">10</span><span class="p">))</span>
+</code></pre></div>  </div>
+</blockquote>
 
 <hr />
 

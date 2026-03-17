@@ -5,13 +5,708 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 12 Mar 2026 12:22:01 -0400</pubDate>
-    <lastBuildDate>Thu, 12 Mar 2026 12:22:01 -0400</lastBuildDate>
+    <pubDate>Tue, 17 Mar 2026 12:43:21 -0400</pubDate>
+    <lastBuildDate>Tue, 17 Mar 2026 12:43:21 -0400</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
         <title>λ-Calculus: Reduction Strategies</title>
-        <description>
+        <description>&lt;p&gt;The untyped λ-calculus is a term-rewriting-based system, in which the
+program’s “state” is captured completely by the term itself. In our
+&lt;a href=&quot;/cis352-s26/closures&quot;&gt;closure-creating interpreters lecture&lt;/a&gt;, we saw a derivative system
+of the λ-calculus, in which we defined the relation &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ρ, e ⇓ v&lt;/code&gt; via
+natural deduction rules. A key insight of that lecture was that the
+structure of the rules allowed us to write a function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(interp ρ e)&lt;/code&gt;
+(producing a value &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;v&lt;/code&gt;) via recursion. However, in that lecture, we
+have implicitly assumed a call-by-value evaluation strategy. We have
+talked about evaluation order before informally (in &lt;a href=&quot;/cis352-s26/evaluation-order&quot;&gt;our lecture on
+evaluation order&lt;/a&gt;), but in this lecture we will see how the untyped λ-calculus
+is defined so as to be &lt;em&gt;agnostic&lt;/em&gt; to evaluation strategy.&lt;/p&gt;
+
+&lt;h2 id=&quot;in-context-β-reduction&quot;&gt;“In-Context” β-Reduction&lt;/h2&gt;
+
+&lt;p&gt;Recall that we defined β-reduction in our last lecture:&lt;/p&gt;
+
+&lt;div class=&quot;nd-rule&quot;&gt;
+&lt;div class=&quot;nd-conclusion&quot;&gt;((λ (x) e-b) e-a) &lt;sup&gt;β&lt;/sup&gt;⟹ e-b [x ↦ e-a]&lt;/div&gt;
+&lt;div class=&quot;nd-label&quot;&gt;β&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;However, we recall that for a given term, there may be numerous
+β-redexes. A β-redex is an &lt;em&gt;opportunity&lt;/em&gt; to apply β. However, the
+reality is that a term of size &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; will (in general) have O(n)
+β-redexes.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;How many β-redexes are present in the following term? Click
+it to load it in the explorer, then hold &lt;kbd&gt;B&lt;/kbd&gt; to reveal all
+redexes:&lt;/p&gt;
+
+  &lt;p&gt;&lt;code class=&quot;le-term&quot;&gt;((λ (x) ((λ (y) y) x)) ((λ (z) z) k))&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Because there are (in general) multiple possible β-redexes, we
+&lt;em&gt;cannot&lt;/em&gt; write an interpreter for the λ-calculus with β-reduction
+alone, at least using our same strategy we did before. The issue is
+that–in our closure-creating interpreters lecture–the evaluation
+relation &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ρ, e ⇓ v&lt;/code&gt; can be read as a &lt;em&gt;function&lt;/em&gt;, accepting pairs of
+environment / term and outputting values. However, because there are
+multiple-possible β-redexes, it would seem reasonable to conclude that
+the relation &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;β⟹&lt;/code&gt; can &lt;em&gt;not&lt;/em&gt; be a function.&lt;/p&gt;
+
+&lt;p&gt;We can formalize a notion of “in-context” β reduction via three rules.
+These tell us that β can happen at the top level, or deep inside the
+left or right side of an application:&lt;/p&gt;
+
+&lt;div class=&quot;nd-rules-row&quot;&gt;
+&lt;div class=&quot;nd-rule&quot;&gt;
+&lt;div class=&quot;nd-conclusion&quot;&gt;((λ (x) e-b) e-a) &lt;sup&gt;β&lt;/sup&gt;⟹ e-b [x ↦ e-a]&lt;/div&gt;
+&lt;div class=&quot;nd-label&quot;&gt;β-Here&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;nd-rule&quot;&gt;
+&lt;div class=&quot;nd-premise&quot;&gt;e₀ &lt;sup&gt;β&lt;/sup&gt;⟹ e₀&apos;&lt;/div&gt;
+&lt;div class=&quot;nd-conclusion&quot;&gt;(e₀ e₁) &lt;sup&gt;β&lt;/sup&gt;⟹ (e₀&apos; e₁)&lt;/div&gt;
+&lt;div class=&quot;nd-label&quot;&gt;β-Left&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;nd-rule&quot;&gt;
+&lt;div class=&quot;nd-premise&quot;&gt;e₁ &lt;sup&gt;β&lt;/sup&gt;⟹ e₁&apos;&lt;/div&gt;
+&lt;div class=&quot;nd-conclusion&quot;&gt;(e₀ e₁) &lt;sup&gt;β&lt;/sup&gt;⟹ (e₀ e₁&apos;)&lt;/div&gt;
+&lt;div class=&quot;nd-label&quot;&gt;β-Right&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;This allows us to use natural deduction rules to be specific about
+what, specifically, is reduced. For example, click the term from the
+QuickAnswer above to load it, hold &lt;kbd&gt;B&lt;/kbd&gt; to see all redexes,
+then press &lt;kbd&gt;Space&lt;/kbd&gt; to step.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;free-variables&quot;&gt;Free Variables&lt;/h2&gt;
+
+&lt;p&gt;So far, we have been intuitive about substitution, this lecture we
+will learn that technically, we need to use &lt;em&gt;capture-avoiding
+substitution&lt;/em&gt;. For example:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  (λ (x) (λ (z) (a (z (λ (b) d))))) [ d ↦ (g g) ]
+≡ (λ (x) (λ (z) (a (z (λ (b) (g g))))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This case is easy: we scan through the term, copying it over–any
+place we see &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;d&lt;/code&gt;, we drop in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(g g)&lt;/code&gt; instead. However, it turns out
+the issue is a bit tricky in general:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  (λ (x) x) [ x ↦ k ]  ≢ (λ (x) k) ;; WRONG
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Notice what we did in the above; we renamed the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;, but the
+issue is this: previously the term was the identity function, &lt;em&gt;now&lt;/em&gt;
+it’s the function that accepts any argument and returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;. You might
+say: “fine, but need to change it to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (k) k)&lt;/code&gt;, but now the problem
+is this, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt; can never refer to anything &lt;em&gt;except for&lt;/em&gt; the argument.&lt;/p&gt;
+
+&lt;p&gt;In general, we want to avoid variable “capture” when we do
+substitution. In the context of the λ-calculus, a variable is captured
+during substitution when a variable that was free in the substituted
+term becomes bound by a binder in the context where the substitution
+is inserted.&lt;/p&gt;
+
+&lt;p&gt;A variable is &lt;em&gt;free&lt;/em&gt; when it is not bound:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Any variable &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;, without context, is free. In other words, the set
+of free variables of the term &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; is simply the singleton, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;{x}&lt;/code&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;The free variables of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e0 e1)&lt;/code&gt; are the union of the free variables
+of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e0&lt;/code&gt; and the free variables of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e1&lt;/code&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;The free variables of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) e)&lt;/code&gt; are all free variables in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt;
+&lt;em&gt;except for&lt;/em&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;. The lambda &lt;em&gt;binds&lt;/em&gt; the variable &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;. In
+programming languages, we use the term “binder” to refer to a
+syntactic point within the code that establishes a variable binding,
+including a let, formal parameter, etc.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Here’s the definition of freevars in Racket:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; freevars : Expr → (Setof Symbol)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; Return the set of free variables in a λ-calculus expression&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;freevars&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;symbol?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;set&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;set-remove&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;freevars&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;       &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;set-union&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;freevars&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;freevars&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Notice how the structure of this function mirrors the three cases of
+the definition above. This is a common pattern in PL: we define a
+mathematical concept by structural recursion, and the Racket
+implementation follows the same structure.&lt;/p&gt;
+
+&lt;p&gt;Now that we have learned the definition of free variables, let’s
+practice a bit. Load each of these in the explorer and try to
+identify the free variables yourself:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;What are the free variables in the term:
+&lt;code class=&quot;le-term&quot;&gt;(λ (x) (x (λ (x) (x (y z)))))&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;What are the free variables in the term:
+&lt;code class=&quot;le-term&quot;&gt;(((λ (x) (y x)) (λ (y) (x y))) (λ (z) z))&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;It is best to think of free variables as “variables which will be
+given a meaning later.” For example, let’s look at the following
+expression, in Racket:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((λ (x) x) add1)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;From the perspective of the λ-calculus, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt; is a free variable. But
+this isn’t true in Racket–in Racket, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt; is the function that adds
+one to a number. So what’s happening?&lt;/p&gt;
+
+&lt;p&gt;One way to think about the answer is this: because you use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#lang
+racket&lt;/code&gt; at the top of the file, the Racket language includes a large
+standard library, which gives definitions to things like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt;. One
+mental model to understand this might be to imagine that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#lang
+racket&lt;/code&gt; is doing something like taking the above term and wrapping it
+in a definition of the real &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt; implementation:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(let ([add1 ...]
+      [+ ...]
+	  ...)
+((λ (x) x) add1))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now we can see that free variables are important: they might have a
+meaning &lt;em&gt;outside&lt;/em&gt; of the current term, so we can’t just arbitrarily
+change them. For example, while the terms &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) x)&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (y) y)&lt;/code&gt; are
+equivalent, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) add1)&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) y)&lt;/code&gt; are &lt;em&gt;very&lt;/em&gt; different terms. In
+general, we do not want to touch free variables: we want to leave them
+be.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;α-conversion&quot;&gt;α-conversion&lt;/h2&gt;
+
+&lt;p&gt;The λ-calculus actually has several different conversion rules. We
+have mostly talked about β, which is the main driver of
+computation–we will now learn about α-conversion, which allows us to
+rewrite terms in a semantics-preserving way. We can use α-conversion
+to rename a variable bound by a binder:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(λ (x) (x (λ (y) (λ (x) x)))) α[x ↦ z]⟹ (λ (z) (z (λ (y) (λ (x) x))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Click the term &lt;code class=&quot;le-term&quot;&gt;(λ (x) (x (λ (y) (λ (x) x))))&lt;/code&gt; to load it in
+the explorer, then right-click on a λ binder to try α-conversion.&lt;/p&gt;
+
+&lt;p&gt;Notice how in the α-conversion above, we renamed the outermost binding
+of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; to the variable &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;z&lt;/code&gt;. Doing so forced us to rewrite the first
+variable reference (of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;) to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;z&lt;/code&gt;, but &lt;strong&gt;not&lt;/strong&gt; the second; this is
+because the second occurrence of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; is under a &lt;em&gt;new&lt;/em&gt; binding for
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;. In most programming languages, you can clobber a variable name
+via nesting scopes. In the λ-calculus, this corresponds to re-binding
+a variable when its binding is in scope, as in the following example:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;le-term&quot;&gt;(λ (x) (λ (x) x))&lt;/code&gt; — here &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; refers to the &lt;em&gt;second&lt;/em&gt; lambda.&lt;/p&gt;
+
+&lt;p&gt;Of course, this is not unique to the λ-calculus, it happens in many languages:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; Racket: inner x shadows outer x&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;           &lt;span class=&quot;c1&quot;&gt;;; evaluates to 2&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-haskell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;-- Haskell&lt;/span&gt;
+&lt;span class=&quot;kr&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;-- evaluates to 2&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Java: parameter shadows field&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Example&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nc&quot;&gt;System&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;out&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;println&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// prints the parameter&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// C: block scoping&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;%d&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// prints 2&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// JavaScript: block scoping with let&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// prints 2&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;When we α-convert a term, we need to be careful to respect binders: if
+we’re α-converting &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;, we need to stop conversion when we hit another
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Here is α-rename and α-convert in Racket:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; α-rename : Symbol Symbol Expr → Expr&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; Rename free occurrences of x to z within e&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;α-rename&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;symbol?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                          &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;;; x is rebound here: stop&lt;/span&gt;
+                          &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;α-rename&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;       &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;α-rename&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;α-rename&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;;; α-convert : Symbol Expr → Expr&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; Rename the outermost binder of a λ to z&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;α-convert&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;α-rename&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Let’s test it:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;check-equal?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;α-convert&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;z&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
+              &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;check-equal?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;α-convert&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;z&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt;
+              &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The second test is particularly instructive: notice that the inner
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) x)&lt;/code&gt; is left alone, because that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; is bound by the inner λ,
+not the outer one we are renaming.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;capture-avoiding-substitution&quot;&gt;Capture-Avoiding Substitution&lt;/h2&gt;
+
+&lt;p&gt;So far we have been a bit informal. It turns out that in our
+definition of the β rule, we need to use &lt;em&gt;capture-avoiding&lt;/em&gt;
+substitution.  Capture-avoiding substitution makes a fairly simple
+observation: we never want to perform a substitution that would change
+a variable’s binding status, we must never capture a variable that was
+previously bound. Here are a few examples of where we cannot do
+substitution naively:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;;; Example 1: free variable captured by a binder
+  (λ (y) x) [x ↦ y]
+≢ (λ (y) y)              ;; WRONG: y was free, now it&apos;s bound
+
+;; Example 2: free variable in substituted term gets captured
+  (λ (y) (x y)) [x ↦ (y z)]
+≢ (λ (y) ((y z) y))      ;; WRONG: the y in (y z) gets captured
+
+;; Example 3: capture changes meaning of an application
+  ((λ (y) x) x) [x ↦ y]
+≢ ((λ (y) y) y)           ;; WRONG: identity applied to y ≠ original
+
+;; Example 4: capture inside nested lambdas
+  (λ (z) (λ (y) (x z))) [x ↦ (y y)]
+≢ (λ (z) (λ (y) ((y y) z)))  ;; WRONG: y in (y y) captured by inner λ
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In each case, the issue is that a variable which was &lt;em&gt;free&lt;/em&gt; in the
+term being substituted gets &lt;em&gt;captured&lt;/em&gt; by a binder in the target
+expression. After the substitution, the variable now refers to
+something entirely different than it did before.&lt;/p&gt;
+
+&lt;p&gt;However, to avoid capturing variables inappropriately, we can use
+α-conversion. This is because there will always be an unused variable,
+so whenever substitution would cause a variable to be captured, we
+just perform α-conversion so that the capture no longer occurs. There
+are few places this might happen:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;When we substitute a term &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e-a&lt;/code&gt; into &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (y) body)&lt;/code&gt;, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e-a&lt;/code&gt;
+contains a free variable named &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;y&lt;/code&gt;. The binder &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (y) ...)&lt;/code&gt;
+would capture the free &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;y&lt;/code&gt; in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e-a&lt;/code&gt;. &lt;strong&gt;The fix:&lt;/strong&gt; α-rename &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;y&lt;/code&gt; to a
+fresh variable before performing the substitution.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;When there are multiple nested binders, each of which could
+potentially capture a free variable in the substituted term. We must
+check each binder as we recurse into the term.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Here is capture-avoiding substitution, step by step, on Example 1:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;;; Goal: (λ (y) x) [x ↦ y]
+;; Problem: y is free in the substituted term, and the binder is (λ (y) ...)
+;; Step 1: α-rename to avoid capture
+  (λ (y) x) α[y↦y&apos;]⟹ (λ (y&apos;) x)
+;; Step 2: now substitute safely
+  (λ (y&apos;) x) [x ↦ y] = (λ (y&apos;) y)  ✓
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;And on Example 2:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;;; Goal: (λ (y) (x y)) [x ↦ (y z)]
+;; Problem: y is free in (y z), and the binder is (λ (y) ...)
+;; Step 1: α-rename to avoid capture
+  (λ (y) (x y)) α[y↦w]⟹ (λ (w) (x w))
+;; Step 2: now substitute safely
+  (λ (w) (x w)) [x ↦ (y z)] = (λ (w) ((y z) w))  ✓
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Use capture-avoiding substitution to compute:&lt;/p&gt;
+
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(λ (y) (y x)) [x ↦ (λ (z) y)]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Use capture-avoiding substitution to compute:&lt;/p&gt;
+
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(λ (y) (λ (z) (x (y z)))) [x ↦ (y (λ (a) z))]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;Hint: which binders cause problems? You may need more than one α-rename.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;advanced-aside-de-bruijn-indices&quot;&gt;Advanced Aside: De Bruijn Indices&lt;/h2&gt;
+
+&lt;p&gt;One source of complexity in the λ-calculus comes from variable names.
+We just saw that substitution requires care to avoid capture, and
+α-conversion exists precisely because variable names are, in some
+sense, arbitrary. A natural question is: can we eliminate names
+entirely?&lt;/p&gt;
+
+&lt;p&gt;The answer is yes. De Bruijn indices replace variable names with
+&lt;em&gt;numbers&lt;/em&gt; that indicate how many binders “up” a variable reference
+points to. For example:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(λ (x) x)             becomes  (λ 0)
+(λ (x) (λ (y) x))     becomes  (λ (λ 1))
+(λ (x) (λ (y) y))     becomes  (λ (λ 0))
+(λ (x) (λ (y) (x y))) becomes  (λ (λ (1 0)))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The number &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt; means “the variable bound by the nearest enclosing λ,”
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt; means “the next one out,” and so on. So in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (λ 1))&lt;/code&gt;, the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt;
+refers to the &lt;em&gt;outer&lt;/em&gt; λ, skipping past the inner one.&lt;/p&gt;
+
+&lt;p&gt;The key benefit: two terms that are α-equivalent (differ only in
+variable names) get the &lt;em&gt;exact same&lt;/em&gt; De Bruijn representation. For
+example, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) x)&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (y) y)&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (z) z)&lt;/code&gt; all become &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ
+0)&lt;/code&gt;. This means α-equivalence becomes &lt;em&gt;syntactic&lt;/em&gt; equality, which is
+very convenient.&lt;/p&gt;
+
+&lt;p&gt;The tradeoff is that De Bruijn terms are harder to read. The term
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (λ (1 0)))&lt;/code&gt; is much less clear than &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) (λ (y) (x y)))&lt;/code&gt; if
+you’re a human trying to understand the code. For this reason, most
+presentations aimed at humans (including this course) stick with named
+variables, but real implementations of type checkers and compilers
+frequently use De Bruijn indices under the hood.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;η-expansion-and-contraction&quot;&gt;η-expansion and contraction&lt;/h2&gt;
+
+&lt;p&gt;So far we have learned of two reduction rules: α (renaming) and β. We
+will now discuss another, η. The η rule captures a notion of &lt;em&gt;function
+extensionality&lt;/em&gt;. In mathematics, function extensionality refers to the
+principle that two functions are equal whenever their extensions
+(behavior on all arguments) are equal. In other words, f = g whenever
+∀x. f(x) = g(x). This is captured by the η rule:&lt;/p&gt;
+
+&lt;div class=&quot;nd-rules-row&quot;&gt;
+&lt;div class=&quot;nd-rule&quot;&gt;
+&lt;div class=&quot;nd-conclusion&quot;&gt;(λ (x) (e x)) &lt;sup&gt;η&lt;/sup&gt;⟹ e&lt;/div&gt;
+&lt;div class=&quot;nd-label&quot;&gt;η-contract&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;nd-rule&quot;&gt;
+&lt;div class=&quot;nd-side&quot;&gt;x not free in e&lt;/div&gt;
+&lt;div class=&quot;nd-conclusion&quot;&gt;e &lt;sup&gt;η&lt;/sup&gt;⟹ (λ (x) (e x))&lt;/div&gt;
+&lt;div class=&quot;nd-label&quot;&gt;η-expand&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;We call these both “η-conversion,” the first is contractive (makes the
+term smaller), the second is expansive (makes the term
+bigger). Because we can always expand, then contract, then expand,
+etc. we can treat η as an equality. We will not use η very frequently,
+however we will see at least one application of it in our lectures on
+Church encoding.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;reduction-strategies&quot;&gt;Reduction Strategies&lt;/h2&gt;
+
+&lt;p&gt;The untyped λ-calculus is extremely economical, in the sense that it
+is capable of expressing Turing-equivalent computation &lt;em&gt;just&lt;/em&gt; by using
+β. As we mentioned before, a term may have an arbitrary number of β
+reductions. For example, the following term has six distinct
+β-redexes. Click the term to load it, then hold &lt;kbd&gt;B&lt;/kbd&gt; to see
+all six highlighted:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;le-term&quot;&gt;((λ (a) ((λ (b) b) a)) ((λ (c) c) ((λ (d) d) ((λ (e) e) ((λ (f) f) x)))))&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;There is a β-redex at the outermost application, one in the body
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((λ (b) b) a)&lt;/code&gt;, and four nested applications on the right:
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((λ (c) c) ...)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((λ (d) d) ...)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((λ (e) e) ...)&lt;/code&gt;, and
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((λ (f) f) x)&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;As we mentioned at the beginning of lecture, we can define a notion of
+“in-context” β which allows us to be explicit about precisely what was
+reduced. However, in practice, we don’t want have to
+nondeterministically “guess” which β rule to apply: we want the
+programming language to make evaluation order explicit.&lt;/p&gt;
+
+&lt;p&gt;With respect to a function call, there are essentially two options:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;(Eager evaluation, “call by value”): Evaluate a function’s arguments
+down to “values,” (results), which are then bound to the formal
+parameters before jumping into the body.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;(Lazy evaluation, “call by name/need”): Instead of evaluating a
+function’s arguments, bind the function’s formal parameters to the
+&lt;em&gt;expressions&lt;/em&gt; of the actual arguments.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;To show an example, consider the following term. Let
+Ω = &lt;code class=&quot;le-term&quot;&gt;((λ (z) (z z)) (λ (z) (z z)))&lt;/code&gt;.
+Notice that Ω is a β-redex which reduces to &lt;em&gt;itself&lt;/em&gt;:
+substituting &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (z) (z z))&lt;/code&gt; for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;z&lt;/code&gt; in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(z z)&lt;/code&gt; gives us
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((λ (z) (z z)) (λ (z) (z z)))&lt;/code&gt; right back. So Ω loops forever.&lt;/p&gt;
+
+&lt;p&gt;Now consider applying a function that ignores its argument to Ω.
+Click to load:
+&lt;code class=&quot;le-term&quot;&gt;((λ (x) (λ (y) y)) ((λ (z) (z z)) (λ (z) (z z))))&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Under call-by-value, Ω is evaluated first (diverges). Under
+call-by-name, the outer β fires immediately and Ω is discarded.
+Try switching strategies in the explorer to see the difference.&lt;/p&gt;
+
+&lt;p&gt;This is a case where the evaluation strategy &lt;em&gt;matters&lt;/em&gt;: call-by-value
+diverges, but call-by-name successfully produces a result.&lt;/p&gt;
+
+&lt;p&gt;We will learn about four reduction strategies in this class, although
+the last two are the only ones we implement in real programming
+languages:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Normal order&lt;/strong&gt;: Always reduce the leftmost, outermost β-redex
+first. This reduces &lt;em&gt;under&lt;/em&gt; lambdas. Normal order is guaranteed to
+find a normal form if one exists (a consequence of the Church-Rosser
+theorem), but it does reduce under lambdas, which is unusual for
+programming languages.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Applicative order&lt;/strong&gt;: Always reduce the leftmost, innermost β-redex
+first. This evaluates arguments before functions, and reduces
+&lt;em&gt;under&lt;/em&gt; lambdas. Think of it as “evaluate from the inside out.”&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Call by value&lt;/strong&gt; (CBV): Like applicative order, but do &lt;em&gt;not&lt;/em&gt; reduce
+under λ-abstractions. Evaluate arguments to &lt;em&gt;values&lt;/em&gt;
+(λ-abstractions) before applying. This is what Racket, OCaml,
+Python, Java, C, and most mainstream languages use.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Call by name&lt;/strong&gt; (CBN): Like normal order, but do &lt;em&gt;not&lt;/em&gt; reduce under
+λ-abstractions. Arguments are passed as unevaluated expressions.
+Haskell uses a variant called “call by need” which additionally
+memoizes the result of evaluating an argument the first time it is
+used, avoiding redundant work.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Load this term under each strategy and hold &lt;kbd&gt;B&lt;/kbd&gt; to see which
+redex each strategy picks:&lt;/p&gt;
+
+&lt;div class=&quot;le-strategy-group&quot;&gt;
+&lt;button class=&quot;le-strat-btn&quot; data-term=&quot;(((λ (x) (λ (y) (x y))) ((λ (a) a) z)) ((λ (b) b) w))&quot; data-strategy=&quot;normal&quot;&gt;&lt;i class=&quot;fas fa-play&quot;&gt;&lt;/i&gt; Normal&lt;/button&gt;
+&lt;button class=&quot;le-strat-btn&quot; data-term=&quot;(((λ (x) (λ (y) (x y))) ((λ (a) a) z)) ((λ (b) b) w))&quot; data-strategy=&quot;applicative&quot;&gt;&lt;i class=&quot;fas fa-play&quot;&gt;&lt;/i&gt; Applicative&lt;/button&gt;
+&lt;button class=&quot;le-strat-btn&quot; data-term=&quot;(((λ (x) (λ (y) (x y))) ((λ (a) a) z)) ((λ (b) b) w))&quot; data-strategy=&quot;cbv&quot;&gt;&lt;i class=&quot;fas fa-play&quot;&gt;&lt;/i&gt; CBV&lt;/button&gt;
+&lt;button class=&quot;le-strat-btn&quot; data-term=&quot;(((λ (x) (λ (y) (x y))) ((λ (a) a) z)) ((λ (b) b) w))&quot; data-strategy=&quot;cbn&quot;&gt;&lt;i class=&quot;fas fa-play&quot;&gt;&lt;/i&gt; CBN&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The distinction between these strategies comes down to two questions:
+(1) Do we reduce arguments before applying a function? (2) Do we
+reduce under λ-abstractions?&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt; &lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;Reduce under λ?&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;Reduce arguments first?&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Normal order&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Yes&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;No (outermost first)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Applicative order&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Yes&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Yes (innermost first)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Call by value (CBV)&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;No&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;Yes&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Call by name (CBN)&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;No&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;No&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;why-not-under-lambdas&quot;&gt;Why “not under lambdas?”&lt;/h2&gt;
+
+&lt;p&gt;You may be wondering: why do real programming languages refuse to
+reduce under λ-abstractions? It comes down to a simple idea: a
+λ-abstraction is already a &lt;em&gt;value&lt;/em&gt;. When we write
+&lt;code class=&quot;le-term&quot;&gt;(λ (x) ((λ (y) y) x))&lt;/code&gt;
+in a real language, the language treats this as “a function”–it is
+done. The body &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((λ (y) y) x)&lt;/code&gt; is not evaluated until the function
+is actually &lt;em&gt;called&lt;/em&gt; with an argument.&lt;/p&gt;
+
+&lt;p&gt;This makes practical sense. Consider:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;When Racket encounters this definition, it creates a closure and moves
+on. It does &lt;em&gt;not&lt;/em&gt; try to “simplify” the body &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ (* x x) 1)&lt;/code&gt;. Why?
+Because &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; isn’t known yet–it’s a parameter. There’s nothing useful
+to compute until someone actually calls &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f 5)&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;There’s also an efficiency argument. If we reduced under lambdas, we’d
+be doing work speculatively: computing inside function bodies that may
+never be called. In a language like Racket, where functions are
+first-class and passed around liberally, this would be enormously
+wasteful.&lt;/p&gt;
+
+&lt;p&gt;Finally, reducing under lambdas can change the termination behavior of
+programs. Some programs &lt;em&gt;only&lt;/em&gt; terminate if we avoid reducing under
+lambdas. The Ω example above is illustrative:
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) (λ (y) y))&lt;/code&gt; applied to Ω terminates under call-by-name
+(which doesn’t reduce the argument), but would loop under a strategy
+that tried to fully reduce Ω first.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;the-church-rosser-property&quot;&gt;The Church-Rosser Property&lt;/h2&gt;
+
+&lt;p&gt;We have seen that a given term may have multiple possible β-redexes,
+and that different reduction strategies may choose different redexes at
+each step. This raises a natural question: if we reduce the same term
+in two different ways, can we end up with &lt;em&gt;different&lt;/em&gt; normal forms?&lt;/p&gt;
+
+&lt;p&gt;The answer is no, and this is guaranteed by the &lt;strong&gt;Church-Rosser theorem&lt;/strong&gt;
+(also called the &lt;em&gt;confluence&lt;/em&gt; theorem):&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Theorem (Church-Rosser):&lt;/strong&gt; If a term &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; can be reduced (in zero or
+more steps) to both &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e2&lt;/code&gt;, then there exists a term &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e3&lt;/code&gt; such
+that both &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e2&lt;/code&gt; can be reduced to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e3&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Visually, this looks like a diamond:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;           e
+          / \
+         /   \
+        e1    e2
+         \   /
+          \ /
+           e3
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;No matter how we diverge in our reduction choices, we can always
+converge again. An immediate consequence is:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Corollary:&lt;/strong&gt; If a term has a β-normal form, it is &lt;em&gt;unique&lt;/em&gt; (up to
+α-equivalence).&lt;/p&gt;
+
+&lt;p&gt;This is reassuring. It means the λ-calculus, despite its
+nondeterminism, is &lt;em&gt;not&lt;/em&gt; ambiguous about results. If a computation has
+an answer, that answer is the same regardless of evaluation strategy.&lt;/p&gt;
+
+&lt;p&gt;Let’s see this concretely. Load the term
+&lt;code class=&quot;le-term&quot;&gt;(((λ (x) (λ (y) (x y))) ((λ (a) a) z)) ((λ (b) b) w))&lt;/code&gt;
+under normal order and step to normal form. Then reload it under
+applicative order and step again. You’ll arrive at the same result
+both ways — that’s Church-Rosser in action.&lt;/p&gt;
+
+&lt;div class=&quot;le-strategy-group&quot;&gt;
+&lt;button class=&quot;le-strat-btn&quot; data-term=&quot;(((λ (x) (λ (y) (x y))) ((λ (a) a) z)) ((λ (b) b) w))&quot; data-strategy=&quot;normal&quot;&gt;&lt;i class=&quot;fas fa-play&quot;&gt;&lt;/i&gt; Normal order&lt;/button&gt;
+&lt;button class=&quot;le-strat-btn&quot; data-term=&quot;(((λ (x) (λ (y) (x y))) ((λ (a) a) z)) ((λ (b) b) w))&quot; data-strategy=&quot;applicative&quot;&gt;&lt;i class=&quot;fas fa-play&quot;&gt;&lt;/i&gt; Applicative order&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Load the term
+&lt;code class=&quot;le-term&quot;&gt;(((λ (x) (λ (y) x)) ((λ (a) a) z)) ((λ (b) (b b)) (λ (b) (b b))))&lt;/code&gt;
+and try reducing it with &lt;strong&gt;normal order&lt;/strong&gt; vs. &lt;strong&gt;call by value&lt;/strong&gt;.
+Which strategy finds the normal form? Which one diverges? Why?&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;However, Church-Rosser does &lt;em&gt;not&lt;/em&gt; guarantee that every strategy will
+&lt;em&gt;find&lt;/em&gt; the normal form. As we saw with the Ω example, call-by-value
+can diverge on terms where call-by-name terminates. In fact, if any
+strategy finds a normal form, normal order will also find it. This is
+why normal order is sometimes called the “most powerful” reduction
+strategy–but it comes at the cost of reducing under lambdas, which is
+impractical for real languages.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;advanced-optional&quot;&gt;Advanced, Optional&lt;/h2&gt;
+
+&lt;p&gt;Taking α, β, and η conversion together, we get an &lt;em&gt;equational theory&lt;/em&gt;
+over λ-calculus terms (modulo α-equivalence). Unfortunately, our
+presentation here is a bit informal due to a complication: λ-calculus
+binding is not algebraic, in the sense that ordinary free algebras are
+not enough to capture binding structure. This is reflected by a lot of
+semantic ugliness, like side conditions in our rules. More theoretical
+treatments of the λ-calculus prefer to leverage more complex
+representations, e.g., de-Bruijn indices or higher-order abstract
+syntax (HOAS). These approaches require more mathematical complexity
+from the start, but that is rewarded by a more fundamentally elegant
+approach.&lt;/p&gt;
 </description>
         <pubDate>Thu, 05 Mar 2026 00:00:00 -0500</pubDate>
         <link>https://kmicinski.com/cis352-s26/reduction-strategies</link>
@@ -1278,6 +1973,580 @@ standard. Tests with &lt;code class=&quot;language-plaintext highlighter-rouge&q
       </item>
     
       <item>
+        <title>Natural Deduction and Language Semantics</title>
+        <description>&lt;style&gt;
+/* ── Buttons ──────────────────────────────────────── */
+.cl-btn {
+  display: inline-block;
+  padding: 7px 18px;
+  font-size: 0.85em;
+  font-weight: 500;
+  font-family: inherit;
+  color: #374151;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+.cl-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* ── Solutions ────────────────────────────────────── */
+details {
+  margin: 1em 0 1.5em;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+details summary {
+  padding: 10px 16px;
+  font-weight: 500;
+  font-size: 0.92em;
+  color: #4f46e5;
+  background: #f9fafb;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+  list-style: none;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: &quot;▸ &quot;;
+  font-size: 0.8em;
+  margin-right: 4px;
+}
+details[open] summary::before { content: &quot;▾ &quot;; }
+details[open] summary {
+  border-bottom: 1px solid #e5e7eb;
+  background: #f3f4f6;
+}
+details .solution-body {
+  padding: 16px;
+}
+
+/* ── Proof rule blocks ────────────────────────────── */
+.rule-block {
+  margin: 1.2em 0;
+  padding: 0 0 0.5em;
+  border-bottom: 1px solid #f3f4f6;
+}
+.rule-block:last-child { border-bottom: none; }
+.rule-name {
+  font-weight: 600;
+  font-size: 0.95em;
+  color: #374151;
+  margin-bottom: 4px;
+}
+.rule-desc {
+  font-size: 0.9em;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+/* ── Exercise blocks ──────────────────────────────── */
+.exercise-box {
+  margin: 1.5em 0;
+  padding: 1em 1.2em;
+  background: #fefce8;
+  border-left: 4px solid #fbbf24;
+  border-radius: 0 8px 8px 0;
+}
+.exercise-box h4 {
+  margin: 0 0 0.4em;
+  font-size: 1em;
+  font-weight: 600;
+  color: #92400e;
+}
+.exercise-box p { margin: 0.3em 0; }
+
+/* ── Editor containers ────────────────────────────── */
+.editor-wrap {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0.8em 0;
+  min-height: 180px;
+}
+&lt;/style&gt;
+
+&lt;script&gt;
+// Rule name lists for editor dropdowns
+var _natRules = [&apos;Zero&apos;, &apos;Add1&apos;];
+var _boolTypeRules = [&apos;True&apos;, &apos;False&apos;, &apos;And&apos;, &apos;Or&apos;];
+var _boolEvalRules = [&apos;True&apos;, &apos;False&apos;, &apos;And&apos;, &apos;Or&apos;];
+&lt;/script&gt;
+
+&lt;h2 id=&quot;topics&quot;&gt;Topics&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Natural Deduction&lt;/li&gt;
+  &lt;li&gt;Language Semantics via Natural Deduction&lt;/li&gt;
+  &lt;li&gt;From natural semantics to interpreters&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://gist.github.com/kmicinski/99b757a5009cfb7749948c90aa923159&quot;&gt;Lecture notes in Racket (.rkt)&lt;/a&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;natural-deduction&quot;&gt;Natural Deduction&lt;/h2&gt;
+
+&lt;p&gt;Natural deduction is a style of mathematical reasoning which has an
+especially close relationship with computing. We will use natural
+deduction in this class to write proofs, specifications, and define
+the semantics of programming languages which we build.&lt;/p&gt;
+
+&lt;p&gt;Our goal today is to learn the format of natural deduction
+proofs. We define natural deduction as a method for
+defining both specifications and proofs of propositions (rigorous
+statements).&lt;/p&gt;
+
+&lt;p&gt;We will learn natural deduction in a way which also introduces
+the upcoming homework on transitive closure.&lt;/p&gt;
+
+&lt;h3 id=&quot;defining-the-natural-numbers&quot;&gt;Defining the Natural Numbers&lt;/h3&gt;
+
+&lt;p&gt;Let’s start by defining proofs for natural numbers. There are two ways
+to build any natural number:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;The constant 0 is a natural number.&lt;/li&gt;
+  &lt;li&gt;If &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; is a natural number, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(S n)&lt;/code&gt; is also a natural number.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;We saw how to define the natural numbers via a term algebra over
+signature {0 &amp;amp;mapsto; 0, S &amp;amp;mapsto; 1}. Now we’ll see another way: using
+natural deduction rules.&lt;/p&gt;
+
+&lt;div class=&quot;rule-block&quot;&gt;
+&lt;div class=&quot;rule-name&quot;&gt;Zero&lt;/div&gt;
+&lt;div class=&quot;rule-desc&quot;&gt;The constant 0 is a natural number.&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((Zero :right) --- &amp;quot;0 : nat&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;rule-block&quot;&gt;
+&lt;div class=&quot;rule-name&quot;&gt;Add1&lt;/div&gt;
+&lt;div class=&quot;rule-desc&quot;&gt;If n is a natural number, then (S n) is also a natural number.&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((Add1 :right) (--- &amp;quot;n : nat&amp;quot;) --- &amp;quot;(S n) : nat&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;In natural deduction, rules have the following format:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;         Assumption 0, Assumption 1, ...
+  Name  -----------------------------------
+                    Conclusion
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The rule says: “If we can prove Assumption 0, Assumption 1, …,
+then applying rule &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Name&lt;/code&gt; allows us to prove the Conclusion.” Some
+rules have no assumptions above the line – we call these
+“axioms,” because they represent statements we can make
+without requiring any proof.&lt;/p&gt;
+
+&lt;p&gt;The assumptions and conclusions are “propositions:” mathematical
+statements. In this case, propositions are of the form &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_ : nat&lt;/code&gt;
+which means “some object &lt;em&gt;has type&lt;/em&gt; nat.” You should read &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;:&lt;/code&gt; as
+“has type” and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat&lt;/code&gt; as “natural number.”&lt;/p&gt;
+
+&lt;h3 id=&quot;example-proving-s-s-s-0--nat&quot;&gt;Example: Proving (S (S (S 0))) : nat&lt;/h3&gt;
+
+&lt;p&gt;Let’s use these rules to prove that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(S (S (S 0))) : nat&lt;/code&gt; (i.e.,
+“3 is a natural number”):&lt;/p&gt;
+
+&lt;div data-proof-tree=&quot;((Add1 :right) ((Add1 :right) ((Add1 :right) ((Zero :right) --- &amp;quot;0 : nat&amp;quot;) --- &amp;quot;(S 0) : nat&amp;quot;) --- &amp;quot;(S (S 0)) : nat&amp;quot;) --- &amp;quot;(S (S (S 0))) : nat&amp;quot;)&quot;&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;reading-rules-forward-and-backward&quot;&gt;Reading Rules Forward and Backward&lt;/h3&gt;
+
+&lt;p&gt;The tricky part about natural deduction is that rules can be read
+either forward &lt;em&gt;or&lt;/em&gt; backward. Consider the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Add1&lt;/code&gt; rule:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;(Reading “forward,” top-to-bottom): “If we have a proof of
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n : nat&lt;/code&gt;, then we can apply Add1 and prove &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(S n) : nat&lt;/code&gt;.”&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;(Reading “backward,” bottom-to-top): “If we want to prove
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(S n) : nat&lt;/code&gt; for some &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt;, then we can apply Add1 and simplify our
+task to proving &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n : nat&lt;/code&gt; – which may or may not be possible.”&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;To build a complete proof using natural deduction, we need two things:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;(Local correctness)&lt;/strong&gt; Each rule must be applied correctly&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;(Completeness)&lt;/strong&gt; All leaves of the proof tree must be axioms&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Here is an example that breaks &lt;em&gt;local correctness&lt;/em&gt;:&lt;/p&gt;
+
+&lt;div data-proof-tree=&quot;((&amp;quot;Add1 (WRONG)&amp;quot; :right) ((Zero :right) --- &amp;quot;0 : nat&amp;quot;) --- &amp;quot;(S (S (S 0))) : nat&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+
+&lt;p&gt;This is not a valid usage of Add1: if we have &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(S n)&lt;/code&gt; on the
+bottom, we need &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; on the top. Here the top is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt;, so the bottom
+should be &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(S 0)&lt;/code&gt; – instead, it has &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(S (S (S 0)))&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Here is an example that breaks &lt;em&gt;completeness&lt;/em&gt;:&lt;/p&gt;
+
+&lt;div data-proof-tree=&quot;((Add1 :right) ((Add1 :right) (--- &amp;quot;(S B) : nat&amp;quot;) --- &amp;quot;(S (S B)) : nat&amp;quot;) --- &amp;quot;(S (S (S B))) : nat&amp;quot;)&quot;&gt;&lt;/div&gt;
+
+&lt;p&gt;The top of this proof is incomplete: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(S B) : nat&lt;/code&gt; has not been
+proven. Each local application of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Add1&lt;/code&gt; is correct, but we’d
+eventually need to prove &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;B : nat&lt;/code&gt;, which is not possible by any rule.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;exercise-1&quot;&gt;Exercise 1&lt;/h2&gt;
+
+&lt;div class=&quot;exercise-box&quot;&gt;
+&lt;h4&gt;QuickAnswer&lt;/h4&gt;
+&lt;p&gt;Apply the Add1 rule &quot;forwards,&quot; deriving a conclusion from the
+premise &lt;code&gt;(S (S (S n))) : nat&lt;/code&gt;.&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;exercise-2&quot;&gt;Exercise 2&lt;/h2&gt;
+
+&lt;div class=&quot;exercise-box&quot;&gt;
+&lt;h4&gt;QuickAnswer&lt;/h4&gt;
+&lt;p&gt;Apply the Add1 rule &quot;backwards,&quot; deriving a proof obligation from the
+conclusion &lt;code&gt;(S (S 0)) : nat&lt;/code&gt;.&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;exercise-3&quot;&gt;Exercise 3&lt;/h2&gt;
+
+&lt;div class=&quot;exercise-box&quot;&gt;
+&lt;h4&gt;QuickAnswer&lt;/h4&gt;
+&lt;p&gt;Using the rules Zero and Add1, build a complete proof of &lt;strong&gt;(S (S 0)) : nat&lt;/strong&gt;&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;editor-wrap&quot; id=&quot;nat-exercise&quot;&gt;&lt;/div&gt;
+
+&lt;script&gt;
+(function() {
+  var container = document.getElementById(&apos;nat-exercise&apos;);
+  ProofTree.createEditor(container, {
+    tree: &apos;(--- &quot;(S (S 0)) : nat&quot;)&apos;,
+    theoryRules: _natRules
+  });
+})();
+&lt;/script&gt;
+
+&lt;details&gt;
+&lt;summary&gt;Show solution&lt;/summary&gt;
+&lt;div class=&quot;solution-body&quot;&gt;
+&lt;div id=&quot;nat-exercise-solution&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+(function() {
+  window._natExSexp = &apos;((Add1 :right) ((Add1 :right) ((Zero :right) --- &quot;0 : nat&quot;) --- &quot;(S 0) : nat&quot;) --- &quot;(S (S 0)) : nat&quot;)&apos;;
+  var details = document.getElementById(&apos;nat-exercise-solution&apos;).closest(&apos;details&apos;);
+  var rendered = false;
+  details.addEventListener(&apos;toggle&apos;, function() {
+    if (details.open &amp;&amp; !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._natExSexp, document.getElementById(&apos;nat-exercise-solution&apos;));
+    }
+  });
+})();
+&lt;/script&gt;
+&lt;/details&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;booleans&quot;&gt;Booleans&lt;/h2&gt;
+
+&lt;p&gt;Let’s do another short example. We’ll define rules for constructing
+boolean expressions:&lt;/p&gt;
+
+&lt;div class=&quot;rule-block&quot;&gt;
+&lt;div class=&quot;rule-name&quot;&gt;True&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((True :right) --- &amp;quot;#t : bool&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;rule-block&quot;&gt;
+&lt;div class=&quot;rule-name&quot;&gt;False&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((False :right) --- &amp;quot;#f : bool&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;rule-block&quot;&gt;
+&lt;div class=&quot;rule-name&quot;&gt;And&lt;/div&gt;
+&lt;div class=&quot;rule-desc&quot;&gt;To show (and e0 e1) : bool, we must prove both e0 : bool and e1 : bool.&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((And :right) (--- &amp;quot;e0 : bool&amp;quot;) (--- &amp;quot;e1 : bool&amp;quot;) --- &amp;quot;(and e0 e1) : bool&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;rule-block&quot;&gt;
+&lt;div class=&quot;rule-name&quot;&gt;Or&lt;/div&gt;
+&lt;div class=&quot;rule-desc&quot;&gt;To show (or e0 e1) : bool, we must prove both e0 : bool and e1 : bool.&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((Or :right) (--- &amp;quot;e0 : bool&amp;quot;) (--- &amp;quot;e1 : bool&amp;quot;) --- &amp;quot;(or e0 e1) : bool&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;exercise-4&quot;&gt;Exercise 4&lt;/h2&gt;
+
+&lt;div class=&quot;exercise-box&quot;&gt;
+&lt;h4&gt;QuickAnswer&lt;/h4&gt;
+&lt;p&gt;Using the rules above, build a proof of &lt;strong&gt;(and (or #t #f) #t) : bool&lt;/strong&gt;&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;editor-wrap&quot; id=&quot;bool-exercise&quot;&gt;&lt;/div&gt;
+
+&lt;script&gt;
+(function() {
+  var container = document.getElementById(&apos;bool-exercise&apos;);
+  ProofTree.createEditor(container, {
+    tree: &apos;(--- &quot;(and (or #t #f) #t) : bool&quot;)&apos;,
+    theoryRules: _boolTypeRules
+  });
+})();
+&lt;/script&gt;
+
+&lt;details&gt;
+&lt;summary&gt;Show solution&lt;/summary&gt;
+&lt;div class=&quot;solution-body&quot;&gt;
+&lt;div id=&quot;bool-exercise-solution&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+(function() {
+  window._boolExSexp = &apos;((And :right) ((Or :right) ((True :right) --- &quot;#t : bool&quot;) ((False :right) --- &quot;#f : bool&quot;) --- &quot;(or #t #f) : bool&quot;) ((True :right) --- &quot;#t : bool&quot;) --- &quot;(and (or #t #f) #t) : bool&quot;)&apos;;
+  var details = document.getElementById(&apos;bool-exercise-solution&apos;).closest(&apos;details&apos;);
+  var rendered = false;
+  details.addEventListener(&apos;toggle&apos;, function() {
+    if (details.open &amp;&amp; !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._boolExSexp, document.getElementById(&apos;bool-exercise-solution&apos;));
+    }
+  });
+})();
+&lt;/script&gt;
+&lt;/details&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;language-semantics-via-natural-deduction&quot;&gt;Language Semantics via Natural Deduction&lt;/h2&gt;
+
+&lt;p&gt;We will use natural deduction to specify the semantics (meaning) of
+programming languages. This will allow us to rigorously make clear
+&lt;em&gt;exactly&lt;/em&gt; how programs are evaluated, to a degree that we could
+rigorously test or even &lt;em&gt;prove&lt;/em&gt; properties about programs in our
+language.&lt;/p&gt;
+
+&lt;p&gt;Programming language semantics is a core topic in CIS352. There are
+several methods for specifying semantics:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;Reference interpreter:&lt;/strong&gt; “The semantics is whatever Python does.”
+    &lt;ul&gt;
+      &lt;li&gt;&lt;em&gt;Upside:&lt;/em&gt; scales to complex languages&lt;/li&gt;
+      &lt;li&gt;&lt;em&gt;Downside:&lt;/em&gt; the host language may not have a well-defined meaning
+itself (e.g., C++ has undefined behavior)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Denotational semantics:&lt;/strong&gt; Map the program into a mathematical
+domain.
+    &lt;ul&gt;
+      &lt;li&gt;&lt;em&gt;Upside:&lt;/em&gt; mathematics is well-developed&lt;/li&gt;
+      &lt;li&gt;&lt;em&gt;Downside:&lt;/em&gt; complex for nontrivial features like loops&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;“Big-step” / natural semantics:&lt;/strong&gt; Specify semantics via natural
+deduction.
+    &lt;ul&gt;
+      &lt;li&gt;&lt;em&gt;Upside:&lt;/em&gt; we can often take the specification and directly build
+an interpreter (or compiler)&lt;/li&gt;
+      &lt;li&gt;&lt;em&gt;Downside:&lt;/em&gt; requires fully specifying the language, which may be
+impractical for truly production-grade languages&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;a-small-boolean-language&quot;&gt;A Small Boolean Language&lt;/h3&gt;
+
+&lt;p&gt;When we specify a language by natural deduction, we define a
+“reduction relation:”&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;e ⇓ v&lt;/strong&gt;   “expression e evaluates to value v”&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; is an expression (something to be evaluated) and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;v&lt;/code&gt; is a
+value (a result). As our first example, consider a small boolean
+language:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;true&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;false&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This is the term algebra over {&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;true&lt;/code&gt; arity 0, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;false&lt;/code&gt; arity 0,
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;amp;&amp;amp;&lt;/code&gt; arity 2, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;||&lt;/code&gt; arity 2}. For example:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;expr?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;false&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;true&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; =&amp;gt; #t&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Values will be Racket’s booleans (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt;).
+Now we define the semantics – precisely when we can prove &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e ⇓ v&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;rule-block&quot;&gt;
+&lt;div class=&quot;rule-name&quot;&gt;True&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((True :right) --- &amp;quot;true ⇓ #t&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;rule-block&quot;&gt;
+&lt;div class=&quot;rule-name&quot;&gt;False&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((False :right) --- &amp;quot;false ⇓ #f&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;rule-block&quot;&gt;
+&lt;div class=&quot;rule-name&quot;&gt;And&lt;/div&gt;
+&lt;div class=&quot;rule-desc&quot;&gt;Evaluate both subexpressions and combine with &lt;code&gt;and&lt;/code&gt;.&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((And :right) (--- &amp;quot;e0 ⇓ v0&amp;quot;) (--- &amp;quot;e1 ⇓ v1&amp;quot;) &amp;quot;v = (and v0 v1)&amp;quot; --- &amp;quot;(&amp;amp;&amp;amp; e0 e1) ⇓ v&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;rule-block&quot;&gt;
+&lt;div class=&quot;rule-name&quot;&gt;Or&lt;/div&gt;
+&lt;div class=&quot;rule-desc&quot;&gt;Evaluate both subexpressions and combine with &lt;code&gt;or&lt;/code&gt;.&lt;/div&gt;
+&lt;div data-proof-tree=&quot;((Or :right) (--- &amp;quot;e0 ⇓ v0&amp;quot;) (--- &amp;quot;e1 ⇓ v1&amp;quot;) &amp;quot;v = (or v0 v1)&amp;quot; --- &amp;quot;(|| e0 e1) ⇓ v&amp;quot;)&quot; data-proof-tree-zoom=&quot;false&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Notice how in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;And&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Or&lt;/code&gt; rules we assume that there is a
+definition of &lt;em&gt;and&lt;/em&gt;/&lt;em&gt;or&lt;/em&gt; above the line. We are implicitly assuming
+a definition in the &lt;em&gt;metalanguage&lt;/em&gt; (the language we use to define the
+language). In this case, we use Racket’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;and&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;or&lt;/code&gt; as the
+metalanguage, but in general the metalanguage will be “mathematics.”&lt;/p&gt;
+
+&lt;h2 id=&quot;exercise-5&quot;&gt;Exercise 5&lt;/h2&gt;
+
+&lt;div class=&quot;exercise-box&quot;&gt;
+&lt;h4&gt;QuickAnswer&lt;/h4&gt;
+&lt;p&gt;Write a proof that: &lt;strong&gt;(&amp;amp;&amp;amp; true true) ⇓ #t&lt;/strong&gt;&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;editor-wrap&quot; id=&quot;eval-exercise1&quot;&gt;&lt;/div&gt;
+
+&lt;script&gt;
+(function() {
+  var container = document.getElementById(&apos;eval-exercise1&apos;);
+  ProofTree.createEditor(container, {
+    tree: &apos;(--- &quot;(&amp;&amp; true true) ⇓ #t&quot;)&apos;,
+    theoryRules: _boolEvalRules
+  });
+})();
+&lt;/script&gt;
+
+&lt;details&gt;
+&lt;summary&gt;Show solution&lt;/summary&gt;
+&lt;div class=&quot;solution-body&quot;&gt;
+&lt;div id=&quot;eval-exercise1-solution&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+(function() {
+  window._eval1Sexp = &apos;((And :right) ((True :right) --- &quot;true ⇓ #t&quot;) ((True :right) --- &quot;true ⇓ #t&quot;) &quot;#t = (and #t #t)&quot; --- &quot;(&amp;&amp; true true) ⇓ #t&quot;)&apos;;
+  var details = document.getElementById(&apos;eval-exercise1-solution&apos;).closest(&apos;details&apos;);
+  var rendered = false;
+  details.addEventListener(&apos;toggle&apos;, function() {
+    if (details.open &amp;&amp; !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._eval1Sexp, document.getElementById(&apos;eval-exercise1-solution&apos;));
+    }
+  });
+})();
+&lt;/script&gt;
+&lt;/details&gt;
+
+&lt;h2 id=&quot;exercise-6&quot;&gt;Exercise 6&lt;/h2&gt;
+
+&lt;div class=&quot;exercise-box&quot;&gt;
+&lt;h4&gt;QuickAnswer&lt;/h4&gt;
+&lt;p&gt;Write a proof that: &lt;strong&gt;(&amp;amp;&amp;amp; true (|| false false)) ⇓ #f&lt;/strong&gt;&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;editor-wrap&quot; id=&quot;eval-exercise2&quot;&gt;&lt;/div&gt;
+
+&lt;script&gt;
+(function() {
+  var container = document.getElementById(&apos;eval-exercise2&apos;);
+  ProofTree.createEditor(container, {
+    tree: &apos;(--- &quot;(&amp;&amp; true (|| false false)) ⇓ #f&quot;)&apos;,
+    theoryRules: _boolEvalRules
+  });
+})();
+&lt;/script&gt;
+
+&lt;details&gt;
+&lt;summary&gt;Show solution&lt;/summary&gt;
+&lt;div class=&quot;solution-body&quot;&gt;
+&lt;div id=&quot;eval-exercise2-solution&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+(function() {
+  window._eval2Sexp = &apos;((And :right) ((True :right) --- &quot;true ⇓ #t&quot;) ((Or :right) ((False :right) --- &quot;false ⇓ #f&quot;) ((False :right) --- &quot;false ⇓ #f&quot;) &quot;#f = (or #f #f)&quot; --- &quot;(|| false false) ⇓ #f&quot;) &quot;#f = (and #t #f)&quot; --- &quot;(&amp;&amp; true (|| false false)) ⇓ #f&quot;)&apos;;
+  var details = document.getElementById(&apos;eval-exercise2-solution&apos;).closest(&apos;details&apos;);
+  var rendered = false;
+  details.addEventListener(&apos;toggle&apos;, function() {
+    if (details.open &amp;&amp; !rendered) {
+      rendered = true;
+      ProofTree.renderReadonly(window._eval2Sexp, document.getElementById(&apos;eval-exercise2-solution&apos;));
+    }
+  });
+})();
+&lt;/script&gt;
+&lt;/details&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;from-natural-semantics-to-interpreters&quot;&gt;From Natural Semantics to Interpreters&lt;/h2&gt;
+
+&lt;p&gt;A key insight of this course is that big-step natural deduction rules
+can be read as a &lt;em&gt;recursive function&lt;/em&gt;. Each rule tells us: “to
+evaluate this kind of expression, evaluate the subexpressions and
+combine the results.” This is exactly what an interpreter does.&lt;/p&gt;
+
+&lt;p&gt;For our boolean language, the interpreter follows directly from the
+rules:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; interp : Expr → Value&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;interp&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;true&lt;/span&gt;  &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;false&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+     &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;interp&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;interp&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+     &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;interp&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;interp&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Notice the direct correspondence:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;True&lt;/code&gt; rule says &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;true ⇓ #t&lt;/code&gt; – the interpreter returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;
+for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;true&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;And&lt;/code&gt; rule says: evaluate &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e0&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;v0&lt;/code&gt;, evaluate &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e1&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;v1&lt;/code&gt;,
+return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(and v0 v1)&lt;/code&gt; – the interpreter does exactly that with
+recursive calls.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This pattern – writing natural deduction rules, then translating
+them directly into an interpreter – is the central technique we will
+use throughout the rest of CIS352. In our lecture on
+&lt;a href=&quot;/cis352-s26/closures&quot;&gt;closure-creating interpreters&lt;/a&gt;, we
+extend this idea to a much richer language with variables, lambdas,
+closures, and environments.&lt;/p&gt;
+</description>
+        <pubDate>Tue, 24 Feb 2026 00:00:00 -0500</pubDate>
+        <link>https://kmicinski.com/cis352-s26/natural-deduction</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/natural-deduction</guid>
+        
+        
+      </item>
+    
+      <item>
         <title>Evaluation Order</title>
         <description>&lt;h1 id=&quot;cis352--spring-2026&quot;&gt;CIS352 – Spring 2026&lt;/h1&gt;
 
@@ -1385,14 +2654,16 @@ can only emit logging statements).&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;What is printed? Reminder: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(begin e0 ... en)&lt;/code&gt; evaluates &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e0 ...&lt;/code&gt; for their effect, then returns the result of evaluating &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;en&lt;/code&gt;.&lt;/p&gt;
+  &lt;p&gt;What is printed? Reminder: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(begin e0 ... en)&lt;/code&gt; evaluates &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e0 ...&lt;/code&gt; for their effect, then returns the result of evaluating &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;en&lt;/code&gt;.&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;displayln&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;displayln&lt;/span&gt;
  &lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;begin&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;displayln&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;begin&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;displayln&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;begin&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;displayln&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;p&gt;To facilitate calling a function, the computer has to remember where to return. For example, consider the following functions:&lt;/p&gt;
 
@@ -1479,16 +2750,18 @@ can only emit logging statements).&lt;/p&gt;
       &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;a0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;a3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Transform the following function, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;baz&lt;/code&gt;, into &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;baz+&lt;/code&gt;, a version of the function that satisfies the following constraint: every function’s argument can only be a variable / constant.&lt;/p&gt;
+  &lt;p&gt;Transform the following function, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;baz&lt;/code&gt;, into &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;baz+&lt;/code&gt;, a version of the function that satisfies the following constraint: every function’s argument can only be a variable / constant.&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;baz&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;baz&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;list-set&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;list-ref&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
 
 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;baz+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; introduce new lets, think carefully about evaluation order&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;hr /&gt;
 
@@ -1541,24 +2814,28 @@ can only emit logging statements).&lt;/p&gt;
 
 &lt;p&gt;The key thing to understand is this: generally (there is an exception we’ll discuss in a minute), when you call a function, you are &lt;em&gt;saving&lt;/em&gt; a return point on the stack. This will genuinely cost memory: if you have a large operation with a lot of deep recursions, that could start to be quite expensive. In fact, this was considered a major contributor to why functional languages (LISP, etc.) were seen as slow: in a functional language, you use recursion in place of iteration. Loops are fast, and generally use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;jump&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;goto&lt;/code&gt; instructions: no matter how many elements the loop processes, it doesn’t have any effect on the stack.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Compared to the input, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt;, what will the maximum stack depth of the following function be (give a worst-case bound, i.e., big-O):&lt;/p&gt;
+  &lt;p&gt;Compared to the input, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt;, what will the maximum stack depth of the following function be (give a worst-case bound, i.e., big-O):&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;example&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;example&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
       &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
       &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;example&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Consider the following code:&lt;/p&gt;
+  &lt;p&gt;Consider the following code:&lt;/p&gt;
 
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(g (+ 1 (f x)) 5)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(g (+ 1 (f x)) 5)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
 
-&lt;p&gt;Assume that we are evaluating the call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f x)&lt;/code&gt;. Describe, in plain English, what the stack will look like. Be as descriptive as possible, and try (if possible) to give enough information that we would know how to do the rest of the execution without seeing the term itself.&lt;/p&gt;
+  &lt;p&gt;Assume that we are evaluating the call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f x)&lt;/code&gt;. Describe, in plain English, what the stack will look like. Be as descriptive as possible, and try (if possible) to give enough information that we would know how to do the rest of the execution without seeing the term itself.&lt;/p&gt;
+&lt;/blockquote&gt;
 
 &lt;hr /&gt;
 
@@ -1612,15 +2889,17 @@ can only emit logging statements).&lt;/p&gt;
 
 &lt;p&gt;We can see now how &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt; is the very last call in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt; form.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Consider &lt;em&gt;all&lt;/em&gt; possible calls in the code below, which calls are in tail position (we call these “tail calls”)?&lt;/p&gt;
+  &lt;p&gt;Consider &lt;em&gt;all&lt;/em&gt; possible calls in the code below, which calls are in tail position (we call these “tail calls”)?&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cm&quot;&gt;#;&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cm&quot;&gt;#;&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;cond&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;add1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
       &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sub1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
       &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;g&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))])&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;hr /&gt;
 
@@ -1706,11 +2985,12 @@ can only emit logging statements).&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Which of the following is tail recursive?&lt;/p&gt;
+  &lt;p&gt;Which of the following is tail recursive?&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;h+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;h+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
       &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;h+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
       &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;h+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
@@ -1718,27 +2998,30 @@ can only emit logging statements).&lt;/p&gt;
 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;g+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;cond&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;g+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
         &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Consider the following direct-style implementation of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(list-sum l)&lt;/code&gt;:&lt;/p&gt;
+  &lt;p&gt;Consider the following direct-style implementation of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(list-sum l)&lt;/code&gt;:&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;list-sum&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;list-sum&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;hd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;tl&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;hd&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;list-sum&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;tl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
 
-&lt;p&gt;Please write &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(list-sum-tail l acc)&lt;/code&gt;, which takes an additional argument as an accumulator.&lt;/p&gt;
+  &lt;p&gt;Please write &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(list-sum-tail l acc)&lt;/code&gt;, which takes an additional argument as an accumulator.&lt;/p&gt;
 
-&lt;p&gt;NOTE: In general, we &lt;em&gt;don’t&lt;/em&gt; want to expose the extra accumulator argument–it exposes an implementation detail to the caller of the function (they have to pass in 0 everywhere). But I am making it explicit to show the trick: make sure you make the recursive call in tail position, update the accumulator &lt;em&gt;before&lt;/em&gt; (as an argument to) the call.&lt;/p&gt;
+  &lt;p&gt;NOTE: In general, we &lt;em&gt;don’t&lt;/em&gt; want to expose the extra accumulator argument–it exposes an implementation detail to the caller of the function (they have to pass in 0 everywhere). But I am making it explicit to show the trick: make sure you make the recursive call in tail position, update the accumulator &lt;em&gt;before&lt;/em&gt; (as an argument to) the call.&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;list-sum-tail&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;list-sum-tail&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;hd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;tl&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 </description>
         <pubDate>Tue, 03 Feb 2026 00:00:00 -0500</pubDate>
         <link>https://kmicinski.com/cis352-s26/evaluation-order</link>
@@ -1812,18 +3095,20 @@ can only emit logging statements).&lt;/p&gt;
   &lt;li&gt;Recursion mirrors the inductive structure of terms&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Now, let’s have you write this up in Racket: Write a type predicate, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add-expr?&lt;/code&gt;, which characterizes the set of expressions over the constants 1/0 and the two-argument +:&lt;/p&gt;
+  &lt;p&gt;Now, let’s have you write this up in Racket: Write a type predicate, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add-expr?&lt;/code&gt;, which characterizes the set of expressions over the constants 1/0 and the two-argument +:&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;               &lt;span class=&quot;c1&quot;&gt;;; 0 is an add-expr?&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;               &lt;span class=&quot;c1&quot;&gt;;; 1 is an add-expr?&lt;/span&gt;
     &lt;span class=&quot;c1&quot;&gt;;; Hint: possible to use a predicate pattern: ,(? p? e0)&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;;; (+ e0 e1) is an add-expr? if e0 / e1 are add-expr?s&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;p&gt;Now, given an expression, e, we may write a Racket function that evaluates the expression &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; down to a &lt;em&gt;number&lt;/em&gt;. In fact, if we construe &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add-expr?&lt;/code&gt; to define a programming language, then we are writing our first &lt;em&gt;interpreter&lt;/em&gt;. We will use recursion and matching to build our interpreter, following a common style we will learn about later. We will not focus extensively on interpreters in today’s class, but we &lt;em&gt;will&lt;/em&gt; use algebraic data types to define the &lt;em&gt;abstract syntax&lt;/em&gt; of programming languages frequently.&lt;/p&gt;
 
@@ -1856,13 +3141,15 @@ can only emit logging statements).&lt;/p&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Define a function that converts a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bool?&lt;/code&gt; to a Racket &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;boolean?&lt;/code&gt; (i.e., just #t/#f).&lt;/p&gt;
+  &lt;p&gt;Define a function that converts a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bool?&lt;/code&gt; to a Racket &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;boolean?&lt;/code&gt; (i.e., just #t/#f).&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bool?-&amp;gt;racket&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bool?-&amp;gt;racket&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;hr /&gt;
 
@@ -1897,29 +3184,33 @@ can only emit logging statements).&lt;/p&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-even?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]))&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;&lt;em&gt;Don’t&lt;/em&gt; use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-&amp;gt;num&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-even?&lt;/code&gt;:&lt;/p&gt;
+  &lt;p&gt;&lt;em&gt;Don’t&lt;/em&gt; use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-&amp;gt;num&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-even?&lt;/code&gt;:&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-odd?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-odd?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Assume n0 and n1 are &lt;em&gt;both&lt;/em&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;. Now, define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(&amp;lt;= n0 n1)&lt;/code&gt;.&lt;/p&gt;
+  &lt;p&gt;Assume n0 and n1 are &lt;em&gt;both&lt;/em&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;. Now, define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(&amp;lt;= n0 n1)&lt;/code&gt;.&lt;/p&gt;
 
-&lt;p&gt;Basic approach: use recursion over n0 / n1:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;Match n0, if n0 is 0 then return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;If n0 not 0, then what do you do…?&lt;/li&gt;
-&lt;/ul&gt;
+  &lt;p&gt;Basic approach: use recursion over n0 / n1:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;Match n0, if n0 is 0 then return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;&lt;/li&gt;
+    &lt;li&gt;If n0 not 0, then what do you do…?&lt;/li&gt;
+  &lt;/ul&gt;
 
-&lt;p&gt;DON’T use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-&amp;gt;num&lt;/code&gt; (which makes this easier):&lt;/p&gt;
+  &lt;p&gt;DON’T use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-&amp;gt;num&lt;/code&gt; (which makes this easier):&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-lte&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-lte&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;hr /&gt;
 
@@ -1978,40 +3269,44 @@ can only emit logging statements).&lt;/p&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;plus&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Idea: recursion on n0&lt;/p&gt;
+  &lt;p&gt;Idea: recursion on n0&lt;/p&gt;
 
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(times 0 k) = 0
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(times 0 k) = 0
 (times (S n) k) = k + (times n k)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
 
-&lt;p&gt;Remember:&lt;/p&gt;
+  &lt;p&gt;Remember:&lt;/p&gt;
 
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(nat-&amp;gt;num (times n0 n1)) = (* (nat-&amp;gt;num n0) (nat-&amp;gt;num n1))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(nat-&amp;gt;num (times n0 n1)) = (* (nat-&amp;gt;num n0) (nat-&amp;gt;num n1))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;times&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;times&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Now, we use recursion on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt; to define the factorial function:&lt;/p&gt;
+  &lt;p&gt;Now, we use recursion on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt; to define the factorial function:&lt;/p&gt;
 
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(fac 0) =&amp;gt; 1
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(fac 0) =&amp;gt; 1
 (fac (S n)) =&amp;gt; (S n) * (fac n)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
 
-&lt;p&gt;Remember, we must produce a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;:&lt;/p&gt;
+  &lt;p&gt;Remember, we must produce a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;:&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;factorial&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;factorial&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 
 &lt;span class=&quot;c1&quot;&gt;;; (factorial &apos;(S (S (S (S 0)))))&lt;/span&gt;
 &lt;span class=&quot;c1&quot;&gt;;;   =&amp;gt; &apos;(S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S 0))))))))))))))))))))))))&lt;/span&gt;
 &lt;span class=&quot;c1&quot;&gt;;; (nat-&amp;gt;num (factorial &apos;(S (S (S (S 0)))))) =&amp;gt; 24&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;hr /&gt;
 
@@ -2118,18 +3413,20 @@ can only emit logging statements).&lt;/p&gt;
                      = 6
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Using the standard rules of arithmetic for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;, etc., and also the two rules:&lt;/p&gt;
+  &lt;p&gt;Using the standard rules of arithmetic for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;, etc., and also the two rules:&lt;/p&gt;
 
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(fold-1)   (foldr f z &apos;()) = z
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(fold-1)   (foldr f z &apos;()) = z
 (fold-2)   (foldr f z (cons hd tl)) = (f hd (foldr f z tl))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
 
-&lt;p&gt;Rigorously prove–via a series of equalities (annotate fold-1/2 when appropriate)–the following:&lt;/p&gt;
+  &lt;p&gt;Rigorously prove–via a series of equalities (annotate fold-1/2 when appropriate)–the following:&lt;/p&gt;
 
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(foldr * 1 &apos;(2 3 4)) = 24
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(foldr * 1 &apos;(2 3 4)) = 24
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;h3 id=&quot;the-identity-l--foldr-cons--l&quot;&gt;The identity: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;l = (foldr cons &apos;() l)&lt;/code&gt;&lt;/h3&gt;
 
@@ -2178,16 +3475,18 @@ can only emit logging statements).&lt;/p&gt;
          &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Use foldr to add all &lt;em&gt;even&lt;/em&gt; numbers in the list l:&lt;/p&gt;
+  &lt;p&gt;Use foldr to add all &lt;em&gt;even&lt;/em&gt; numbers in the list l:&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (add-evens &apos;(0 1 2 3 4 5)) =&amp;gt; 6&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (add-evens &apos;(0 1 2 3 4 5)) =&amp;gt; 6&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-evens&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
          &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
          &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;h3 id=&quot;fold-in-other-languages&quot;&gt;Fold in other languages&lt;/h3&gt;
 
@@ -2226,12 +3525,14 @@ for (elt in list.reverse) { acc = f(elt,acc); }
 &lt;p&gt;Also, fold forms the basis for MapReduce, a popular distributed / parallel computing framework:
 https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;What is the result of…&lt;/p&gt;
+  &lt;p&gt;What is the result of…&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;hr /&gt;
 
@@ -2311,14 +3612,16 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
 
 &lt;h2 id=&quot;warmup&quot;&gt;Warmup&lt;/h2&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Let’s write &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(interleave l0 l1)&lt;/code&gt;, a function that takes two lists l0/l1 and returns the elements of l0 interleaved with the elements of l1. Assume l0/l1 have the same length.&lt;/p&gt;
+  &lt;p&gt;Let’s write &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(interleave l0 l1)&lt;/code&gt;, a function that takes two lists l0/l1 and returns the elements of l0 interleaved with the elements of l1. Assume l0/l1 have the same length.&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (interleave &apos;(0 1 2) &apos;(x y z)) =&amp;gt; &apos;(0 x 1 y 2 z)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (interleave &apos;(0 1 2) &apos;(x y z)) =&amp;gt; &apos;(0 x 1 y 2 z)&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;interleave&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;hr /&gt;
 
@@ -2376,17 +3679,19 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
        &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;7&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;empty&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;12&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;empty&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Write the tree:&lt;/p&gt;
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;         20
+  &lt;p&gt;Write the tree:&lt;/p&gt;
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;         20
         /  \
        10  30
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;in a manner that satisfies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tree?&lt;/code&gt;:&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+  &lt;p&gt;in a manner that satisfies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tree?&lt;/code&gt;:&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (node ...)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (node ...)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;p&gt;One fact about trees in Racket: they are &lt;em&gt;just lists&lt;/em&gt;. We can build them entirely out of cons cells. We don’t need any fancy machinery to define trees, other than recursion and lists. Once we have recursion and lists, we will see we can build the rest of computation.&lt;/p&gt;
 
@@ -2422,18 +3727,20 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
 
 &lt;p&gt;In the above definition, we used &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(third t)&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(fourth t)&lt;/code&gt; to manually extract t0/t1. Today, we’ll learn about pattern matching, which will make this much easier. But for now, let’s work another example in the same style as the previous:&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(tree-sum t)&lt;/code&gt;, assuming t satisfies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tree?&lt;/code&gt;:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;If t is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;empty&lt;/code&gt;, return 0&lt;/li&gt;
-  &lt;li&gt;If t is a node, return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(second t)&lt;/code&gt; + tree-sum applied to the left/right subtree (use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(third t)&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(fourth t)&lt;/code&gt; to get them).&lt;/li&gt;
-&lt;/ul&gt;
+  &lt;p&gt;Define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(tree-sum t)&lt;/code&gt;, assuming t satisfies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tree?&lt;/code&gt;:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;If t is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;empty&lt;/code&gt;, return 0&lt;/li&gt;
+    &lt;li&gt;If t is a node, return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(second t)&lt;/code&gt; + tree-sum applied to the left/right subtree (use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(third t)&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(fourth t)&lt;/code&gt; to get them).&lt;/li&gt;
+  &lt;/ul&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (tree-sum &apos;(node 5 (node 10 empty empty) (node -5 empty empty))) =&amp;gt; 10&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (tree-sum &apos;(node 5 (node 10 empty empty) (node -5 empty empty))) =&amp;gt; 10&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tree-sum&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;hr /&gt;
 
@@ -2500,18 +3807,20 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Translate the following function, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bar&lt;/code&gt;, to use match:&lt;/p&gt;
+  &lt;p&gt;Translate the following function, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bar&lt;/code&gt;, to use match:&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bar&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bar&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;cond&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
         &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;-1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;-1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
         &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bar&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))]))&lt;/span&gt;
 
 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bar-match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;hr /&gt;
 
@@ -2577,11 +3886,12 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
   &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; returns 3&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Use match to define a function, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(every-other l)&lt;/code&gt;, which returns every other element in l.&lt;/p&gt;
+  &lt;p&gt;Use match to define a function, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(every-other l)&lt;/code&gt;, which returns every other element in l.&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (every-other &apos;()) =&amp;gt; &apos;()&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (every-other &apos;()) =&amp;gt; &apos;()&lt;/span&gt;
 &lt;span class=&quot;c1&quot;&gt;;; (every-other &apos;(1)) =&amp;gt; &apos;(1)&lt;/span&gt;
 &lt;span class=&quot;c1&quot;&gt;;; (every-other &apos;(1 2)) =&amp;gt; &apos;(1)&lt;/span&gt;
 &lt;span class=&quot;c1&quot;&gt;;; (every-other &apos;(1 2 3)) =&amp;gt; &apos;(1 3)&lt;/span&gt;
@@ -2589,7 +3899,8 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
 &lt;span class=&quot;c1&quot;&gt;;; `(,x0 ,x1 ,x-rest ...), `(,x0), and &apos;()&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;every-other&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;hr /&gt;
 
@@ -2622,15 +3933,17 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;evens-or-odds?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;Describe the behavior of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mystery-function&lt;/code&gt;. What does it return? Consider all possible inputs, but describe its behavior as precisely as you can.&lt;/p&gt;
+  &lt;p&gt;Describe the behavior of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mystery-function&lt;/code&gt;. What does it return? Consider all possible inputs, but describe its behavior as precisely as you can.&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;mystery-function&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;mystery-function&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;zero?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;xs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;xs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;error&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 
 &lt;hr /&gt;
 
@@ -2662,19 +3975,21 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;t0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;t1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;max&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;max-tree&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;max-tree&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;&lt;strong&gt;QuickAnswer&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-&lt;p&gt;A tree satisfies the BST (binary search tree) property whenever every subtree &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(node ,v ,t0 ,t1)&lt;/code&gt; has that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(max t0) &amp;lt; v &amp;lt; (min t1)&lt;/code&gt;.&lt;/p&gt;
+  &lt;p&gt;A tree satisfies the BST (binary search tree) property whenever every subtree &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(node ,v ,t0 ,t1)&lt;/code&gt; has that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(max t0) &amp;lt; v &amp;lt; (min t1)&lt;/code&gt;.&lt;/p&gt;
 
-&lt;p&gt;Basic idea: match t&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;If it’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;empty&lt;/code&gt;, return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;If it’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(node ,v ,t0 ,t1)&lt;/code&gt;, call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(max-tree t)&lt;/code&gt; (above) to calculate the maximum of t0 and t1, then check the necessary properties.&lt;/li&gt;
-&lt;/ul&gt;
+  &lt;p&gt;Basic idea: match t&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;If it’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;empty&lt;/code&gt;, return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;&lt;/li&gt;
+    &lt;li&gt;If it’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(node ,v ,t0 ,t1)&lt;/code&gt;, call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(max-tree t)&lt;/code&gt; (above) to calculate the maximum of t0 and t1, then check the necessary properties.&lt;/li&gt;
+  &lt;/ul&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bst-property?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bst-property?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
 </description>
         <pubDate>Sun, 01 Feb 2026 00:00:00 -0500</pubDate>
         <link>https://kmicinski.com/cis352-s26/patterns</link>

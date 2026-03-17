@@ -472,6 +472,16 @@ body {
     color: var(--brand);
 }
 
+/* Flash animation when strategy changes via postMessage */
+@keyframes strategy-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(247, 105, 0, 0.4); }
+    50%  { box-shadow: 0 0 0 6px rgba(247, 105, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(247, 105, 0, 0); }
+}
+.strategy-grid.strategy-flash .strategy-btn.active {
+    animation: strategy-pulse 0.6s ease-out;
+}
+
 .zoom-controls {
     display: flex;
     align-items: center;
@@ -621,11 +631,14 @@ body {
 }
 
 .term.strategy-next {
-    background: rgba(247, 105, 0, 0.03);
+    background: rgba(5, 150, 105, 0.08);
+    box-shadow: 0 0 0 1.5px rgba(5, 150, 105, 0.3);
+    border-radius: 3px;
 }
 
 .term.strategy-next.hovered {
-    background: rgba(247, 105, 0, 0.08);
+    background: rgba(5, 150, 105, 0.15);
+    box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.5);
 }
 
 /* Syntax tokens */

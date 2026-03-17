@@ -205,14 +205,16 @@ can only emit logging statements).</p>
   </li>
 </ul>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>What is printed? Reminder: <code class="language-plaintext highlighter-rouge">(begin e0 ... en)</code> evaluates <code class="language-plaintext highlighter-rouge">e0 ...</code> for their effect, then returns the result of evaluating <code class="language-plaintext highlighter-rouge">en</code>.</p>
+  <p>What is printed? Reminder: <code class="language-plaintext highlighter-rouge">(begin e0 ... en)</code> evaluates <code class="language-plaintext highlighter-rouge">e0 ...</code> for their effect, then returns the result of evaluating <code class="language-plaintext highlighter-rouge">en</code>.</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nb">displayln</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nb">displayln</span>
  <span class="p">((</span><span class="k">begin</span> <span class="p">(</span><span class="nb">displayln</span> <span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">x</span><span class="p">)</span> <span class="p">(</span><span class="k">begin</span> <span class="p">(</span><span class="nb">displayln</span> <span class="nv">x</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="mi">3</span><span class="p">))))</span>
   <span class="p">(</span><span class="k">begin</span> <span class="p">(</span><span class="nb">displayln</span> <span class="mi">5</span><span class="p">)</span> <span class="mi">3</span><span class="p">)))</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <p>To facilitate calling a function, the computer has to remember where to return. For example, consider the following functions:</p>
 
@@ -299,16 +301,18 @@ can only emit logging statements).</p>
       <span class="p">(</span><span class="nb">*</span> <span class="nv">a0</span> <span class="nv">a3</span><span class="p">))))</span>
 </code></pre></div></div>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Transform the following function, <code class="language-plaintext highlighter-rouge">baz</code>, into <code class="language-plaintext highlighter-rouge">baz+</code>, a version of the function that satisfies the following constraint: every function’s argument can only be a variable / constant.</p>
+  <p>Transform the following function, <code class="language-plaintext highlighter-rouge">baz</code>, into <code class="language-plaintext highlighter-rouge">baz+</code>, a version of the function that satisfies the following constraint: every function’s argument can only be a variable / constant.</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">baz</span> <span class="nv">x</span> <span class="nv">l</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">baz</span> <span class="nv">x</span> <span class="nv">l</span><span class="p">)</span>
   <span class="p">(</span><span class="nf">list-set</span> <span class="nv">l</span> <span class="nv">x</span> <span class="p">(</span><span class="nb">+</span> <span class="p">(</span><span class="nb">list-ref</span> <span class="nv">l</span> <span class="nv">x</span><span class="p">)</span> <span class="mi">10</span><span class="p">)))</span>
 
 <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">baz+</span> <span class="nv">x</span> <span class="nv">l</span><span class="p">)</span>
   <span class="ss">'todo</span><span class="p">)</span> <span class="c1">;; introduce new lets, think carefully about evaluation order</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <hr />
 
@@ -361,24 +365,28 @@ can only emit logging statements).</p>
 
 <p>The key thing to understand is this: generally (there is an exception we’ll discuss in a minute), when you call a function, you are <em>saving</em> a return point on the stack. This will genuinely cost memory: if you have a large operation with a lot of deep recursions, that could start to be quite expensive. In fact, this was considered a major contributor to why functional languages (LISP, etc.) were seen as slow: in a functional language, you use recursion in place of iteration. Loops are fast, and generally use <code class="language-plaintext highlighter-rouge">jump</code> or <code class="language-plaintext highlighter-rouge">goto</code> instructions: no matter how many elements the loop processes, it doesn’t have any effect on the stack.</p>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Compared to the input, <code class="language-plaintext highlighter-rouge">n</code>, what will the maximum stack depth of the following function be (give a worst-case bound, i.e., big-O):</p>
+  <p>Compared to the input, <code class="language-plaintext highlighter-rouge">n</code>, what will the maximum stack depth of the following function be (give a worst-case bound, i.e., big-O):</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">example</span> <span class="nv">l</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">example</span> <span class="nv">l</span><span class="p">)</span>
   <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">&lt;</span> <span class="nv">l</span> <span class="mi">1</span><span class="p">)</span>
       <span class="mi">1</span>
       <span class="p">(</span><span class="nf">example</span> <span class="p">(</span><span class="nb">/</span> <span class="nv">l</span> <span class="mi">2</span><span class="p">))))</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Consider the following code:</p>
+  <p>Consider the following code:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(g (+ 1 (f x)) 5)
-</code></pre></div></div>
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(g (+ 1 (f x)) 5)
+</code></pre></div>  </div>
 
-<p>Assume that we are evaluating the call <code class="language-plaintext highlighter-rouge">(f x)</code>. Describe, in plain English, what the stack will look like. Be as descriptive as possible, and try (if possible) to give enough information that we would know how to do the rest of the execution without seeing the term itself.</p>
+  <p>Assume that we are evaluating the call <code class="language-plaintext highlighter-rouge">(f x)</code>. Describe, in plain English, what the stack will look like. Be as descriptive as possible, and try (if possible) to give enough information that we would know how to do the rest of the execution without seeing the term itself.</p>
+</blockquote>
 
 <hr />
 
@@ -432,15 +440,17 @@ can only emit logging statements).</p>
 
 <p>We can see now how <code class="language-plaintext highlighter-rouge">*</code> is the very last call in the <code class="language-plaintext highlighter-rouge">let</code> form.</p>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Consider <em>all</em> possible calls in the code below, which calls are in tail position (we call these “tail calls”)?</p>
+  <p>Consider <em>all</em> possible calls in the code below, which calls are in tail position (we call these “tail calls”)?</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">#;</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">#;</span>
 <span class="p">(</span><span class="k">cond</span> <span class="p">[(</span><span class="nb">equal?</span> <span class="nv">x</span> <span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="nb">add1</span> <span class="nv">x</span><span class="p">)]</span>
       <span class="p">[(</span><span class="nf">f</span> <span class="nv">x</span><span class="p">)</span> <span class="p">(</span><span class="nb">sub1</span> <span class="nv">x</span><span class="p">)]</span>
       <span class="p">[</span><span class="nf">else</span> <span class="p">(</span><span class="nf">g</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">))])</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
 <hr />
 
@@ -526,11 +536,12 @@ can only emit logging statements).</p>
   </li>
 </ul>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Which of the following is tail recursive?</p>
+  <p>Which of the following is tail recursive?</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">h+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">h+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
   <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">equal?</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
       <span class="p">(</span><span class="nb">+</span> <span class="mi">1</span> <span class="p">(</span><span class="nf">h+</span> <span class="nv">y</span> <span class="nv">x</span><span class="p">))</span>
       <span class="p">(</span><span class="nf">h+</span> <span class="nv">y</span> <span class="nv">x</span><span class="p">)))</span>
@@ -538,27 +549,30 @@ can only emit logging statements).</p>
 <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">g+</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
   <span class="p">(</span><span class="k">cond</span> <span class="p">[(</span><span class="nf">x</span> <span class="nv">y</span><span class="p">)</span> <span class="p">(</span><span class="nf">g+</span> <span class="nv">y</span> <span class="nv">x</span><span class="p">)]</span>
         <span class="p">[</span><span class="nf">else</span> <span class="nv">y</span><span class="p">]))</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
-<p><strong>QuickAnswer</strong></p>
+<blockquote>
+  <p>QuickAnswer</p>
 
-<p>Consider the following direct-style implementation of <code class="language-plaintext highlighter-rouge">(list-sum l)</code>:</p>
+  <p>Consider the following direct-style implementation of <code class="language-plaintext highlighter-rouge">(list-sum l)</code>:</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">list-sum</span> <span class="nv">l</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">list-sum</span> <span class="nv">l</span><span class="p">)</span>
   <span class="p">(</span><span class="nf">match</span> <span class="nv">l</span>
     <span class="p">[</span><span class="o">'</span><span class="p">()</span> <span class="mi">0</span><span class="p">]</span>
     <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">hd</span> <span class="o">,</span><span class="nv">tl</span> <span class="o">...</span><span class="p">)</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">hd</span> <span class="p">(</span><span class="nf">list-sum</span> <span class="nv">tl</span><span class="p">))]))</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
 
-<p>Please write <code class="language-plaintext highlighter-rouge">(list-sum-tail l acc)</code>, which takes an additional argument as an accumulator.</p>
+  <p>Please write <code class="language-plaintext highlighter-rouge">(list-sum-tail l acc)</code>, which takes an additional argument as an accumulator.</p>
 
-<p>NOTE: In general, we <em>don’t</em> want to expose the extra accumulator argument–it exposes an implementation detail to the caller of the function (they have to pass in 0 everywhere). But I am making it explicit to show the trick: make sure you make the recursive call in tail position, update the accumulator <em>before</em> (as an argument to) the call.</p>
+  <p>NOTE: In general, we <em>don’t</em> want to expose the extra accumulator argument–it exposes an implementation detail to the caller of the function (they have to pass in 0 everywhere). But I am making it explicit to show the trick: make sure you make the recursive call in tail position, update the accumulator <em>before</em> (as an argument to) the call.</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">list-sum-tail</span> <span class="nv">l</span> <span class="nv">acc</span><span class="p">)</span>
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">list-sum-tail</span> <span class="nv">l</span> <span class="nv">acc</span><span class="p">)</span>
   <span class="p">(</span><span class="nf">match</span> <span class="nv">l</span>
     <span class="p">[</span><span class="o">'</span><span class="p">()</span> <span class="ss">'todo</span><span class="p">]</span>
     <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">hd</span> <span class="o">,</span><span class="nv">tl</span> <span class="o">...</span><span class="p">)</span> <span class="ss">'todo</span><span class="p">]))</span>
-</code></pre></div></div>
+</code></pre></div>  </div>
+</blockquote>
 
   </div>
 

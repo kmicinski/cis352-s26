@@ -1,55 +1,54 @@
-/* ── Lecture Explorer: Split-pane structural layout only ── */
-/* Notes pane inherits all default post/site styling        */
+/* ── Lecture Explorer: Split-pane layout ────────────────── */
+/* Shared styles (blockquotes, code, kbd, nd-rules) are    */
+/* in main.scss so all layouts benefit.                     */
 
-/* Hide Jekyll chrome */
+/* ── Hide Jekyll chrome ────────────────────────────────── */
 .lecture-explorer-page .site-header { display: none; }
 .lecture-explorer-page .site-footer { display: none; }
 .lecture-explorer-page .page-content { padding: 0; }
 .lecture-explorer-page .wrapper { max-width: none; padding: 0; }
 
-/* ── Top bar ─────────────────────────────────────── */
+/* ── Top bar ───────────────────────────────────────────── */
 #le-topbar {
   display: flex;
   align-items: center;
   gap: 12px;
   height: 44px;
-  padding: 0 16px;
-  background: #000E54;
-  color: #fff;
+  padding: 0 20px;
+  background: #fff;
+  color: #374151;
   font-size: 0.875rem;
   z-index: 10;
   flex-shrink: 0;
+  border-bottom: 1px solid #e5e7eb;
 }
-
 .le-back-link {
-  color: rgba(255, 255, 255, 0.85);
+  color: #6b7280;
   text-decoration: none;
   font-weight: 500;
   white-space: nowrap;
   transition: color 0.15s;
 }
 .le-back-link:hover { color: #F76900; }
-
 .le-title {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
+  color: #111827;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .le-topbar-spacer { flex: 1; }
-
 .le-toggle-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
   border-radius: 4px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #6b7280;
   cursor: pointer;
   transition: all 0.15s;
   font-size: 0.78rem;
@@ -57,8 +56,9 @@
   white-space: nowrap;
 }
 .le-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  color: #374151;
 }
 .le-toggle-btn.le-active {
   background: #F76900;
@@ -66,49 +66,107 @@
   color: #fff;
 }
 
-/* ── Split pane container ────────────────────────── */
+/* ── Split pane container ──────────────────────────────── */
 #le-split {
   display: flex;
   height: calc(100vh - 44px);
   overflow: hidden;
 }
-
 .le-pane {
   overflow: hidden;
   min-width: 0;
 }
 
-/* ── Notes pane (left) ───────────────────────────── */
+/* ── Notes pane (left) ─────────────────────────────────── */
 #le-notes {
   width: 40%;
   min-width: 280px;
   overflow-y: auto;
   overflow-x: hidden;
+  background: #fff;
 }
-
-/* When explorer is off, notes take full width */
 #le-notes.le-full {
   width: 100% !important;
   min-width: 0;
 }
-
 .le-notes-inner {
-  padding: 20px 30px 64px;
-  max-width: 850px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 28px 36px 80px;
+  font-size: 0.95rem;
+  line-height: 1.72;
+  color: #1f2937;
 }
 
-/* ── Clickable lambda terms ──────────────────────── */
+/* ── Typography overrides for notes pane ────────────────── */
+.le-notes-inner h2 {
+  margin: 2em 0 0.6em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 1.4em;
+  font-weight: 700;
+  color: #111827;
+}
+.le-notes-inner h2:first-child { margin-top: 0; }
+.le-notes-inner h3 {
+  margin: 1.6em 0 0.5em;
+  font-size: 1.15em;
+  font-weight: 600;
+  color: #1f2937;
+}
+.le-notes-inner p { margin: 0.75em 0; }
+.le-notes-inner ul, .le-notes-inner ol {
+  margin: 0.6em 0;
+  padding-left: 1.6em;
+}
+.le-notes-inner li { margin: 0.35em 0; }
+.le-notes-inner hr {
+  margin: 2em 0;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+}
+.le-notes-inner pre {
+  margin: 1em 0;
+  padding: 14px 18px;
+  background: #f8f9fb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.88em;
+  line-height: 1.55;
+}
+.le-notes-inner table {
+  margin: 1em 0;
+  border-collapse: collapse;
+  font-size: 0.9em;
+  width: 100%;
+}
+.le-notes-inner th, .le-notes-inner td {
+  padding: 8px 14px;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+.le-notes-inner th {
+  background: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+.le-notes-inner strong {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ── Clickable lambda terms ────────────────────────────── */
 .le-lambda-clickable {
   cursor: pointer;
   position: relative;
-  border-bottom: 2px dashed rgba(247, 105, 0, 0.4);
+  border-bottom: 2px dashed rgba(247, 105, 0, 0.35);
   transition: border-color 0.15s, background-color 0.15s;
 }
 .le-lambda-clickable:hover {
   border-bottom-color: #F76900;
-  background-color: rgba(247, 105, 0, 0.08);
+  background-color: rgba(247, 105, 0, 0.06);
 }
-
 .le-lambda-clickable::after {
   content: "Load in explorer \2192";
   position: absolute;
@@ -116,10 +174,10 @@
   left: 50%;
   transform: translateX(-50%);
   padding: 3px 8px;
-  background: #000E54;
+  background: #374151;
   color: #fff;
-  font-size: 0.72rem;
-  font-family: sans-serif;
+  font-size: 0.7rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-style: normal;
   border-radius: 4px;
   white-space: nowrap;
@@ -128,16 +186,14 @@
   transition: opacity 0.15s;
   z-index: 10;
 }
-.le-lambda-clickable:hover::after {
-  opacity: 1;
-}
+.le-lambda-clickable:hover::after { opacity: 1; }
 
-/* ── Divider ─────────────────────────────────────── */
+/* ── Divider ───────────────────────────────────────────── */
 #le-divider {
-  width: 10px;
-  background: #f1f5f9;
-  border-left: 1px solid #e2e8f0;
-  border-right: 1px solid #e2e8f0;
+  width: 8px;
+  background: #f9fafb;
+  border-left: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
   cursor: col-resize;
   display: flex;
   align-items: center;
@@ -147,85 +203,120 @@
   transition: background 0.15s;
   touch-action: none;
 }
-
 #le-divider:hover,
-#le-divider.le-dragging {
-  background: #e2e8f0;
-}
-
+#le-divider.le-dragging { background: #e5e7eb; }
 .le-divider-grip {
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
-
 .le-divider-grip span {
   display: block;
-  width: 4px;
-  height: 4px;
+  width: 3px;
+  height: 3px;
   border-radius: 50%;
-  background: #94a3b8;
+  background: #9ca3af;
 }
-
 #le-divider:hover .le-divider-grip span,
-#le-divider.le-dragging .le-divider-grip span {
-  background: #64748b;
-}
+#le-divider.le-dragging .le-divider-grip span { background: #6b7280; }
 
-/* ── Explorer pane (right) ───────────────────────── */
+/* ── Explorer pane (right) ─────────────────────────────── */
 #le-explorer {
   flex: 1;
   min-width: 300px;
 }
-
 #le-explorer-iframe {
   width: 100%;
   height: 100%;
   border: none;
 }
+#le-explorer.le-hidden { display: none; }
+#le-divider.le-hidden { display: none; }
+#le-split.le-resizing #le-explorer-iframe { pointer-events: none; }
 
-/* ── Explorer hidden ─────────────────────────────── */
-#le-explorer.le-hidden {
-  display: none;
-}
-#le-divider.le-hidden {
-  display: none;
-}
-
-/* ── Prevent iframe from capturing mouse during drag */
-#le-split.le-resizing #le-explorer-iframe {
-  pointer-events: none;
-}
-
-/* ── Mobile: explorer off by default, toggle enables it ── */
+/* ── Mobile ────────────────────────────────────────────── */
 @media (max-width: 700px) {
   #le-notes {
     width: 100% !important;
     min-width: 0;
   }
-
   #le-explorer {
     width: 100%;
     min-width: 0;
   }
-
-  .le-notes-inner {
-    padding: 16px 16px 40px;
-  }
-
-  /* When explorer is toggled on in mobile, stack vertically */
-  #le-split.le-mobile-split {
-    flex-direction: column;
-  }
-
+  .le-notes-inner { padding: 20px 18px 48px; }
+  #le-split.le-mobile-split { flex-direction: column; }
   #le-split.le-mobile-split #le-notes {
     height: 50%;
     overflow-y: auto;
   }
-
-  #le-split.le-mobile-split #le-explorer {
-    height: 50%;
-  }
-
+  #le-split.le-mobile-split #le-explorer { height: 50%; }
   #le-divider { display: none; }
+}
+
+/* ── Interactive buttons (explorer-specific) ───────────── */
+button.le-try-btn,
+.le-try-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  margin: 0.4em 4px 0.4em 0;
+  font-size: 0.84em;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #fff;
+  background: #374151;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  line-height: 1.4;
+}
+button.le-try-btn:hover,
+.le-try-btn:hover {
+  background: #F76900;
+  border-color: #F76900;
+  color: #fff;
+}
+.le-try-btn.le-btn-active {
+  background: #F76900;
+  border-color: #F76900;
+  transform: scale(0.97);
+}
+.le-try-btn i { font-size: 0.85em; }
+
+/* ── Strategy button groups ────────────────────────────── */
+.le-strategy-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0.6em 0;
+}
+button.le-strat-btn,
+.le-strat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  font-size: 0.82em;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #374151;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+button.le-strat-btn:hover,
+.le-strat-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+.le-strat-btn.le-strat-active {
+  background: #374151;
+  border-color: #374151;
+  color: #fff;
 }

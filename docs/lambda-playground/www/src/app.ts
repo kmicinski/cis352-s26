@@ -391,8 +391,13 @@ async function main(): Promise<void> {
                 break;
             case 'setStrategy':
                 if (typeof data.strategy === 'string') {
-                    engine.set_strategy(data.strategy);
-                    renderCurrentTerm();
+                    setStrategy(data.strategy as StrategyName);
+                    // Flash the strategy group to draw attention
+                    const sg = document.getElementById('strategy-group');
+                    if (sg) {
+                        sg.classList.add('strategy-flash');
+                        setTimeout(() => sg.classList.remove('strategy-flash'), 600);
+                    }
                 }
                 break;
             case 'step': {
