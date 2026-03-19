@@ -4,17 +4,16 @@ title: "Evaluation Order"
 permalink: /evaluation-order
 ---
 
-# CIS352 -- Spring 2026
+## Topics
 
-[Link to code for these lecture notes](https://gist.github.com/kmicinski/7042e0c2143f3fa2236cfc4517a684e8)
+- Evaluation Order
+- Printf-style debugging and reachability hypotheses
+- Evaluation of function calls
+- The Stack
+- Tail Position and Tail Calls
+- Tail Call Optimization (TCO) and Tail Recursive Functions
 
-## Today's agenda...
-- □ Evaluation Order
-- □ Printf-style debugging and reachability hypotheses
-- □ Evaluation of function call
-- □ The Stack
-- □ Tail Position and Tail Calls
-- □ Tail Call Optimization (TCO) and Tail Recursive Functions
+[Code for these lecture notes](https://gist.github.com/kmicinski/7042e0c2143f3fa2236cfc4517a684e8)
 
 ---
 
@@ -22,21 +21,23 @@ permalink: /evaluation-order
 
 Evaluation order refers to the order in which certain subexpressions in our program are *evaluated*. Evaluation happens in small steps: at the most basic level, the machine executes instructions on a multi-GHz clock. It is crucial for debugging and code comprehension to have a firm understanding of evaluation order. Exactly when and where expressions in our code are evaluated is something we need to make rigorous. We will do so soon by writing interpreters, but we will talk about it informally for now.
 
-**QuickAnswer:** what is printed to the console for the following fragment?
-
-```racket
-;; displayln x to the console, then return y
-(define (display-and-return x y)
-  (displayln x)
-  y) ;; note: the above definition builds an implicit (begin ...)
-
-(define (my-plus x y)
-  (displayln "adding")
-  (+ x y))
-
-(displayln (my-plus (display-and-return 5 3)
-                    (display-and-return 10 4)))
-```
+> QuickAnswer
+>
+> What is printed to the console for the following fragment?
+>
+> ```racket
+> ;; displayln x to the console, then return y
+> (define (display-and-return x y)
+>   (displayln x)
+>   y) ;; note: the above definition builds an implicit (begin ...)
+>
+> (define (my-plus x y)
+>   (displayln "adding")
+>   (+ x y))
+>
+> (displayln (my-plus (display-and-return 5 3)
+>                     (display-and-return 10 4)))
+> ```
 
 When we refer to "control" in the context of programming languages, we are often appealing to the idea that we are "focusing" on some subcomputation at each point. In functional languages, the notion of control is generally: what subexpression is being evaluated. In assembly language, the notion of control is %rip, i.e., the instruction pointer, which always points at the instruction currently being executed.
 It is a crucial skill to be able to trace through the program's control flow and to be able to identify what is happening.

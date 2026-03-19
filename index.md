@@ -35,7 +35,7 @@ layout: mainpage
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/firstday.pdf">
+            <a href="{{ '/' | relative_url }}assets/slides/firstday.pdf">
               Slides
             </a>
           </li>
@@ -77,7 +77,7 @@ layout: mainpage
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/cis352-f22-l1.pdf">
+            <a href="{{ '/' | relative_url }}assets/slides/cis352-f22-l1.pdf">
               Slides
             </a>
           </li>
@@ -124,7 +124,7 @@ layout: mainpage
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/cis352-f22-l2.pdf">Slides</a>
+            <a href="{{ '/' | relative_url }}assets/slides/cis352-f22-l2.pdf">Slides</a>
           </li>
         </ul>
       </div>
@@ -186,7 +186,7 @@ layout: mainpage
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/lambdas.pdf">Slides</a>
+            <a href="{{ '/' | relative_url }}assets/slides/lambdas.pdf">Slides</a>
           </li>
         </ul>
       </div>
@@ -207,7 +207,7 @@ layout: mainpage
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/cons.pdf">Slides (Cons)</a>
+            <a href="{{ '/' | relative_url }}assets/slides/cons.pdf">Slides (Cons)</a>
           </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
@@ -215,7 +215,7 @@ layout: mainpage
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/maps-matches.pdf">Slides (Matching)</a>
+            <a href="{{ '/' | relative_url }}assets/slides/maps-matches.pdf">Slides (Matching)</a>
           </li>
         </ul>
       </div>
@@ -239,7 +239,7 @@ layout: mainpage
         </div>
         <div class="resource-notes">
           <i class="fa-solid fa-file-lines notes-icon"></i>
-          <a href="{{ site.baseurl }}/patterns">Lecture Notes</a>
+          <a href="{{ '/' | relative_url }}patterns">Lecture Notes</a>
         </div>
       </div>
     </li>
@@ -253,7 +253,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-upload"></i>
-            <a href="{{ site.baseurl }}/projects/1">Submit Homework by 2/3</a>
+            <a href="{{ '/' | relative_url }}projects/1">Submit Homework by 2/3</a>
           </li>
         </ul>
       </div>
@@ -269,7 +269,7 @@ layout: mainpage
         </div>
         <div class="resource-notes">
           <i class="fa-solid fa-file-lines notes-icon"></i>
-          <a href="{{ site.baseurl }}/algebra">Lecture Notes</a>
+          <a href="{{ '/' | relative_url }}algebra">Lecture Notes</a>
         </div>
         <ul class="resources-inline">
           <li>
@@ -278,7 +278,7 @@ layout: mainpage
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/folds.pdf">Slides (Folds)</a>
+            <a href="{{ '/' | relative_url }}assets/slides/folds.pdf">Slides (Folds)</a>
           </li>
         </ul>
       </div>
@@ -302,7 +302,7 @@ layout: mainpage
         </div>
         <div class="resource-notes">
           <i class="fa-solid fa-file-lines notes-icon"></i>
-          <a href="{{ site.baseurl }}/evaluation-order">Lecture Notes</a>
+          <a href="{{ '/' | relative_url }}evaluation-order">Lecture Notes</a>
         </div>
       </div>
     </li>
@@ -317,7 +317,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="{{ site.baseurl }}/projects/2">Homework Details</a>
+            <a href="{{ '/' | relative_url }}projects/2">Homework Details</a>
           </li>
         </ul>
       </div>
@@ -362,7 +362,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/stack-smashing.pdf">Stack Smashing (Short Lecture Slides)</a>
+            <a href="{{ '/' | relative_url }}assets/slides/stack-smashing.pdf">Stack Smashing (Short Lecture Slides)</a>
           </li>
         </ul>
       </div>
@@ -398,7 +398,7 @@ layout: mainpage
         </div>
         <div class="resource-notes">
           <i class="fa-solid fa-file-lines notes-icon"></i>
-          <a href="{{ site.baseurl }}/natural-deduction">Lecture Notes</a>
+          <a href="{{ '/' | relative_url }}natural-deduction">Lecture Notes</a>
         </div>
         <ul class="resources-inline">
           <li>
@@ -423,7 +423,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-upload"></i>
-            <a href="{{ site.baseurl }}/projects/2">Submit Homework by 2/26</a>
+            <a href="{{ '/' | relative_url }}projects/2">Submit Homework by 2/26</a>
           </li>
         </ul>
       </div>
@@ -458,7 +458,7 @@ layout: mainpage
         </div>
         <div class="resource-notes">
           <i class="fa-solid fa-file-lines notes-icon"></i>
-          <a href="{{ site.baseurl }}/lambda">Lecture Notes</a>
+          <a href="{{ '/' | relative_url }}lambda">Lecture Notes</a>
         </div>
         <ul class="resources-inline">
           <li>
@@ -467,7 +467,7 @@ layout: mainpage
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/lambda-intro.pdf">Slides (Optional)</a>
+            <a href="{{ '/' | relative_url }}assets/slides/lambda-intro.pdf">Slides (Optional)</a>
           </li>
         </ul>
       </div>
@@ -477,7 +477,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-code project-icon"></i>
-          Homework P3: <a href="{{ site.baseurl }}/projects/3">Scheme Interpreter</a> -- Released (Due 3/24)
+          Homework P3: <a href="{{ '/' | relative_url }}projects/3">Scheme Interpreter</a> -- Released (Due 3/24)
         </div>
         <ul class="resources-inline">
           <li>
@@ -486,7 +486,7 @@ layout: mainpage
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/projects/3">Instructions</a>
+            <a href="{{ '/' | relative_url }}projects/3">Instructions</a>
           </li>
         </ul>
       </div>
@@ -501,7 +501,7 @@ layout: mainpage
         </div>
         <div class="resource-notes">
           <i class="fa-solid fa-file-lines notes-icon"></i>
-          <a href="{{ site.baseurl }}/closures">Lecture Notes</a>
+          <a href="{{ '/' | relative_url }}closures">Lecture Notes</a>
         </div>
       </div>
     </li>
@@ -510,7 +510,7 @@ layout: mainpage
 
 <!-- WEEK 9 -->
 <div class="week-header">
-  <h2><i class="fa-solid fa-calendar-week"></i> Week 9: Lambda Calculus: Reductions and Church Encoding</h2>
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 9: Reduction Strategies and Exam 2 Review</h2>
 </div>
 <div class="week-schedule">
   <ul>
@@ -552,32 +552,12 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Church Numerals, Church Encoding, and the Y Combinator
+          Exam 2 Review
         </div>
-        <ul class="resources-inline">
-          <li>
-            <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=DC-9wWgXQTc&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=24">Numerals</a>
-          </li>
+        <ul class="resources-list">
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/churchnum.pdf">Slides (Numerals)</a>
-          </li>
-          <li>
-            <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=izfoxmSAQ28">Encoding</a>
-          </li>
-          <li>
-            <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/p4.pdf">Slides (Encoding)</a>
-          </li>
-          <li>
-            <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=GJi4H2UMaRU&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=27">Y Combinator</a>
-          </li>
-          <li>
-            <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/y-comb.pdf">Slides (Y Combinator)</a>
+            <a href="{{ '/assets/slides/CIS352_s26_m2_practice.pdf' | relative_url }}">Practice Exam</a>
           </li>
         </ul>
       </div>
@@ -602,7 +582,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-upload"></i>
-            <a href="{{ site.baseurl }}/projects/3">Submit Homework by 3/24</a>
+            <a href="{{ '/' | relative_url }}projects/3">Submit Homework by 3/24</a>
           </li>
         </ul>
       </div>
@@ -632,7 +612,7 @@ layout: mainpage
 
 <!-- WEEK 11 -->
 <div class="week-header">
-  <h2><i class="fa-solid fa-calendar-week"></i> Week 11: Type Systems</h2>
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 11: Church Encoding and Type Systems</h2>
 </div>
 <div class="week-schedule">
   <ul>
@@ -642,12 +622,32 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Simply-Typed λ-Calculus and Type Soundness
+          Church Numerals, Church Encoding, and the Y Combinator
         </div>
-        <ul class="resources-list">
+        <ul class="resources-inline">
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=DC-9wWgXQTc&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=24">Numerals</a>
+          </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/types-part1.pdf">Lecture Slides</a>
+            <a href="{{ '/assets/slides/churchnum.pdf' | relative_url }}">Slides (Numerals)</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=izfoxmSAQ28">Encoding</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="{{ '/assets/slides/p4.pdf' | relative_url }}">Slides (Encoding)</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=GJi4H2UMaRU&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=27">Y Combinator</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="{{ '/assets/slides/y-comb.pdf' | relative_url }}">Slides (Y Combinator)</a>
           </li>
         </ul>
       </div>
@@ -658,8 +658,14 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Propositions as Types (Verified Programming in Lean)
+          Simply-Typed λ-Calculus and Type Soundness
         </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="{{ '/assets/slides/types-part1.pdf' | relative_url }}">Lecture Slides</a>
+          </li>
+        </ul>
       </div>
     </li>
     <li class="session-item">
@@ -672,7 +678,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="{{ site.baseurl }}/projects/4">Homework Details</a>
+            <a href="{{ '/' | relative_url }}projects/4">Homework Details</a>
           </li>
         </ul>
       </div>
@@ -682,7 +688,7 @@ layout: mainpage
 
 <!-- WEEK 12 -->
 <div class="week-header">
-  <h2><i class="fa-solid fa-calendar-week"></i> Week 12: Type Inference, Polymorphism, and Object Orientation</h2>
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 12: Type Inference and Objects vs. Closures</h2>
 </div>
 <div class="week-schedule">
   <ul>
@@ -692,8 +698,14 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Parametric Polymorphism and System F
+          Hindley-Milner Type Inference
         </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="{{ '/assets/slides/types-part2.pdf' | relative_url }}">Lecture Slides</a>
+          </li>
+        </ul>
       </div>
     </li>
     <!-- Session: 4/9 -->
@@ -702,14 +714,8 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Hindley-Milner Type Inference and Short Lecture: Objects vs. Closures
+          Objects vs. Closures and Intro to Rust
         </div>
-        <ul class="resources-list">
-          <li>
-            <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ site.baseurl }}/assets/slides/types-part2.pdf">Lecture Slides</a>
-          </li>
-        </ul>
       </div>
     </li>
   </ul>
@@ -761,7 +767,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-upload"></i>
-            <a href="{{ site.baseurl }}/projects/4">Submit Homework by 4/21</a>
+            <a href="{{ '/' | relative_url }}projects/4">Submit Homework by 4/21</a>
           </li>
         </ul>
       </div>
