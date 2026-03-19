@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Church Encoding</title>
+  <meta name="description" content="We will now turn our attention to convincing ourselves of the Turingcompleteness of the λ-calculus. We will do this by systematicallytaking forms from the λ-...">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://kmicinski.com/cis352-s26/css/main.css">
+  <link rel="canonical" href="https://kmicinski.com/cis352-s26/church-encoding">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="https://kmicinski.com/cis352-s26/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  
+</head>
+
+  <link rel="stylesheet" href="/cis352-s26/css/lecture-explorer.css">
+  <body class="lecture-explorer-page">
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="https://kmicinski.com//cis352-s26/">CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/#schedule">Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/syllabus">Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/playground">Proof Playground</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/lambda-explorer">Lambda Explorer</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/playground">Proof Tree Playground</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+
+        <!-- Top bar -->
+        <div id="le-topbar">
+          <a href="/cis352-s26/" class="le-back-link">
+            <i class="fas fa-arrow-left"></i> CIS352
+          </a>
+          <h1 class="le-title">Church Encoding</h1>
+          <div class="le-topbar-spacer"></div>
+          <button class="le-toggle-btn" id="le-toggle-explorer" title="Toggle explorer pane">
+            <i class="fas fa-flask"></i> Explorer
+          </button>
+        </div>
+
+        <!-- Split pane container -->
+        <div id="le-split">
+          <!-- Left pane: lecture notes -->
+          <div id="le-notes" class="le-pane">
+            <div class="le-notes-inner">
+              <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+                <div class="post-content" itemprop="articleBody">
+                  <p>We will now turn our attention to convincing ourselves of the Turing
+completeness of the λ-calculus. We will do this by systematically
+taking forms from the λ-calculus and explaining how they translate
+into simpler forms. We will do this in a piecemeal style, starting
+with relatively simple forms and then expanding to more complex forms.</p>
+
+<h2 id="numbers">Numbers</h2>
+
+<p>First, we need to encode numbers. What do we mean when we say
+“encode?” Well, informally, we mean that when we have a number like 8,
+we have a corresponding λ-calculus object that corresponds to 8. To be
+a bit more formal about it, we want a pair of functions <code class="language-plaintext highlighter-rouge">church-&gt;nat</code>
+and <code class="language-plaintext highlighter-rouge">nat-&gt;church</code> such that you can “round-trip” them:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>∀n : nat, (church-&gt;nat (nat-&gt;church n)) = n
+</code></pre></div></div>
+
+<p>We will give one encoding here. The encoding I will give is the
+“standard” one, but it is important to recognize that there are
+others. As long as we can define the two functions above in a
+harmonious way (along with defining the other operations we need on
+numbers), we should be good.</p>
+
+<p>Our representation of the number <code class="language-plaintext highlighter-rouge">N : nat</code> will be: (λ(f) (fᴺ x)),
+where fᴺ is N applications of N. To give a few specific examples:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(nat-&gt;church 0) = (λ (f) (λ (x) x)) ;; call f 0 times
+(nat-&gt;church 1) = (λ (f) (λ (x) (f x))) ;; call f 0 times
+(nat-&gt;church 2) = (λ (f) (λ (x) (f (f x)))) ;; call f 0 times
+(nat-&gt;church 3) = (λ (f) (λ (x) (f (f (f x))))) ;; call f 0 times
+</code></pre></div></div>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Convert the following Church-encoded number to a Racket number:
+    (λ (f) (λ (x) (f (f (f (f (f (f (f x)))))))))</p>
+</blockquote>
+
+<p>One immediate point we should make is that it may take an arbitrary
+amount of reductions (β, α, η) to get any given term into normal
+form. For example, consider the following term:</p>
+
+<p>CLAUDE: Give a somewhat complex term which ultimately reduces to the encoding of 2.</p>
+
+<p>This is just as true in the λ-calculus as it is in arithmetic: we know
+that <code class="language-plaintext highlighter-rouge">8 = 7 + 1 = 7 + 1 + 0 = 7 + 1 + 0 + 0 = ...</code>. In general, there
+are an infinite number of algebraic expressions which “are” (compute
+to) 8. However, in gradeschool arithmetic, we can <em>always</em> simplify /
+canonicalize the term (as long as we don’t have any variables). By
+contrast, in the λ-calculus, it might be the case that some evaluation
+strategies will never reduce (e.g., because the term contains
+Ω). However, Church-Rosser tells us that when we <em>do</em> hit a normal
+form, it will be unique (up to α equivalence).</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Use β-reduction to reduce the term to β-normal form:</p>
+
+  <p>((λ (g) (λ (f) (λ (x) (f ((g f) x))))) (λ (z) z))</p>
+
+  <p>What Church-encoded number does it represent?</p>
+</blockquote>
+
+<h2 id="round-tripping-numbers">Round-Tripping Numbers</h2>
+
+<p>Now let’s say we wanted to write a Racket function which generates a
+Church-encoded version of the number N. We can do that as follows:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(define (nat-&gt;church n)
+  (define (h n)
+    (match n
+      [0 'x]
+      [_ `(f ,(h (- n 1)))]))
+  `(λ (f) (λ (x) ,(h n))))
+(nat-&gt;church 4)
+</code></pre></div></div>
+
+<p>The function produces a quoted expression (i.e., a Racket quoted
+list). If I actually want to <em>use</em> that in Racket, I can call <code class="language-plaintext highlighter-rouge">eval</code>
+(you will rarely want to do this, so this is just for illustrative
+purposes here):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(eval (nat-&gt;church 4) (make-base-namespace))
+#&lt;procedure&gt; 
+</code></pre></div></div>
+
+<p>The call to <code class="language-plaintext highlighter-rouge">(make-base-namespace)</code> is required to tell eval how to
+interpret variables (in this case, there are no free variables).</p>
+
+<p>Now, Racket has no way of “inspecting” the <code class="language-plaintext highlighter-rouge">#&lt;procedure&gt;</code>. In fact,
+this is kind of a key point: it’s never meaningful to inspect a
+function’s source code at runtime, because we can never meaningfully
+compare two functions for identity without actually running them. So
+the question is: how do we know that the result of our <code class="language-plaintext highlighter-rouge">nat-&gt;church</code>
+is correct?</p>
+
+<p>This turns out to be a tricky question, because what “correctness”
+means here is ill-defined, until we give the other side of the
+definition, <code class="language-plaintext highlighter-rouge">church-&gt;nat</code>. Let’s do that now. To start, let’s look at
+the following term:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(λ (f) (λ (x) (f (f (f (f x))))))
+</code></pre></div></div>
+
+<p>Think a little bit about what this function <em>does</em>: it consumes a
+function <code class="language-plaintext highlighter-rouge">f</code>, and returns a function which consumes an input <code class="language-plaintext highlighter-rouge">x</code> and
+then returns the result of applying <code class="language-plaintext highlighter-rouge">f</code> four times on <code class="language-plaintext highlighter-rouge">x</code>. So here’s
+the trick: if we make <code class="language-plaintext highlighter-rouge">f</code> be the Racket function <code class="language-plaintext highlighter-rouge">add1</code>, then we get:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(λ (x) (add1 (add1 (add1 (add1 x)))))
+</code></pre></div></div>
+
+<p>Hopefully you will agree that this is equivalent to the function:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(λ (x) (+ x 4))
+</code></pre></div></div>
+
+<p>So now we can see: if we are given a number <code class="language-plaintext highlighter-rouge">N</code>, and we apply it on
+Racket’s <code class="language-plaintext highlighter-rouge">add1</code>, we get back a function which takes in <code class="language-plaintext highlighter-rouge">x</code> and adds
+<code class="language-plaintext highlighter-rouge">N</code> to it. To get the whole number, we can just make that <code class="language-plaintext highlighter-rouge">x</code> be <code class="language-plaintext highlighter-rouge">0</code>!</p>
+
+<p>Thus, we can implement <code class="language-plaintext highlighter-rouge">(church-&gt;nat N)</code> (where <code class="language-plaintext highlighter-rouge">N</code> is a
+<em>church-encoded representation of some number N</em>) as follows:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(define (church-&gt;nat N) ((N add1) 0))
+</code></pre></div></div>
+
+<p>Just to reiterate: there’s no special reason that we <em>must</em> use this
+encoding. This is just the most direct encoding. There are other
+possible encodings that could work. Also, notice that nothing in
+<code class="language-plaintext highlighter-rouge">church-&gt;nat</code> requires <code class="language-plaintext highlighter-rouge">N</code> to be a Church-encoed number: if we give
+<code class="language-plaintext highlighter-rouge">church-&gt;nat</code> something that <em>isn’t</em> a Church-encoded number, it will
+just produce nonsense. In our next lecture, we’ll start studying type
+theory: we’ll use type systems to ensure that everything is tied
+together as it should be; for now, we’ll just say: it only works if
+you use this encoding.</p>
+
+<h2 id="church-encoding-add1">Church-encoding <code class="language-plaintext highlighter-rouge">add1</code></h2>
+
+<p>So far, we’ve only discussed how to encode constants (natural numbers)
+into the lambda calculus. But the great thing about the encoding is
+that we should be able to take our program, encode each <em>fragment</em>
+into the λ-calculus, and then “run” (via β-reduction, or just running
+it in Racket) our program until we get an answer.</p>
+
+<p>We can implement the <code class="language-plaintext highlighter-rouge">add1</code> function as follows:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>add1 = (λ (N) (λ (f) (λ (x) (f ((N f) x)))))
+</code></pre></div></div>
+
+<p>Look at how it works:</p>
+<ul>
+  <li>It consumes an argument <code class="language-plaintext highlighter-rouge">N</code>, and returns <code class="language-plaintext highlighter-rouge">(λ (f) (λ (x) (f ((N f) x))))</code></li>
+  <li>What is that result? Well, it takes <code class="language-plaintext highlighter-rouge">f</code> and <code class="language-plaintext highlighter-rouge">x</code> and:
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">((N f) x)</code> applies <code class="language-plaintext highlighter-rouge">f</code> <code class="language-plaintext highlighter-rouge">N</code> times to <code class="language-plaintext highlighter-rouge">x</code> (this is the definition of N!)</li>
+      <li>Takes the result of that and applies <code class="language-plaintext highlighter-rouge">f</code> on it <em>one more</em> time.</li>
+    </ul>
+  </li>
+</ul>
+
+
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <!-- Draggable divider -->
+          <div id="le-divider" title="Drag to resize, double-click to reset">
+            <div class="le-divider-grip">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+
+          <!-- Right pane: lambda explorer -->
+          <div id="le-explorer" class="le-pane">
+            <iframe
+              id="le-explorer-iframe"
+              src="/cis352-s26/lambda-playground/www/index.html?term="
+              allow="clipboard-write"
+              title="Lambda Calculus Explorer"
+            ></iframe>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '26) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src="/cis352-s26/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="/cis352-s26/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js"></script>
+
+
+    <script src="/cis352-s26/assets/js/lecture-explorer.js"></script>
+  </body>
+</html>

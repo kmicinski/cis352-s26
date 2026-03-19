@@ -5,9 +5,192 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 17 Mar 2026 17:42:57 -0400</pubDate>
-    <lastBuildDate>Tue, 17 Mar 2026 17:42:57 -0400</lastBuildDate>
+    <pubDate>Wed, 18 Mar 2026 22:15:14 -0400</pubDate>
+    <lastBuildDate>Wed, 18 Mar 2026 22:15:14 -0400</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>Church Encoding</title>
+        <description></description>
+        <pubDate>Wed, 18 Mar 2026 00:00:00 -0400</pubDate>
+        <link>https://kmicinski.com/cis352-s26/2026/03/18/church-encoding/</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/2026/03/18/church-encoding/</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>Church Encoding</title>
+        <description>&lt;p&gt;We will now turn our attention to convincing ourselves of the Turing
+completeness of the λ-calculus. We will do this by systematically
+taking forms from the λ-calculus and explaining how they translate
+into simpler forms. We will do this in a piecemeal style, starting
+with relatively simple forms and then expanding to more complex forms.&lt;/p&gt;
+
+&lt;h2 id=&quot;numbers&quot;&gt;Numbers&lt;/h2&gt;
+
+&lt;p&gt;First, we need to encode numbers. What do we mean when we say
+“encode?” Well, informally, we mean that when we have a number like 8,
+we have a corresponding λ-calculus object that corresponds to 8. To be
+a bit more formal about it, we want a pair of functions &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-&amp;gt;nat&lt;/code&gt;
+and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-&amp;gt;church&lt;/code&gt; such that you can “round-trip” them:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;∀n : nat, (church-&amp;gt;nat (nat-&amp;gt;church n)) = n
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We will give one encoding here. The encoding I will give is the
+“standard” one, but it is important to recognize that there are
+others. As long as we can define the two functions above in a
+harmonious way (along with defining the other operations we need on
+numbers), we should be good.&lt;/p&gt;
+
+&lt;p&gt;Our representation of the number &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N : nat&lt;/code&gt; will be: (λ(f) (fᴺ x)),
+where fᴺ is N applications of N. To give a few specific examples:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(nat-&amp;gt;church 0) = (λ (f) (λ (x) x)) ;; call f 0 times
+(nat-&amp;gt;church 1) = (λ (f) (λ (x) (f x))) ;; call f 0 times
+(nat-&amp;gt;church 2) = (λ (f) (λ (x) (f (f x)))) ;; call f 0 times
+(nat-&amp;gt;church 3) = (λ (f) (λ (x) (f (f (f x))))) ;; call f 0 times
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Convert the following Church-encoded number to a Racket number:
+    (λ (f) (λ (x) (f (f (f (f (f (f (f x)))))))))&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;One immediate point we should make is that it may take an arbitrary
+amount of reductions (β, α, η) to get any given term into normal
+form. For example, consider the following term:&lt;/p&gt;
+
+&lt;p&gt;CLAUDE: Give a somewhat complex term which ultimately reduces to the encoding of 2.&lt;/p&gt;
+
+&lt;p&gt;This is just as true in the λ-calculus as it is in arithmetic: we know
+that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;8 = 7 + 1 = 7 + 1 + 0 = 7 + 1 + 0 + 0 = ...&lt;/code&gt;. In general, there
+are an infinite number of algebraic expressions which “are” (compute
+to) 8. However, in gradeschool arithmetic, we can &lt;em&gt;always&lt;/em&gt; simplify /
+canonicalize the term (as long as we don’t have any variables). By
+contrast, in the λ-calculus, it might be the case that some evaluation
+strategies will never reduce (e.g., because the term contains
+Ω). However, Church-Rosser tells us that when we &lt;em&gt;do&lt;/em&gt; hit a normal
+form, it will be unique (up to α equivalence).&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Use β-reduction to reduce the term to β-normal form:&lt;/p&gt;
+
+  &lt;p&gt;((λ (g) (λ (f) (λ (x) (f ((g f) x))))) (λ (z) z))&lt;/p&gt;
+
+  &lt;p&gt;What Church-encoded number does it represent?&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;round-tripping-numbers&quot;&gt;Round-Tripping Numbers&lt;/h2&gt;
+
+&lt;p&gt;Now let’s say we wanted to write a Racket function which generates a
+Church-encoded version of the number N. We can do that as follows:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(define (nat-&amp;gt;church n)
+  (define (h n)
+    (match n
+      [0 &apos;x]
+      [_ `(f ,(h (- n 1)))]))
+  `(λ (f) (λ (x) ,(h n))))
+(nat-&amp;gt;church 4)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The function produces a quoted expression (i.e., a Racket quoted
+list). If I actually want to &lt;em&gt;use&lt;/em&gt; that in Racket, I can call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eval&lt;/code&gt;
+(you will rarely want to do this, so this is just for illustrative
+purposes here):&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(eval (nat-&amp;gt;church 4) (make-base-namespace))
+#&amp;lt;procedure&amp;gt; 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The call to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(make-base-namespace)&lt;/code&gt; is required to tell eval how to
+interpret variables (in this case, there are no free variables).&lt;/p&gt;
+
+&lt;p&gt;Now, Racket has no way of “inspecting” the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#&amp;lt;procedure&amp;gt;&lt;/code&gt;. In fact,
+this is kind of a key point: it’s never meaningful to inspect a
+function’s source code at runtime, because we can never meaningfully
+compare two functions for identity without actually running them. So
+the question is: how do we know that the result of our &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-&amp;gt;church&lt;/code&gt;
+is correct?&lt;/p&gt;
+
+&lt;p&gt;This turns out to be a tricky question, because what “correctness”
+means here is ill-defined, until we give the other side of the
+definition, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-&amp;gt;nat&lt;/code&gt;. Let’s do that now. To start, let’s look at
+the following term:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(λ (f) (λ (x) (f (f (f (f x))))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Think a little bit about what this function &lt;em&gt;does&lt;/em&gt;: it consumes a
+function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;, and returns a function which consumes an input &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; and
+then returns the result of applying &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; four times on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;. So here’s
+the trick: if we make &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; be the Racket function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt;, then we get:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(λ (x) (add1 (add1 (add1 (add1 x)))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Hopefully you will agree that this is equivalent to the function:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(λ (x) (+ x 4))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;So now we can see: if we are given a number &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt;, and we apply it on
+Racket’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt;, we get back a function which takes in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; and adds
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt; to it. To get the whole number, we can just make that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; be &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt;!&lt;/p&gt;
+
+&lt;p&gt;Thus, we can implement &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(church-&amp;gt;nat N)&lt;/code&gt; (where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt; is a
+&lt;em&gt;church-encoded representation of some number N&lt;/em&gt;) as follows:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(define (church-&amp;gt;nat N) ((N add1) 0))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Just to reiterate: there’s no special reason that we &lt;em&gt;must&lt;/em&gt; use this
+encoding. This is just the most direct encoding. There are other
+possible encodings that could work. Also, notice that nothing in
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-&amp;gt;nat&lt;/code&gt; requires &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt; to be a Church-encoed number: if we give
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-&amp;gt;nat&lt;/code&gt; something that &lt;em&gt;isn’t&lt;/em&gt; a Church-encoded number, it will
+just produce nonsense. In our next lecture, we’ll start studying type
+theory: we’ll use type systems to ensure that everything is tied
+together as it should be; for now, we’ll just say: it only works if
+you use this encoding.&lt;/p&gt;
+
+&lt;h2 id=&quot;church-encoding-add1&quot;&gt;Church-encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt;&lt;/h2&gt;
+
+&lt;p&gt;So far, we’ve only discussed how to encode constants (natural numbers)
+into the lambda calculus. But the great thing about the encoding is
+that we should be able to take our program, encode each &lt;em&gt;fragment&lt;/em&gt;
+into the λ-calculus, and then “run” (via β-reduction, or just running
+it in Racket) our program until we get an answer.&lt;/p&gt;
+
+&lt;p&gt;We can implement the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt; function as follows:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;add1 = (λ (N) (λ (f) (λ (x) (f ((N f) x)))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Look at how it works:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;It consumes an argument &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt;, and returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (f) (λ (x) (f ((N f) x))))&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;What is that result? Well, it takes &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; and:
+    &lt;ul&gt;
+      &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((N f) x)&lt;/code&gt; applies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt; times to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; (this is the definition of N!)&lt;/li&gt;
+      &lt;li&gt;Takes the result of that and applies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; on it &lt;em&gt;one more&lt;/em&gt; time.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Wed, 18 Mar 2026 00:00:00 -0400</pubDate>
+        <link>https://kmicinski.com/cis352-s26/church-encoding</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/church-encoding</guid>
+        
+        
+      </item>
     
       <item>
         <title>λ-Calculus: Reduction Strategies</title>
@@ -4004,428 +4187,6 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
         <link>https://kmicinski.com/cis352-s26/patterns</link>
         <guid isPermaLink="true">https://kmicinski.com/cis352-s26/patterns</guid>
         
-        
-      </item>
-    
-      <item>
-        <title>Project 2: Transitive Closure</title>
-        <description>&lt;p&gt;&lt;strong&gt;Due&lt;/strong&gt;: Thursday, February 26, 11:59PM
-&lt;strong&gt;Late deadline (-5%)&lt;/strong&gt;: March 1, 11:59PM&lt;/p&gt;
-
-&lt;p&gt;Available on http://autograde.org. Use your credentials to login.&lt;/p&gt;
-
-&lt;p&gt;In this project we will implement a domain-specific programming
-language that allows us to specify network topologies and check their
-connectivity. Production datacenters and commercial networks are
-composed of myriad hosts, routers, and switches, connected in a
-complex web of infrastructure. An important but challenging question
-is simply: which nodes may connect to which others?  Even in the
-modern age, network misconfigurations still account for &lt;a href=&quot;https://www.forbes.com/sites/forbestechcouncil/2022/01/27/whats-causing-all-these-network-outages-and-what-can-cios-do-to-prevent-them/?sh=6dc268d37e7b&quot;&gt;global
-internet outage
-events&lt;/a&gt;. To
-address this, several cloud providers have begun to provide tools for
-analyzing properties of networks specified via domain-specific
-configuration languages. For example, AWS’s &lt;a href=&quot;https://aws.amazon.com/blogs/aws/new-vpc-insights-analyzes-reachability-and-visibility-in-vpcs/&quot;&gt;VPC Reachability
-Analyzer&lt;/a&gt;
-is a commercial offering that is now used by some cloud system
-engineers as part of their day-to-day jobs.&lt;/p&gt;
-
-&lt;p&gt;In this project, we will build a minimal language for expressing
-network topologies and implement transitive closure, the algorithm for
-graph reachability. This will allow us to check for connectivity
-properties of (potentially huge) graphs. Our language is loosely
-inspired by &lt;a href=&quot;https://cornell-pl.github.io/cs6114/netkat.html&quot;&gt;NetKAT&lt;/a&gt;,
-and we encourage you to read about its features if software-defined
-networking is of interest to you.&lt;/p&gt;
-
-&lt;h3 id=&quot;academic-integrity&quot;&gt;Academic Integrity&lt;/h3&gt;
-
-&lt;p&gt;See syllabus for academic integrity / AI policy. AI usage is allowed,
-please document (prompts, etc.) in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ai-usage.txt&lt;/code&gt;.&lt;/p&gt;
-
-&lt;h2 id=&quot;input-format&quot;&gt;Input Format&lt;/h2&gt;
-
-&lt;p&gt;Networks include various pieces of physical infrastructure: routers,
-switches, and servers. In this project we will ignore the
-physical properties of network nodes, and will simply call every
-entity capable of sending or receiving data a “node.” Nodes are
-connected by (directed) links. Both nodes and links are specified as
-commands, each command residing on a unique line of the input file
-format. Syntactically, the two specification commands are (a) the
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;NODE &amp;lt;name&amp;gt;&lt;/code&gt; command, which specifies the existence of a node named
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;name&amp;gt;&lt;/code&gt; and (b) the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;LINK &amp;lt;from&amp;gt; &amp;lt;to&amp;gt;&lt;/code&gt; command, which establishes a
-(directed) link from node &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;from&amp;gt;&lt;/code&gt; to node &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;to&amp;gt;&lt;/code&gt;. For convenience, we
-assume all nodes are specified before any occurrences of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;LINK&lt;/code&gt;
-commands. For example, the following is valid:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;NODE node0-name
-NODE node1-name
-LINK node0-name node1-name
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;But the next is not:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;NODE node0-name
-LINK node0-name node1-name
-NODE node1-name
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;We can visualize the first graph in the following way:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    +------------+  link    +------------+
-    | node0-name | -------&amp;gt; | node1-name |
-    +------------+          +------------+
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Let’s add some more nodes and links:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;NODE node0-name
-NODE node1-name
-NODE node2-name
-LINK node0-name node1-name
-LINK node1-name node2-name
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Now our network looks like this:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    +------------+  link    +------------+  link    +------------+
-    | node0-name | -------&amp;gt; | node1-name | -------&amp;gt; | node2-name |
-    +------------+          +------------+          +------------+
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h1 id=&quot;transitive-closure&quot;&gt;Transitive Closure&lt;/h1&gt;
-
-&lt;p&gt;The above networks are toy examples. In practice, networks may have
-millions of nodes, and orders-of-magnitude more links. Network
-engineers work hard to ensure that networks are designed to adhere to
-specific connectivity invariants. For example, we may wish to ensure
-that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main-server&lt;/code&gt; can connect to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;backup-srv&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;NODE main-server
-NODE backup-srv
-NODE switch
-NODE db-server
-LINK main-server switch
-LINK switch main-server
-LINK switch backup-srv
-LINK backup-srv switch
-LINK db-server switch
-LINK switch db-server
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Note that we explicitly enumerated bidirectional links. The above
-specification may be visualized as:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    +-------------+          +------------+          +------------+
-    | main-server | &amp;lt;------&amp;gt; |   switch   | &amp;lt;------&amp;gt; | backup-srv |
-    +-------------+          +------------+          +------------+
-                                 ^
-    +------------+               |
-    | db-server  | &amp;lt;-------------+ 
-    +------------+
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Now, we can make queries:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;CONNECT main-server backup-srv
-CONNECT db-server main-server
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Checking these queries is easy for small examples: we can trace in our
-head a path between &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main-server&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;db-server&lt;/code&gt;. But larger examples
-may involve a great many nodes, and even more links between them. As
-such, we need an algorithm which will infer &lt;em&gt;transitive&lt;/em&gt; links through
-the input graph:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;          +----------------------------------------------+
-          v                                              v
-    +-------------+          +------------+          +------------+
-    | main-server | &amp;lt;------&amp;gt; |   switch   | &amp;lt;------&amp;gt; | backup-srv |
-    +-------------+          +------------+          +------------+
-          |                      ^                        ^
-    +------------+               |                        |
-    | db-server  | &amp;lt;-------------+                        |
-    +------------+                                        |
-          ^                                               |
-          +-----------------------------------------------+
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;We do this through an iterative process named &lt;em&gt;transitive
-closure&lt;/em&gt;. Transitive closure consists of a series of steps applied in
-an iterative fashion, until no more answers are possible. In other
-words, the algorithm is defined in terms of its behavior at each “time
-step.”&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;The transitive closure (of links) at time 0 is simply the set of
-extensionally-specified (input) links.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;To construct the transitive closure at time n+1, look at the
-transitive closure at time n. For any pair of links in that graph,
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(x,y)&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(y,z)&lt;/code&gt;, such that the intermediate node &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;y&lt;/code&gt; is
-matching, draw a (possibly new) link between &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;z&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(x,z)&lt;/code&gt;.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Repeat this process until no new links are found. I.e., until the
-transitive closure at some time n is equal to the transitive closure
-at time n+1&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;This process necessarily terminates, as long as you are careful to
-ensure elements are not added twice (which will be easy using the
-correct datastructures, namely sets and hashes). This is because there
-are a finite number of nodes, and so the “worst-case” scenario would
-be that every node was connected to every other (as it is in the above
-graph). At each step of the process, we add more information to
-(monotonically) increase our knowledge base (of transitive links). At
-some point we will either (a) not add any new links or (b) add all
-possible links, at which point no more links may be added and we
-terminate.&lt;/p&gt;
-
-&lt;p&gt;A generalized version of this reasoning gives us the &lt;a href=&quot;https://en.wikipedia.org/wiki/Knaster%E2%80%93Tarski_theorem&quot;&gt;Knaster-Tarski fixed-point theorem&lt;/a&gt; and the &lt;a href=&quot;https://en.wikipedia.org/wiki/Kleene_fixed-point_theorem&quot;&gt;Klenne fixed-point theorem&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h1 id=&quot;hashes&quot;&gt;Hashes&lt;/h1&gt;
-
-&lt;p&gt;We will represent graphs of links as Racket &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hashes&lt;/code&gt;. We strongly
-encourage you to read &lt;a href=&quot;https://docs.racket-lang.org/reference/hashtables.html&quot;&gt;their documentation&lt;/a&gt;. You
-will need to know at least the following key functions: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(hash key0 value0
-...)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(hash-ref key)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(hash-set hsh key value)&lt;/code&gt;, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(hash-keys
-hsh)&lt;/code&gt;. Note: you are specifically &lt;strong&gt;forbidden&lt;/strong&gt; from using
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;make-hash&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hash-set!&lt;/code&gt;, and other mutable variants of hashes.&lt;/p&gt;
-
-&lt;p&gt;To represent a graph as a hash, we will adopt the following
-representation: keys will be strings, and their associated values will
-be &lt;strong&gt;sets&lt;/strong&gt; of strings, manipulated using Racket’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;set&lt;/code&gt;s (whose
-&lt;a href=&quot;https://docs.racket-lang.org/reference/sets.html&quot;&gt;documentation you should read
-here&lt;/a&gt;. For example,
-the first example graph would be represented as&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(define x (hash &quot;node0-name&quot; (set &quot;node1-name&quot;)
-                &quot;node1-name&quot; (set &quot;node2-name&quot;)))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;To add a new link to the graph, we must be careful to use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;set-add&lt;/code&gt; to
-extend the set of nodes. For example, consider that we wanted to
-&lt;em&gt;extend&lt;/em&gt; the above graph with a pointer from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;node0-name&lt;/code&gt; to
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;node3-name&lt;/code&gt;, we would do it via the following:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(hash-set x &quot;node0-name&quot; (set-add (hash-ref x &quot;node0-name&quot;) &quot;node3-name&quot;))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Make sure you understand in the above code how &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;set-add&lt;/code&gt; and
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hash-ref&lt;/code&gt; are used in combination to ensure that no
-previously-present nodes are dropped.&lt;/p&gt;
-
-&lt;h1 id=&quot;tasks&quot;&gt;Tasks&lt;/h1&gt;
-
-&lt;p&gt;You will implement several functions, I have ranked them roughly in
-order of difficulty.&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(parse-line l)&lt;/code&gt; – You will parse an input line given as a string
-and you will transform it into an output that conforms to
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;line?&lt;/code&gt;. Hint: use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;string-split&lt;/code&gt; and matching. (Difficulty:
-easy/medium)&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(forward-link? graph n0 n1)&lt;/code&gt; – Check whether there is a forward
-link from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n0&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n1&lt;/code&gt; in the graph &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;graph&lt;/code&gt;. Return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt; iff &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n1&lt;/code&gt; is
-linked to from (pointed at by) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n0&lt;/code&gt;. (Difficulty: easier)&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(add-link graph from to)&lt;/code&gt; – Add an “edge” in the graph from node 
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;from&lt;/code&gt; to node &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;to&lt;/code&gt;. Hint: use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hash-ref&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;set-add&lt;/code&gt;, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hash-set&lt;/code&gt; 
-to accomplish this. (Difficulty: easier)&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(build-init-graph input)&lt;/code&gt; – Assume that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;input&lt;/code&gt; is a program given
-as input. You will build up an &lt;em&gt;initial&lt;/em&gt; graph datastructure
-corresponding to the program. Essentially, you are building an
-initial graph upon which you will subsequently perform iterative
-rounds of transitive closure. You will do this by looking at each
-line of input and changing the hash in one of two ways:&lt;/p&gt;
-
-    &lt;p&gt;-&amp;gt; If you see a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(node &amp;lt;n&amp;gt;)&lt;/code&gt; command, you will add a self link
-  between &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; and itself.
-  -&amp;gt; If you see an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(link &amp;lt;from&amp;gt; &amp;lt;to&amp;gt;)&lt;/code&gt; command, you will insert an
-  edge from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;from&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;to&lt;/code&gt;.&lt;/p&gt;
-
-    &lt;p&gt;(Difficulty: medium)&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(transitive-closure graph)&lt;/code&gt; – Perform the transitive closure of
-the graph &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;graph&lt;/code&gt;. Your solution must be the final answer of
-transitive closure, not just a single iteration. In other words,
-your solution must possess the property that there are no additional
-links possible to add. (Difficulty: harder)&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;implementing-transitive-closure&quot;&gt;Implementing Transitive Closure&lt;/h3&gt;
-
-&lt;p&gt;There are a variety of algorithms to implement transitive closure. I
-will describe the so-called “naive” approach here, and then sketch a
-more refined (semi-naive) approach. I would recommend you implement
-your code using a combination of either recursive functions or the
-functions &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;foldl/r&lt;/code&gt;. My solution is roughly ten lines and uses &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;foldl&lt;/code&gt;
-three times.&lt;/p&gt;
-
-&lt;p&gt;Here is an iterative algorithm for calculating the transitive closure
-of a graph.&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;Proceeding one iteration at a time, accumulate a variable &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;solution&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;At time step zero, initialize &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;solution&lt;/code&gt; to be the graph of initial
-links.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;To obtain the next time step, iterate over each edge in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;solution&lt;/code&gt;,
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(x,y)&lt;/code&gt; (this can be done using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hash-keys&lt;/code&gt; and a recursive function
-or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;foldl&lt;/code&gt;)&lt;/p&gt;
-
-    &lt;ul&gt;
-      &lt;li&gt;For each of these edges, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(x,y)&lt;/code&gt; identify the set of edges
- starting from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;y&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(y,z)&lt;/code&gt;, add &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(x,z)&lt;/code&gt; to the graph (this can be
- done using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hash-ref&lt;/code&gt;, which will return a set: you can iterate
- over that set as a list by using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;set-&amp;gt;list&lt;/code&gt;). Hint: you may want
- to call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hash-ref&lt;/code&gt; with a third argument to specify a “default”
- value of the empty set (e.g., &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(hash-ref h key (set))&lt;/code&gt;).&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;At some point this process will add no new edges, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;solution&lt;/code&gt; at
-timestep &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; will be the same as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;solution&lt;/code&gt; at timestamp
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n+1&lt;/code&gt;. When this happens, the search is over.&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;As an example, let’s see what happens on the following&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;NODE node0
-NODE node1
-NODE node2
-LINK node0 node1
-LINK node1 node2
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;We start with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;solution&lt;/code&gt; being the graph &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;{node0 -&amp;gt; {node1}, node1 -&amp;gt; {node2}}&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;We examine edge &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(node0,node1)&lt;/code&gt;:&lt;/p&gt;
-
-    &lt;ul&gt;
-      &lt;li&gt;Consider the set of edges beginning with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;node1&lt;/code&gt;: this is just the
-single edge &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(node1,node2)&lt;/code&gt;. We add it to the graph, and now our
-graph is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;{node0 -&amp;gt; {node1, node2}, node1 -&amp;gt; {node2}}&lt;/code&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;We examine edge &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(node1,node2)&lt;/code&gt;:&lt;/p&gt;
-
-    &lt;ul&gt;
-      &lt;li&gt;Consider the set of edges beginning with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;node2&lt;/code&gt;: there are no
-such edges, so the graph doesn’t change.&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;At the end of the first iteration (time step), the graph is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;{node0
--&amp;gt; {node1, node2}, node1 -&amp;gt; {node2}}&lt;/code&gt;.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;During the next iteration, we reexamine &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;node0&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;node1&lt;/code&gt;, but we
-don’t discover any new edges, so the graph remains the same.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;We’re done: the final answer is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;{node0 -&amp;gt; {node1, node2}, node1 -&amp;gt; {node2}}&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;All in all my reference solution uses roughly 14 lines of code and
-uses &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;foldl&lt;/code&gt; several times. I predict reasonable solutions will be
-between 10 and 50 lines, if you find yourself doing significantly more
-work please consult the instructors to ensure you’ve got the algorithm
-down.&lt;/p&gt;
-
-&lt;h1 id=&quot;bonus-tests&quot;&gt;Bonus Tests&lt;/h1&gt;
-
-&lt;p&gt;There are three bonus tests: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bonus-add-edge-3&lt;/code&gt;,
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bonus-transitive-closure-ring100&lt;/code&gt;, and
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bonus-transitive-closure-ring200&lt;/code&gt;. The difference between these tests
-and the normal (secret) tests is that they operate over much larger
-graphs (the last two are ring graphs of size 200 and 300). To pass
-these tests, ensure you don’t add extra algorithmic overhead to your
-solution. The normal secret tests use graphs up to 30 nodes in
-size. In sum, you can earn roughly 18% bonus.&lt;/p&gt;
-
-&lt;h1 id=&quot;testing&quot;&gt;Testing&lt;/h1&gt;
-
-&lt;p&gt;Once you implement all of your work, you will unlock the ability to 
-run &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;connectivity.rkt&lt;/code&gt; with an input file. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;demo&lt;/code&gt; function canonicalizes 
-the database and prints out the starting database and its transitive closure:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;racket connectivity.rkt demo/1.net &quot;CONNECTED n13 n52&quot;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This will allow you to see your code in action. To run the testing
-infrastructure on your code, use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tester.py&lt;/code&gt;. It is invoked as
-follows:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;python3 tester.py -av
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;You may wish to add more example networks in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;demos&lt;/code&gt; folder.&lt;/p&gt;
-
-&lt;h1 id=&quot;submitting-your-code-for-testing&quot;&gt;Submitting your code for testing&lt;/h1&gt;
-
-&lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt; Before you can submit your project for grading you &lt;em&gt;must&lt;/em&gt; git
-add, commit, and push. On a terminal (in your project directory)
-type:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# Add all files in the directory
-git add .
-# Make a commit
-git commit -m &quot;my commit message here&quot;
-# Push to server
-git push
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Once you have done a git commit and push, go to the autograder and
-select for your project to be graded.&lt;/p&gt;
-</description>
-        <pubDate>Sun, 02 Oct 2022 00:00:00 -0400</pubDate>
-        <link>https://kmicinski.com/cis352-s26/projects/2</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/projects/2</guid>
-        
-        
-        <category>assignment</category>
-        
-        <category>project</category>
-        
-      </item>
-    
-      <item>
-        <title>Project 1: Tic-Tac-Toe</title>
-        <description>&lt;p&gt;Please see the project description on the autograder.&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://www.youtube.com/watch?v=ApIXt_Exf7g&quot;&gt;Project Video&lt;/a&gt;&lt;/p&gt;
-</description>
-        <pubDate>Sat, 17 Sep 2022 00:00:00 -0400</pubDate>
-        <link>https://kmicinski.com/cis352-s26/projects/1</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/projects/1</guid>
-        
-        
-        <category>assignment</category>
-        
-        <category>project</category>
         
       </item>
     
