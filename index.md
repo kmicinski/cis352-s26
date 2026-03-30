@@ -626,6 +626,10 @@ layout: mainpage
         </div>
         <ul class="resources-inline">
           <li>
+            <i class="fa-solid fa-book-open notes-icon"></i>
+            <a href="{{ '/church-encoding' | relative_url }}">Lecture Notes (NEW)</a>
+          </li>
+          <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
             <a href="https://www.youtube.com/watch?v=DC-9wWgXQTc&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=24">Numerals</a>
           </li>
@@ -677,8 +681,12 @@ layout: mainpage
         </div>
         <ul class="resources-list">
           <li>
-            <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="{{ '/' | relative_url }}projects/4">Homework Details</a>
+            <i class="fa-solid fa-code project-icon"></i>
+            <a href="{{ '/projects/4' | relative_url }}">Project Instructions</a>
+          </li>
+          <li>
+            <i class="fa-solid fa-book-open notes-icon"></i>
+            <a href="{{ '/church-encoding' | relative_url }}">Lecture Notes (NEW)</a>
           </li>
         </ul>
       </div>
@@ -767,7 +775,7 @@ layout: mainpage
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-upload"></i>
-            <a href="{{ '/' | relative_url }}projects/4">Submit Homework by 4/21</a>
+            <a href="{{ '/projects/4' | relative_url }}">Submit Homework by 4/21</a>
           </li>
         </ul>
       </div>
