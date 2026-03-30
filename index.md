@@ -593,7 +593,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Exam 2 Review
+          More Exam Review / Practice
         </div>
       </div>
     </li>
@@ -772,23 +772,23 @@ layout: mainpage
         </ul>
       </div>
     </li>
-    <!-- Session: 4/21 Final Review -->
+    <!-- Session: 4/21 Exam 3 Review -->
     <li class="session-item">
       <div class="date-col">4/21</div>
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Final Exam Review
+          Exam 3 Review
         </div>
       </div>
     </li>
-    <!-- Session: 4/23 Final Exam -->
+    <!-- Session: 4/23 Exam 3 -->
     <li class="session-item">
       <div class="date-col">4/23</div>
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-file-lines notes-icon"></i>
-          Final Exam (in class, 20%) 
+          Exam 3 (in class, 20%)
         </div>
       </div>
     </li>
@@ -797,17 +797,24 @@ layout: mainpage
 
 <!-- WEEK 15 -->
 <div class="week-header">
-  <h2><i class="fa-solid fa-calendar-week"></i> Week 15: Finals Week / Course Wrap-up</h2>
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 15: Finals Week</h2>
 </div>
 <div class="week-schedule">
   <ul>
+    <!-- Session: 5/1 Final Exam (Optional) -->
     <li class="session-item">
-      <div class="date-col">TBD</div>
+      <div class="date-col">5/1</div>
       <div class="session-col">
         <div class="session-title">
-          <i class="fa-solid fa-graduation-cap"></i>
-          No regular class - finals week buffer
+          <i class="fa-solid fa-file-lines notes-icon"></i>
+          Final Exam (optional, replaces lowest exam grade)
         </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-clock"></i>
+            Friday 10:15AM - 12:15PM, Life Science Building 105
+          </li>
+        </ul>
       </div>
     </li>
   </ul>
