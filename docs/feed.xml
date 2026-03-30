@@ -5,8 +5,8 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 30 Mar 2026 15:59:49 -0400</pubDate>
-    <lastBuildDate>Mon, 30 Mar 2026 15:59:49 -0400</lastBuildDate>
+    <pubDate>Mon, 30 Mar 2026 19:03:00 -0400</pubDate>
+    <lastBuildDate>Mon, 30 Mar 2026 19:03:00 -0400</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -919,14 +919,33 @@ do we do instead?&lt;/p&gt;
 
 &lt;p&gt;The idea is that a boolean is a &lt;em&gt;selector&lt;/em&gt;: it takes two
 arguments, one for “what to do when true” and one for “what to do
-when false,” and picks one of them. But there’s a subtlety: we need
-these arguments to be &lt;strong&gt;thunks&lt;/strong&gt; (zero-argument functions, i.e.,
-callbacks). The reason for thunks is that we want to avoid evaluating
-&lt;em&gt;both&lt;/em&gt; branches: under call-by-value (Racket’s evaluation strategy),
-both arguments would be fully evaluated before the boolean selects
-one. If one branch diverges, the whole thing diverges even if we
-wouldn’t take that branch. Thunks delay evaluation until the boolean
-makes its choice.&lt;/p&gt;
+when false,” and picks one of them.&lt;/p&gt;
+
+&lt;p&gt;In a “pure” presentation of Church booleans, we could simply use:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#t ≡ (λ (a) (λ (b) a))       ;; select first argument
+#f ≡ (λ (a) (λ (b) b))       ;; select second argument
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This works perfectly in the pure λ-calculus, where reduction strategy
+is flexible. But we have a problem: we are ultimately going to
+&lt;em&gt;execute&lt;/em&gt; our Church-encoded programs in Racket, which uses
+call-by-value evaluation. Under CBV, both arguments to a function are
+fully evaluated before the function body runs. So if we wrote &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(if e0
+e1 e2)&lt;/code&gt; as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((e0 e1) e2)&lt;/code&gt;, Racket would evaluate &lt;em&gt;both&lt;/em&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e2&lt;/code&gt;
+before &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e0&lt;/code&gt; gets to select one. If one branch diverges, the whole
+thing diverges even when we wouldn’t have taken that branch.&lt;/p&gt;
+
+&lt;p&gt;This is a bit of a leaky abstraction: the thunking we are about to
+describe is an artifact of running our encoding in a CBV language like
+Racket, not something inherent to the λ-calculus itself. Under normal
+order reduction, the simple encoding above would work fine, because
+arguments are not evaluated until they are actually used.&lt;/p&gt;
+
+&lt;p&gt;To work around CBV, we wrap each argument in a &lt;strong&gt;thunk&lt;/strong&gt; (a
+zero-argument function). Instead of passing values directly, we pass
+callbacks that &lt;em&gt;produce&lt;/em&gt; values when called. The boolean then calls the
+selected thunk, triggering evaluation of only the chosen branch.&lt;/p&gt;
 
 &lt;p&gt;Here is the encoding. We write it first at the “source level” (using
 multi-arg functions and zero-arg calls), then show the compiled

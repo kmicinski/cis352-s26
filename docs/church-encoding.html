@@ -601,14 +601,33 @@ do we do instead?</p>
 
 <p>The idea is that a boolean is a <em>selector</em>: it takes two
 arguments, one for “what to do when true” and one for “what to do
-when false,” and picks one of them. But there’s a subtlety: we need
-these arguments to be <strong>thunks</strong> (zero-argument functions, i.e.,
-callbacks). The reason for thunks is that we want to avoid evaluating
-<em>both</em> branches: under call-by-value (Racket’s evaluation strategy),
-both arguments would be fully evaluated before the boolean selects
-one. If one branch diverges, the whole thing diverges even if we
-wouldn’t take that branch. Thunks delay evaluation until the boolean
-makes its choice.</p>
+when false,” and picks one of them.</p>
+
+<p>In a “pure” presentation of Church booleans, we could simply use:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#t ≡ (λ (a) (λ (b) a))       ;; select first argument
+#f ≡ (λ (a) (λ (b) b))       ;; select second argument
+</code></pre></div></div>
+
+<p>This works perfectly in the pure λ-calculus, where reduction strategy
+is flexible. But we have a problem: we are ultimately going to
+<em>execute</em> our Church-encoded programs in Racket, which uses
+call-by-value evaluation. Under CBV, both arguments to a function are
+fully evaluated before the function body runs. So if we wrote <code class="language-plaintext highlighter-rouge">(if e0
+e1 e2)</code> as <code class="language-plaintext highlighter-rouge">((e0 e1) e2)</code>, Racket would evaluate <em>both</em> <code class="language-plaintext highlighter-rouge">e1</code> and <code class="language-plaintext highlighter-rouge">e2</code>
+before <code class="language-plaintext highlighter-rouge">e0</code> gets to select one. If one branch diverges, the whole
+thing diverges even when we wouldn’t have taken that branch.</p>
+
+<p>This is a bit of a leaky abstraction: the thunking we are about to
+describe is an artifact of running our encoding in a CBV language like
+Racket, not something inherent to the λ-calculus itself. Under normal
+order reduction, the simple encoding above would work fine, because
+arguments are not evaluated until they are actually used.</p>
+
+<p>To work around CBV, we wrap each argument in a <strong>thunk</strong> (a
+zero-argument function). Instead of passing values directly, we pass
+callbacks that <em>produce</em> values when called. The boolean then calls the
+selected thunk, triggering evaluation of only the chosen branch.</p>
 
 <p>Here is the encoding. We write it first at the “source level” (using
 multi-arg functions and zero-arg calls), then show the compiled
