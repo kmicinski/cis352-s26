@@ -5,9 +5,43 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 18 Mar 2026 22:19:51 -0400</pubDate>
-    <lastBuildDate>Wed, 18 Mar 2026 22:19:51 -0400</lastBuildDate>
+    <pubDate>Mon, 30 Mar 2026 01:42:49 -0400</pubDate>
+    <lastBuildDate>Mon, 30 Mar 2026 01:42:49 -0400</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>More Exam 2 Practice</title>
+        <description>&lt;p&gt;During CIS352 lecture, several students mentioned wanting more
+practice problems. We have written up another set of practice
+problems.&lt;/p&gt;
+
+&lt;h2 id=&quot;programming-with-algebra&quot;&gt;Programming with Algebra&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((f g) x) = (x (g 0))&lt;/code&gt;, now define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; via a Racket lambda:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(define f (λ (g) ...))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Let &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;foldl&lt;/code&gt; be defined by the following definition:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(foldl f a &apos;()) = a
+(foldl f a (cons hd rst)) = (foldl f (f hd a) rst)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Using equational reasoning, calculate the value of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(foldl append &apos;() &apos;((x) (y)))&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;##&lt;/p&gt;
+</description>
+        <pubDate>Fri, 20 Mar 2026 00:00:00 -0400</pubDate>
+        <link>https://kmicinski.com/cis352-s26/exam-2-practice</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/exam-2-practice</guid>
+        
+        
+      </item>
     
       <item>
         <title>Church Encoding</title>
@@ -184,6 +218,150 @@ it in Racket) our program until we get an answer.&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ul&gt;
 
+&lt;p&gt;This is a point that deserves some contemplation, so let’s work
+through it with a bit of practice:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Let’s say we want to Church-encode &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(add1 2)&lt;/code&gt; into the λ-calculus.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Single-argument application is already in the λ-calculus, so no
+issue there, but neither &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt; / &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt; is in the lambda calculus, so
+we translate those.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Substituting &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt; with the term above, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt; with its definition yields:&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((λ (N) (λ (f) (λ (x) (f ((N f) x)))))
+ (λ (f) (λ (x) (f (f x)))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now, please take the above term and load it into the λ-explorer (on
+the right) and &lt;em&gt;prove&lt;/em&gt; that the above computation reduces to the
+Church-encoding of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;3&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;aside-understanding-the-encoding&quot;&gt;Aside: Understanding the Encoding&lt;/h2&gt;
+
+&lt;p&gt;At this point, each of the individual steps might make sense, but it
+all feels a little confusing. We’ve studied a lot in this course:
+interpretation, semantics, lambda calculus, etc. Let me write out a
+few bullet points that might make things more clear:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Q: Why are we doing the encoding?&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;A: To show ourselves how high-level programming constructs like
+numbers, multi-argument functions, recursion, etc. work in terms of
+the λ-calculus. Equivalently: to convince ourselves that the
+λ-calculus is capable of expressing these things.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Remark: things such as multi-argument might feel like relatively
+low-level features, rather than high-level features. But remember: the
+λ-calculus is exceptionally small, a minimal rewriting-based
+system. In practice, however, encodings of certain things (e.g.,
+numbers) will have very bad performance: in CIS531, we study
+compilation down to x86-64, in which we have an efficient machine
+representation of 64-bit integers.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Q: Are we interpreting, like in project 3?&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;A: No, we are actually &lt;em&gt;not&lt;/em&gt; interpreting, like in project 3.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Q: Why not? Are we compiling instead?&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;A: Yes, in this lecture, the encoding we’re discussing is tantamount
+to writing a compiler. As for why it’s important, the reason is that
+doing this transformation allows us to write the encodings of &lt;em&gt;all&lt;/em&gt;
+programs, even if they don’t terminate. For example, while we can’t
+interpret &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ 1 Ω)&lt;/code&gt; (where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Ω&lt;/code&gt; is the omega term), we can still
+&lt;em&gt;encode&lt;/em&gt; it. The result will be a term in the λ-calculus.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;So, the encoding is defining how to translate / compile high-level
+features from a Scheme-like language into the λ-calculus.&lt;/p&gt;
+
+&lt;h2 id=&quot;multi-argument-functions-via-currying&quot;&gt;Multi-argument functions via currying&lt;/h2&gt;
+
+&lt;p&gt;In many languages, including Racket, functions often have a fixed
+number of parameters. In fact–even though we haven’t used
+them–Racket also allows functions of an arbitrary number of
+parameters: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((lambda l (second l)) 1 2 3)&lt;/code&gt; returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt;. This reveals
+a pretty good intuition: a function of multiple parameters can take a
+&lt;em&gt;list&lt;/em&gt; or &lt;em&gt;tuple&lt;/em&gt; of inputs. Soon enough, we’ll start looking at type
+theory–that will give us what we need to give a rigorous definition
+of a tuple (or even list) type.&lt;/p&gt;
+
+&lt;p&gt;First: how do we handle &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ () e)&lt;/code&gt;? This is not super common, but it
+does sometimes happen in practical programs (e.g., thunks)
+sometimes. To convert &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ () e)&lt;/code&gt; into the λ-calculus, we just attach a
+superficial “bogus” parameter: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (_) e)&lt;/code&gt;. But we also have to
+remember that everywhere we apply &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e)&lt;/code&gt; with zero arguments (we can
+always identify this just by looking at the code), we translate that
+to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e (λ (x) x))&lt;/code&gt;: i.e., since we know &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; will eventually be &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (_)
+e)&lt;/code&gt; (with a bogus argument).&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) e)&lt;/code&gt; is already encoded, so we just have to encode &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt;. Then,
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x y) e)&lt;/code&gt; is encoded as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) (λ (y) e))&lt;/code&gt;, and calls &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e x y)&lt;/code&gt;
+are encoded &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((e x) y)&lt;/code&gt;. We repeat this trick for any number of
+arguments, and that gives us the encoding of any fixed-arity function.&lt;/p&gt;
+
+&lt;h2 id=&quot;addition-encoding-&quot;&gt;Addition (encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;)&lt;/h2&gt;
+
+&lt;p&gt;Since &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt; both take two arguments, we can use currying: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((+
+3) 4)&lt;/code&gt;, where we then encode 3/4 using the representation we just
+discussed. Actually in Racket, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt; can take any number of arguments,
+or even be applied to a list: while we could encode these things in
+principle, we’ll skip it here to keep things simple. Let’s start with
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ n k)&lt;/code&gt;. To be the natural number &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n+k&lt;/code&gt;, the result needs to be the
+function:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(λ (f) (λ (x) (f (f ... (f x)))))
+               |
+               v
+              n+k times 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;So let’s define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt; with the two arguments, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (n) (λ
+(k) (λ (f) (λ (x) ...))))&lt;/code&gt;. There are a lot of lamdbas here: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; and
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt; are the arguments to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;. That then returns the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (f) (λ (x)
+...))&lt;/code&gt;. Now, to fill in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;...&lt;/code&gt;, we want to apply &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n+k&lt;/code&gt;
+times: this is the definition of the number &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n+k&lt;/code&gt;. To do that, we can
+just do &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((k f) ((n f) x))&lt;/code&gt;. Let’s think carefully about going on
+here; first, let’s look at the argument to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(k f)&lt;/code&gt;, which is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((n f)
+x)&lt;/code&gt;: this applies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; times to to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; (notice we have to be
+careful about currying). That is a term that builds a big stack of
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;s to materialize the number &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (f) (λ (x) (f (f ... n times
+... (f x)))))&lt;/code&gt;. That is passed to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(k f)&lt;/code&gt;, which is the function that
+does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt; times to some argument; in this case, that argument is
+the big stack of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; calls to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;. Then, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(k f)&lt;/code&gt; does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt; times to
+that stack of calls to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;, building a stack of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n+k&lt;/code&gt; calls to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;multiplication-encoding-&quot;&gt;Multiplication (encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;)&lt;/h2&gt;
+
+&lt;h2 id=&quot;evaluating-arithmetic-expressions&quot;&gt;Evaluating Arithmetic Expressions&lt;/h2&gt;
+
+&lt;p&gt;Given the encodings we’ve discussed so far, we can now evaluate a
+simple expression algebra, here’s what we have so far…&lt;/p&gt;
+
+&lt;p&gt;```
+e ::= n        – Literals
+    | (+ e e)  – Addition
+    | (* e e)  – Multiplication
+    | (λ (x …) e) — λs of any arity
+    | (e …) – Applications of any arity&lt;/p&gt;
 </description>
         <pubDate>Wed, 18 Mar 2026 00:00:00 -0400</pubDate>
         <link>https://kmicinski.com/cis352-s26/church-encoding</link>
@@ -3783,409 +3961,6 @@ https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
         <pubDate>Mon, 02 Feb 2026 00:00:00 -0500</pubDate>
         <link>https://kmicinski.com/cis352-s26/algebra</link>
         <guid isPermaLink="true">https://kmicinski.com/cis352-s26/algebra</guid>
-        
-        
-      </item>
-    
-      <item>
-        <title>Pattern Matching</title>
-        <description>&lt;h2 id=&quot;topics&quot;&gt;Topics&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Trees, manually&lt;/li&gt;
-  &lt;li&gt;Recursion over trees&lt;/li&gt;
-  &lt;li&gt;Introducing pattern matching&lt;/li&gt;
-  &lt;li&gt;Matching list patterns (“quasipatterns”)&lt;/li&gt;
-  &lt;li&gt;Matching predicate patterns&lt;/li&gt;
-  &lt;li&gt;Trees, and algebraic data types generally&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;warmup&quot;&gt;Warmup&lt;/h2&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Let’s write &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(interleave l0 l1)&lt;/code&gt;, a function that takes two lists l0/l1 and returns the elements of l0 interleaved with the elements of l1. Assume l0/l1 have the same length.&lt;/p&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (interleave &apos;(0 1 2) &apos;(x y z)) =&amp;gt; &apos;(0 x 1 y 2 z)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;interleave&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;A big idea in CIS352 is being able to explain complex programming language features in terms of simpler ones. A very reasonable question is: “why Racket? Why not Haskell, Rust, etc.” The answer is that all of those languages have a &lt;em&gt;large&lt;/em&gt; set of core features (e.g., static type system), which makes it harder to understand a very tiny core. There is an answer about Racket specifically in the next lecture–but for now, we will study just one more feature.&lt;/p&gt;
-
-&lt;p&gt;Later on in the course we will study the λ-calculus: a language with only three forms. We will show that in fact it is possible to encode every single language feature in terms of the λ-calculus. While CIS352 covers Racket, a main reason for doing this is that it is a language that has a very direct connection to the untyped λ-calculus.&lt;/p&gt;
-
-&lt;p&gt;Today we will talk about pattern matching, an increasingly-common language feature which originated in functional programming (SML, Haskell, etc.) but now exists in Python, Rust, and other general-purpose multi-paradigm languages.&lt;/p&gt;
-
-&lt;p&gt;We are learning the absolutely minimal number of features necessary to build a complete, general-purpose programming language that allows us to get real work done. Because we want to fully understand &lt;em&gt;everything&lt;/em&gt;, we will take a minimal number of things as fundamental. In the case of Racket, we will take only a &lt;em&gt;single&lt;/em&gt; data structure as fundamental: lists. Nearly &lt;em&gt;everything&lt;/em&gt; we build in class–from a data structures point of view–will be done &lt;em&gt;only&lt;/em&gt; using lists.&lt;/p&gt;
-
-&lt;p&gt;Next week, we’ll use algebraic data types for their main purpose in CIS352: representing the &lt;em&gt;syntax&lt;/em&gt; of another programming language, so that we can start writing interpreters.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;trees-manually&quot;&gt;Trees, manually&lt;/h2&gt;
-
-&lt;p&gt;In Racket, we will define an algebraic data type via a “type predicate:”&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tree?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;cond&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;list?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-              &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; node&apos;s length is exactly 4&lt;/span&gt;
-              &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;first&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;node&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-              &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tree?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;third&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-              &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tree?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fourth&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
-         &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;A binary tree is either:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;The symbol &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;empty&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;The list &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(node ,v ,l0 ,l1)&lt;/code&gt; where:
-    &lt;ul&gt;
-      &lt;li&gt;l’s first element is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;node&lt;/code&gt;&lt;/li&gt;
-      &lt;li&gt;l’s second element is any value v&lt;/li&gt;
-      &lt;li&gt;l’s third element l0 is also a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tree?&lt;/code&gt;&lt;/li&gt;
-      &lt;li&gt;l’s fourth element l1 is also a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tree?&lt;/code&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;A tree is &lt;em&gt;nothing else&lt;/em&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Notice how the second &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cond&lt;/code&gt; case is extremely ugly: we have to spell out the shape of the list very precisely. The point of pattern matching is to avoid that pain.&lt;/p&gt;
-
-&lt;h3 id=&quot;example-trees&quot;&gt;Example trees&lt;/h3&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;ss&quot;&gt;&apos;empty&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;empty&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;
-       &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;empty&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-       &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;7&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;empty&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;12&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;empty&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Write the tree:&lt;/p&gt;
-  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;         20
-        /  \
-       10  30
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-  &lt;p&gt;in a manner that satisfies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tree?&lt;/code&gt;:&lt;/p&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (node ...)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;One fact about trees in Racket: they are &lt;em&gt;just lists&lt;/em&gt;. We can build them entirely out of cons cells. We don’t need any fancy machinery to define trees, other than recursion and lists. Once we have recursion and lists, we will see we can build the rest of computation.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;recursion-over-trees&quot;&gt;Recursion over trees&lt;/h2&gt;
-
-&lt;p&gt;Now we want to write a recursive function over trees. Let’s start:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; A tree&apos;s size is the number of *nodes* it contains&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tree-size&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-      &lt;span class=&quot;c1&quot;&gt;;; (tree-size &apos;empty) =&amp;gt; 0&lt;/span&gt;
-      &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
-      &lt;span class=&quot;c1&quot;&gt;;; it&apos;s a node:&lt;/span&gt;
-      &lt;span class=&quot;c1&quot;&gt;;; the left subtree is (third t), the right subtree is (fourth t)&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;t0-size&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tree-size&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;third&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;t1-size&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tree-size&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fourth&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))])&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t0-size&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t1-size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;As we mentioned, every algebraic data type will tell us what the “shape” of our recursion should look like. In the case of trees, we get the following recursion principle:&lt;/p&gt;
-
-&lt;p&gt;To define a recursive function f that works on all trees, define:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f &apos;empty)&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f \&lt;/code&gt;(node ,v ,t0 ,t1))`
-    &lt;ul&gt;
-      &lt;li&gt;&lt;em&gt;Using&lt;/em&gt; the value of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f t0)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f t1)&lt;/code&gt;. I.e., the result of applying f to the left / right subtree&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;In the above definition, we used &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(third t)&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(fourth t)&lt;/code&gt; to manually extract t0/t1. Today, we’ll learn about pattern matching, which will make this much easier. But for now, let’s work another example in the same style as the previous:&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(tree-sum t)&lt;/code&gt;, assuming t satisfies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tree?&lt;/code&gt;:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;If t is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;empty&lt;/code&gt;, return 0&lt;/li&gt;
-    &lt;li&gt;If t is a node, return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(second t)&lt;/code&gt; + tree-sum applied to the left/right subtree (use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(third t)&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(fourth t)&lt;/code&gt; to get them).&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (tree-sum &apos;(node 5 (node 10 empty empty) (node -5 empty empty))) =&amp;gt; 10&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tree-sum&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;introducing-pattern-matching&quot;&gt;Introducing pattern matching&lt;/h2&gt;
-
-&lt;p&gt;We will introduce a new construct: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(match e [pattern body] ...)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;This says: “match an expression e against a number of patterns.”&lt;/p&gt;
-
-&lt;p&gt;Here is a brief example:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fib&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fib&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fib&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;A match expression consists of a:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Discriminee&lt;/strong&gt;, an expression &lt;em&gt;being matched on / observed&lt;/em&gt;&lt;/li&gt;
-  &lt;li&gt;A number of pattern / body pairs, surrounded by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[ ... ]&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;The semantics is this:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;First, evaluate the discriminee down to a value, v&lt;/li&gt;
-  &lt;li&gt;Try to match v against the first pattern:
-    &lt;ul&gt;
-      &lt;li&gt;If the pattern matches, bind pattern variables and evaluate the body&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;If the first pattern fails to match, try the next pattern, …&lt;/li&gt;
-  &lt;li&gt;If no pattern matches, raise an exception.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;strong&gt;Trivia:&lt;/strong&gt; we call a match &lt;em&gt;total&lt;/em&gt; or &lt;em&gt;exhaustive&lt;/em&gt; when it matches all possible values that v could be. In this case, we can rest assured that we will never face an error simply due to the fact that we didn’t have the right match case. Later on in the class, we will study tools for how we could reason about this (and related errors).&lt;/p&gt;
-
-&lt;h3 id=&quot;pattern-types-so-far&quot;&gt;Pattern types so far&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Every literal value (like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&quot;hello&quot;&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;foo&lt;/code&gt;) can be used as a pattern
-    &lt;ul&gt;
-      &lt;li&gt;Matches exactly that literal&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;A variable forms a pattern and binds the variable&lt;/li&gt;
-  &lt;li&gt;The wildcard pattern &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_&lt;/code&gt; matches anything&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;example-cond-vs-match&quot;&gt;Example: cond vs match&lt;/h3&gt;
-
-&lt;p&gt;The two are equivalent:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foo&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;cond&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;hello&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;15&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foo-using-match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;&quot;hello&quot;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;15&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Translate the following function, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bar&lt;/code&gt;, to use match:&lt;/p&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bar&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;cond&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;-1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;-1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bar&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))]))&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bar-match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;matching-list-patterns-quasipatterns&quot;&gt;Matching list patterns (“quasipatterns”)&lt;/h2&gt;
-
-&lt;p&gt;The next pattern we’ll learn is the &lt;strong&gt;most important for CIS352.&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Let’s look at the function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;match-list&lt;/code&gt;, which takes a list l and returns:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;the first element if it is of length 1&lt;/li&gt;
-  &lt;li&gt;the sum of the two elements if it is of length 2&lt;/li&gt;
-  &lt;li&gt;the third elements onward if it is of length &amp;gt; 2&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match-list&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;rest&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;rest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;IMPORTANT:&lt;/strong&gt; in a pattern, you &lt;em&gt;MUST&lt;/em&gt; use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`&lt;/code&gt;, not &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;IMPORTANT:&lt;/strong&gt; when we use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;...&lt;/code&gt; in a pattern, it matches &lt;em&gt;zero or more&lt;/em&gt; occurrences of the pattern immediately previous to it. If that pattern is a variable, then it is bound to a list.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;IMPORTANT:&lt;/strong&gt; just to repeat this, in the following example, y is bound to a &lt;em&gt;list&lt;/em&gt;, because we have &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;...&lt;/code&gt; following y in the pattern.&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;matches zero or more 1s&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;matches any list starting with &apos;x, followed by y (matches as a list)&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;examples&quot;&gt;Examples&lt;/h3&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (match-list &apos;(5)) =&amp;gt; 5&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;; (match-list &apos;(1 2)) =&amp;gt; 3&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;; (match-list &apos;(1 2 3)) =&amp;gt; &apos;(3)&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;; (match-list &apos;(1 2 3 4)) =&amp;gt; &apos;(3 4)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;quasipattern-details&quot;&gt;Quasipattern details&lt;/h3&gt;
-
-&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(,x0 ,x1 ,x2 ...)&lt;/code&gt; is called a &lt;em&gt;quasipattern&lt;/em&gt;, which sounds complex, but it is actually quite simple once you get the gist of it:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(,x0 ,x1 ,x2)&lt;/code&gt; matches a list of size 3
-    &lt;ul&gt;
-      &lt;li&gt;x0, x1, and x2 are bound as pattern variables&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(,x0 ,x-rest ...)&lt;/code&gt; matches a list of size &amp;gt;= 1
-    &lt;ul&gt;
-      &lt;li&gt;x-rest can be &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;()&lt;/code&gt;, or any length &amp;gt; 0&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;We will only ever use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;...&lt;/code&gt; at the &lt;em&gt;end&lt;/em&gt; of a quasipattern (pattern that matches a list).&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;It turns out that x0, x1, and x2 are just &lt;em&gt;patterns&lt;/em&gt;, which happen to be (in this case) variable patterns. We can use literals too, or any other pattern:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; returns 3&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Use match to define a function, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(every-other l)&lt;/code&gt;, which returns every other element in l.&lt;/p&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (every-other &apos;()) =&amp;gt; &apos;()&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;; (every-other &apos;(1)) =&amp;gt; &apos;(1)&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;; (every-other &apos;(1 2)) =&amp;gt; &apos;(1)&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;; (every-other &apos;(1 2 3)) =&amp;gt; &apos;(1 3)&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;; hints: three patterns to use&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;; `(,x0 ,x1 ,x-rest ...), `(,x0), and &apos;()&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;every-other&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;matching-predicate-patterns&quot;&gt;Matching predicate patterns&lt;/h2&gt;
-
-&lt;p&gt;Sometimes we want to say: “match this, but only if it satisfies a certain predicate.” To do that, we can use predicate patterns:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bar++&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;even?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bar++&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; no reason I had to bind y&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;odd?&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; because y = x in this case!&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;The syntax for a predicate pattern is one of two things:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(? predicate?)&lt;/code&gt; Match if &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;predicate?&lt;/code&gt; (a function returning #t/#f) holds&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(? predicate? x)&lt;/code&gt; Match if &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;predicate?&lt;/code&gt; holds, and &lt;em&gt;also&lt;/em&gt; bind x&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Now, remember how list patterns work: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(,x ...)&lt;/code&gt; matches a &lt;em&gt;list&lt;/em&gt; and binds it to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;. Previously however, we mentioned that x need not be a name: it can be &lt;em&gt;any&lt;/em&gt; pattern. It is often a name, in which case it matches &lt;em&gt;any&lt;/em&gt; list as x. But we can also constrain it, to match a list of elements, all of which satisfy some property:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;evens-or-odds?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;We got nothing.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;even?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;evens&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;We got all evens.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;odd?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;odds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;We got all odds.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;We got a mix.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;evens-or-odds?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;evens-or-odds?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Describe the behavior of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mystery-function&lt;/code&gt;. What does it return? Consider all possible inputs, but describe its behavior as precisely as you can.&lt;/p&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;mystery-function&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;zero?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;xs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;xs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;error&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;trees-and-algebraic-data-types-generally&quot;&gt;Trees, and algebraic data types generally&lt;/h2&gt;
-
-&lt;p&gt;We can use pattern matching to implement “type predicates” for algebraic data types: types defined via constructors of associated arities. We rewrite the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tree?&lt;/code&gt; predicate using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;match&lt;/code&gt; as follows.&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match-tree?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;empty&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;match-tree?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;match-tree?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Now, let’s use matching to sum up all of the elements in the tree:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; sum-tree : match-tree? -&amp;gt; number? (assume tree of numbers)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;sum-tree&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; match is total by assumption that t satisfies match-tree?&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;empty&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;t0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;t1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;sum-tree&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;sum-tree&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Now, we can define a function to calculate the maximum element in a tree of numbers. Make &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;empty&lt;/code&gt; return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-inf.0&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;max-tree&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;empty&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;-inf.0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; make the maximum negative infinity&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;node&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;t0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;t1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;max&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;max-tree&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;max-tree&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;A tree satisfies the BST (binary search tree) property whenever every subtree &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(node ,v ,t0 ,t1)&lt;/code&gt; has that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(max t0) &amp;lt; v &amp;lt; (min t1)&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;p&gt;Basic idea: match t&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;If it’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;empty&lt;/code&gt;, return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;&lt;/li&gt;
-    &lt;li&gt;If it’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(node ,v ,t0 ,t1)&lt;/code&gt;, call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(max-tree t)&lt;/code&gt; (above) to calculate the maximum of t0 and t1, then check the necessary properties.&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bst-property?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-</description>
-        <pubDate>Sun, 01 Feb 2026 00:00:00 -0500</pubDate>
-        <link>https://kmicinski.com/cis352-s26/patterns</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/patterns</guid>
         
         
       </item>

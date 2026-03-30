@@ -276,6 +276,150 @@ it in Racket) our program until we get an answer.</p>
   </li>
 </ul>
 
+<p>This is a point that deserves some contemplation, so let’s work
+through it with a bit of practice:</p>
+
+<ul>
+  <li>
+    <p>Let’s say we want to Church-encode <code class="language-plaintext highlighter-rouge">(add1 2)</code> into the λ-calculus.</p>
+  </li>
+  <li>
+    <p>Single-argument application is already in the λ-calculus, so no
+issue there, but neither <code class="language-plaintext highlighter-rouge">add1</code> / <code class="language-plaintext highlighter-rouge">2</code> is in the lambda calculus, so
+we translate those.</p>
+  </li>
+  <li>
+    <p>Substituting <code class="language-plaintext highlighter-rouge">add1</code> with the term above, and <code class="language-plaintext highlighter-rouge">2</code> with its definition yields:</p>
+  </li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((λ (N) (λ (f) (λ (x) (f ((N f) x)))))
+ (λ (f) (λ (x) (f (f x)))))
+</code></pre></div></div>
+
+<p>Now, please take the above term and load it into the λ-explorer (on
+the right) and <em>prove</em> that the above computation reduces to the
+Church-encoding of <code class="language-plaintext highlighter-rouge">3</code>.</p>
+
+<h2 id="aside-understanding-the-encoding">Aside: Understanding the Encoding</h2>
+
+<p>At this point, each of the individual steps might make sense, but it
+all feels a little confusing. We’ve studied a lot in this course:
+interpretation, semantics, lambda calculus, etc. Let me write out a
+few bullet points that might make things more clear:</p>
+
+<ul>
+  <li>
+    <p>Q: Why are we doing the encoding?</p>
+  </li>
+  <li>
+    <p>A: To show ourselves how high-level programming constructs like
+numbers, multi-argument functions, recursion, etc. work in terms of
+the λ-calculus. Equivalently: to convince ourselves that the
+λ-calculus is capable of expressing these things.</p>
+  </li>
+</ul>
+
+<p>Remark: things such as multi-argument might feel like relatively
+low-level features, rather than high-level features. But remember: the
+λ-calculus is exceptionally small, a minimal rewriting-based
+system. In practice, however, encodings of certain things (e.g.,
+numbers) will have very bad performance: in CIS531, we study
+compilation down to x86-64, in which we have an efficient machine
+representation of 64-bit integers.</p>
+
+<ul>
+  <li>
+    <p>Q: Are we interpreting, like in project 3?</p>
+  </li>
+  <li>
+    <p>A: No, we are actually <em>not</em> interpreting, like in project 3.</p>
+  </li>
+  <li>
+    <p>Q: Why not? Are we compiling instead?</p>
+  </li>
+  <li>
+    <p>A: Yes, in this lecture, the encoding we’re discussing is tantamount
+to writing a compiler. As for why it’s important, the reason is that
+doing this transformation allows us to write the encodings of <em>all</em>
+programs, even if they don’t terminate. For example, while we can’t
+interpret <code class="language-plaintext highlighter-rouge">(+ 1 Ω)</code> (where <code class="language-plaintext highlighter-rouge">Ω</code> is the omega term), we can still
+<em>encode</em> it. The result will be a term in the λ-calculus.</p>
+  </li>
+</ul>
+
+<p>So, the encoding is defining how to translate / compile high-level
+features from a Scheme-like language into the λ-calculus.</p>
+
+<h2 id="multi-argument-functions-via-currying">Multi-argument functions via currying</h2>
+
+<p>In many languages, including Racket, functions often have a fixed
+number of parameters. In fact–even though we haven’t used
+them–Racket also allows functions of an arbitrary number of
+parameters: <code class="language-plaintext highlighter-rouge">((lambda l (second l)) 1 2 3)</code> returns <code class="language-plaintext highlighter-rouge">2</code>. This reveals
+a pretty good intuition: a function of multiple parameters can take a
+<em>list</em> or <em>tuple</em> of inputs. Soon enough, we’ll start looking at type
+theory–that will give us what we need to give a rigorous definition
+of a tuple (or even list) type.</p>
+
+<p>First: how do we handle <code class="language-plaintext highlighter-rouge">(λ () e)</code>? This is not super common, but it
+does sometimes happen in practical programs (e.g., thunks)
+sometimes. To convert <code class="language-plaintext highlighter-rouge">(λ () e)</code> into the λ-calculus, we just attach a
+superficial “bogus” parameter: <code class="language-plaintext highlighter-rouge">(λ (_) e)</code>. But we also have to
+remember that everywhere we apply <code class="language-plaintext highlighter-rouge">(e)</code> with zero arguments (we can
+always identify this just by looking at the code), we translate that
+to <code class="language-plaintext highlighter-rouge">(e (λ (x) x))</code>: i.e., since we know <code class="language-plaintext highlighter-rouge">e</code> will eventually be <code class="language-plaintext highlighter-rouge">(λ (_)
+e)</code> (with a bogus argument).</p>
+
+<p><code class="language-plaintext highlighter-rouge">(λ (x) e)</code> is already encoded, so we just have to encode <code class="language-plaintext highlighter-rouge">e</code>. Then,
+<code class="language-plaintext highlighter-rouge">(λ (x y) e)</code> is encoded as <code class="language-plaintext highlighter-rouge">(λ (x) (λ (y) e))</code>, and calls <code class="language-plaintext highlighter-rouge">(e x y)</code>
+are encoded <code class="language-plaintext highlighter-rouge">((e x) y)</code>. We repeat this trick for any number of
+arguments, and that gives us the encoding of any fixed-arity function.</p>
+
+<h2 id="addition-encoding-">Addition (encoding <code class="language-plaintext highlighter-rouge">+</code>)</h2>
+
+<p>Since <code class="language-plaintext highlighter-rouge">+</code> and <code class="language-plaintext highlighter-rouge">*</code> both take two arguments, we can use currying: <code class="language-plaintext highlighter-rouge">((+
+3) 4)</code>, where we then encode 3/4 using the representation we just
+discussed. Actually in Racket, <code class="language-plaintext highlighter-rouge">+</code> can take any number of arguments,
+or even be applied to a list: while we could encode these things in
+principle, we’ll skip it here to keep things simple. Let’s start with
+<code class="language-plaintext highlighter-rouge">(+ n k)</code>. To be the natural number <code class="language-plaintext highlighter-rouge">n+k</code>, the result needs to be the
+function:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(λ (f) (λ (x) (f (f ... (f x)))))
+               |
+               v
+              n+k times 
+</code></pre></div></div>
+
+<p>So let’s define <code class="language-plaintext highlighter-rouge">+</code> with the two arguments, <code class="language-plaintext highlighter-rouge">n</code> and <code class="language-plaintext highlighter-rouge">k</code>: <code class="language-plaintext highlighter-rouge">(λ (n) (λ
+(k) (λ (f) (λ (x) ...))))</code>. There are a lot of lamdbas here: <code class="language-plaintext highlighter-rouge">n</code> and
+<code class="language-plaintext highlighter-rouge">k</code> are the arguments to <code class="language-plaintext highlighter-rouge">+</code>. That then returns the <code class="language-plaintext highlighter-rouge">(λ (f) (λ (x)
+...))</code>. Now, to fill in the <code class="language-plaintext highlighter-rouge">...</code>, we want to apply <code class="language-plaintext highlighter-rouge">f</code> to <code class="language-plaintext highlighter-rouge">x</code> <code class="language-plaintext highlighter-rouge">n+k</code>
+times: this is the definition of the number <code class="language-plaintext highlighter-rouge">n+k</code>. To do that, we can
+just do <code class="language-plaintext highlighter-rouge">((k f) ((n f) x))</code>. Let’s think carefully about going on
+here; first, let’s look at the argument to <code class="language-plaintext highlighter-rouge">(k f)</code>, which is <code class="language-plaintext highlighter-rouge">((n f)
+x)</code>: this applies <code class="language-plaintext highlighter-rouge">f</code> <code class="language-plaintext highlighter-rouge">n</code> times to to <code class="language-plaintext highlighter-rouge">x</code> (notice we have to be
+careful about currying). That is a term that builds a big stack of
+<code class="language-plaintext highlighter-rouge">f</code>s to materialize the number <code class="language-plaintext highlighter-rouge">n</code>: <code class="language-plaintext highlighter-rouge">(λ (f) (λ (x) (f (f ... n times
+... (f x)))))</code>. That is passed to <code class="language-plaintext highlighter-rouge">(k f)</code>, which is the function that
+does <code class="language-plaintext highlighter-rouge">f</code> <code class="language-plaintext highlighter-rouge">k</code> times to some argument; in this case, that argument is
+the big stack of <code class="language-plaintext highlighter-rouge">n</code> calls to <code class="language-plaintext highlighter-rouge">f</code>. Then, <code class="language-plaintext highlighter-rouge">(k f)</code> does <code class="language-plaintext highlighter-rouge">f</code> <code class="language-plaintext highlighter-rouge">k</code> times to
+that stack of calls to <code class="language-plaintext highlighter-rouge">f</code>, building a stack of <code class="language-plaintext highlighter-rouge">n+k</code> calls to <code class="language-plaintext highlighter-rouge">f</code>.</p>
+
+<h2 id="multiplication-encoding-">Multiplication (encoding <code class="language-plaintext highlighter-rouge">*</code>)</h2>
+
+<h2 id="evaluating-arithmetic-expressions">Evaluating Arithmetic Expressions</h2>
+
+<p>Given the encodings we’ve discussed so far, we can now evaluate a
+simple expression algebra, here’s what we have so far…</p>
+
+<p>```
+e ::= n        – Literals
+    | (+ e e)  – Addition
+    | (* e e)  – Multiplication
+    | (λ (x …) e) — λs of any arity
+    | (e …) – Applications of any arity</p>
 
                 </div>
               </article>
