@@ -5,9 +5,385 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 30 Mar 2026 01:42:49 -0400</pubDate>
-    <lastBuildDate>Mon, 30 Mar 2026 01:42:49 -0400</lastBuildDate>
+    <pubDate>Mon, 30 Mar 2026 15:59:49 -0400</pubDate>
+    <lastBuildDate>Mon, 30 Mar 2026 15:59:49 -0400</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>Project 4: Church Encoder</title>
+        <description>&lt;p&gt;&lt;strong&gt;Due&lt;/strong&gt;: Tuesday, April 21, 11:59PM&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Starter code&lt;/strong&gt;: &lt;a href=&quot;https://kmicinski.com/cis352-s26/assets/p4-public.tar.gz&quot;&gt;p4-public.tar.gz&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Submit via &lt;a href=&quot;http://autograde.org&quot;&gt;autograde.org&lt;/a&gt;. If you are not
+enrolled in the course, you can still work through this project using
+the public starter code and tests above.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Lecture notes&lt;/strong&gt;: &lt;a href=&quot;/cis352-s26/church-encoding&quot;&gt;Church Encoding&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;In this project, you will write a Church encoder: a compiler from a
+large subset of Scheme to lambda-calculus. In other words, you will
+transform inputs like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;(let ([x 0]) x)&lt;/code&gt; to outputs like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;((lambda (x)
+x) (lambda (f) (lambda (x) x)))&lt;/code&gt;. Your output will be quoted data in
+the lambda-calculus: the test infrastructure will then interpret this into
+a Racket lambda by using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eval&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;It is crucial to understand that you are &lt;em&gt;not&lt;/em&gt; building an
+interpreter, as in project 3. Instead, you are building a
+&lt;em&gt;compiler&lt;/em&gt;. Your project will translate the input language into the
+lambda-calculus by removing each Racket form, one-by-one, and encoding them
+in the lambda-calculus.&lt;/p&gt;
+
+&lt;p&gt;To understand the encodings, please read through the &lt;a href=&quot;/cis352-s26/church-encoding&quot;&gt;Church Encoding
+lecture notes&lt;/a&gt;, the posted
+course slides, the course videos, and the recorded class lectures on
+Blackboard. We have covered many of the forms already: the main
+challenge in this project is translating the “on paper” knowledge into
+a working compiler.&lt;/p&gt;
+
+&lt;p&gt;The central challenge with this project is debugging. You should try
+to learn a debugging methodology that works for you. I recommend
+calling your compiler on smaller and smaller programs until you
+recognize which part is incorrect. Work to gradually whittle down the
+test cases until you isolate precisely what is wrong.&lt;/p&gt;
+
+&lt;p&gt;Good luck!&lt;/p&gt;
+
+&lt;h2 id=&quot;the-language-syntax&quot;&gt;The Language: Syntax&lt;/h2&gt;
+
+&lt;p&gt;Below is the full syntax of the language you must support:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;e ::= (letrec ([x (lambda (x ...) e)]) e)
+    | (let ([x e] ...) e)
+    | (let* ([x e] ...) e)
+    | (lambda (x ...) e)
+    | (e e ...)
+    | x
+    | (and e ...) | (or e ...)
+    | (if e e e)
+    | (prim e) | (prim e e)
+    | datum
+
+datum ::= nat | (quote ()) | #t | #f
+nat ::= 0 | 1 | 2 | ...
+x is a symbol
+prim is a primitive operation in list prims
+(define prims &apos;(+ * - = add1 sub1 cons car cdr null? not zero?))
+The following are *extra credit*: -, =, sub1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This input language has semantics identical to Scheme / Racket, except:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;You will not be provided code that yields &lt;em&gt;any&lt;/em&gt; kind of error in Racket&lt;/li&gt;
+  &lt;li&gt;You do not need to treat non-boolean values as #t at if, and, or forms
+(Racket allows “truthy” and “falsy” values – we won’t handle those)&lt;/li&gt;
+  &lt;li&gt;primitive operations are either strictly unary (add1 sub1 null? zero? not car cdr),
+or strictly binary (+ - * = cons)&lt;/li&gt;
+  &lt;li&gt;There will be no variadic functions or applications — but any fixed arity is allowed
+(e.g., &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((lambda l (first l)) 1 2 3)&lt;/code&gt; is not allowed but
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((lambda (x y z) x) 1 2 3)&lt;/code&gt; is)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;output-language&quot;&gt;Output language&lt;/h2&gt;
+
+&lt;p&gt;Your output must be a quoted expression in the lambda-calculus:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;e ::= (lambda (x) e)
+    | (e e)
+    | x
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;functions-and-builtins&quot;&gt;Functions and Builtins&lt;/h2&gt;
+
+&lt;p&gt;You will primarily implement the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;churchify&lt;/code&gt; function, which accepts
+an input in the input language above and produces an output in the
+lambda-calculus. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;churchify&lt;/code&gt; recognizes each form in the input language
+(using a match pattern) and then calls itself.&lt;/p&gt;
+
+&lt;p&gt;To make things easier for you, we have used a trick: the function
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-compile&lt;/code&gt; calls churchify with a large &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt; block to bind each
+of the builtins. This allows you to handle builtin operators in a
+relatively simple way: you can just translate &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ e0 e1)&lt;/code&gt; to use
+currying &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((+ e0&apos;) e1&apos;)&lt;/code&gt;, where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e0&apos;&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e1&apos;&lt;/code&gt; are the Church
+encodings of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e0&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e1&lt;/code&gt;. Then, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt; will be given a binding because
+it is wrapped in the top-level &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt; block in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-compile&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Please think about the above paragraph until it makes sense to you: it
+makes handling builtins overwhelmingly simpler.&lt;/p&gt;
+
+&lt;h2 id=&quot;implementation-roadmap&quot;&gt;Implementation Roadmap&lt;/h2&gt;
+
+&lt;p&gt;This project is designed so you can implement it in stages, passing
+more tests at each stage. The early tests (stages 1-8) test
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;churchify&lt;/code&gt; directly, so you &lt;strong&gt;do not&lt;/strong&gt; need &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-compile&lt;/code&gt; or any
+builtins to start passing tests. Later tests (stages 9-11) go through
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-compile&lt;/code&gt; and require builtins.&lt;/p&gt;
+
+&lt;h3 id=&quot;stage-1-variables-and-natural-numbers&quot;&gt;Stage 1: Variables and Natural Numbers&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Tests:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-01a-nat-zero&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-01b-nat-nonzero&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Start here. Implement these two match cases:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Variables&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(? symbol? x)&lt;/code&gt;: Just return the symbol as-is. This
+is trivial but required for everything else.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Natural numbers&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(? natural? nat)&lt;/code&gt;: Encode as Church numerals.
+A Church numeral &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (f) (lambda (x) (f^n x)))&lt;/code&gt; where
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f^n&lt;/code&gt; means &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; applied &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; times. For example:&lt;/p&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt; -&amp;gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (f) (lambda (x) x))&lt;/code&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;3&lt;/code&gt; -&amp;gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (f) (lambda (x) (f (f (f x)))))&lt;/code&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;p&gt;Write a helper function to produce the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f (f ... x))&lt;/code&gt; part, then
+wrap it in the two lambdas. Remember to churchify the result.&lt;/p&gt;
+
+    &lt;p&gt;See the &lt;a href=&quot;/cis352-s26/church-encoding#numbers&quot;&gt;Church Encoding lecture notes&lt;/a&gt;
+for a full explanation.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;stage-2-single-arg-lambda-and-application&quot;&gt;Stage 2: Single-arg Lambda and Application&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Tests:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-02a-lambda-id&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-02b-lambda-const&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;These are needed for almost everything else, so do them early.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Single-arg lambda&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (x) e)&lt;/code&gt;: Recursively churchify the
+body: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(lambda (,x) ,(churchify e0))&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Single-arg application&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(fun arg)&lt;/code&gt;: Churchify both parts:
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(,(churchify fun) ,(churchify arg))&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;stage-3-multi-arg-lambda-and-application-currying&quot;&gt;Stage 3: Multi-arg Lambda and Application (Currying)&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Tests:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-03a-curry-lam&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-03b-curry-app&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;In lambda calculus, all functions take exactly one argument. Multi-arg
+functions must be curried.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Multi-arg lambda&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (x y z ...) e)&lt;/code&gt;: Curry into nested
+single-arg lambdas. Hint: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(churchify &apos;(lambda (x . rest) e))&lt;/code&gt; -&amp;gt;
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(lambda (,x) ,(churchify `(lambda ,rest ,e)))&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Zero-arg lambda&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda () e)&lt;/code&gt;: Add a dummy parameter &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_&lt;/code&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Multi-arg application&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f a b c ...)&lt;/code&gt;: Curry into nested
+applications. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f a b c)&lt;/code&gt; -&amp;gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(((f a) b) c)&lt;/code&gt;. Hint: recursively
+churchify &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((f arg) rest...)&lt;/code&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Zero-arg application&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f)&lt;/code&gt;: Apply with a dummy argument
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (_) _)&lt;/code&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;See the &lt;a href=&quot;/cis352-s26/church-encoding#multi-argument-functions-via-currying&quot;&gt;Church Encoding lecture notes&lt;/a&gt;
+for the background on currying.&lt;/p&gt;
+
+&lt;h3 id=&quot;stage-4-boolean-literals&quot;&gt;Stage 4: Boolean Literals&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Tests:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-04a-true&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-04b-false&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;A Church boolean takes two thunks and calls one of them:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt; -&amp;gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (tt ft) (tt))&lt;/code&gt; (calls the true-thunk)&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt; -&amp;gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (tt ft) (ft))&lt;/code&gt; (calls the false-thunk)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Hint: just churchify the lambda expression shown above. Since these
+use multi-arg lambdas and zero-arg application, you need stage 3
+working first.&lt;/p&gt;
+
+&lt;p&gt;See the &lt;a href=&quot;/cis352-s26/church-encoding#beyond-numbers-encoding-booleans&quot;&gt;Church Encoding lecture notes&lt;/a&gt;
+for the full explanation of the thunk-based encoding.&lt;/p&gt;
+
+&lt;h3 id=&quot;stage-5-if-expressions&quot;&gt;Stage 5: If Expressions&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Tests:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-05a-if-true&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-05b-if-false&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Since a Church bool selects between two thunks:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(if e0 e1 e2)&lt;/code&gt; -&amp;gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e0 (lambda () e1) (lambda () e2))&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Just churchify that expression – it’s a 3-arg application.&lt;/p&gt;
+
+&lt;p&gt;See the &lt;a href=&quot;/cis352-s26/church-encoding#encoding-if-and--or&quot;&gt;Church Encoding lecture notes&lt;/a&gt;
+for how &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/code&gt; works with the boolean encoding.&lt;/p&gt;
+
+&lt;h3 id=&quot;stage-6-let-expressions&quot;&gt;Stage 6: Let Expressions&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Tests:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-06a-let-simple&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-06b-let-empty&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-06c-let-multi&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Let is syntactic sugar for lambda + application:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(let ([x e0]) body)&lt;/code&gt; -&amp;gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((lambda (x) body) e0)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(let ([x e0] [y e1]) body)&lt;/code&gt; -&amp;gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((lambda (x y) body) e0 e1)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(let () body)&lt;/code&gt; -&amp;gt; just &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;body&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Churchify the desugared form.&lt;/p&gt;
+
+&lt;h3 id=&quot;stage-7-let-and-null-literal&quot;&gt;Stage 7: Let* and Null Literal&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Tests:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-07a-letstar&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-07b-null&lt;/code&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;let*&lt;/strong&gt;: Desugar to nested let: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(let* ([x e0] rest...) body)&lt;/code&gt; -&amp;gt;
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(let ([x e0]) (let* (rest...) body))&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Null&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;()&lt;/code&gt;: Encode like a boolean pair callback that calls the
+when-null case: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (when-cons when-null) (when-null))&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;See the &lt;a href=&quot;/cis352-s26/church-encoding#encoding-cons-cells-and-lists&quot;&gt;Church Encoding lecture notes&lt;/a&gt;
+for the list encoding.&lt;/p&gt;
+
+&lt;h3 id=&quot;stage-8-and--or&quot;&gt;Stage 8: And / Or&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Tests:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-08a-and-true&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-08b-or-true&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-08c-and-false&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Desugar to nested if expressions:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(and e0 e1 ...)&lt;/code&gt; -&amp;gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(if e0 (and e1 ...) #f)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(or e0 e1 ...)&lt;/code&gt;  -&amp;gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(if e0 #t (or e1 ...))&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Base cases: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(and)&lt;/code&gt; = &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(or)&lt;/code&gt; = &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt; (already provided)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;See the &lt;a href=&quot;/cis352-s26/church-encoding#encoding-and--or&quot;&gt;Church Encoding lecture notes&lt;/a&gt;
+for the desugaring.&lt;/p&gt;
+
+&lt;h3 id=&quot;stage-9-arithmetic-builtins-in-church-compile&quot;&gt;Stage 9: Arithmetic Builtins (in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-compile&lt;/code&gt;)&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Tests:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-09a-add1&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-09b-plus&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-09c-mult&lt;/code&gt;,
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-09d-zero-true&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-09e-zero-false&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-09f-not&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Now fill in the Church-encoded definitions in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-compile&lt;/code&gt;:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;add1&lt;/strong&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (n) (lambda (f) (lambda (x) (f ((n f) x)))))&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;+&lt;/strong&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (n0 n1) (lambda (f) (lambda (x) ((n1 f) ((n0 f) x)))))&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;*&lt;/strong&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (n0 n1) (lambda (f) (lambda (x) ((n0 (n1 f)) x))))&lt;/code&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;strong&gt;Warning&lt;/strong&gt;: heed the note in the course videos: the video gets
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt; wrong, but the slides get it right.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;zero?&lt;/strong&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (n) ((n (lambda (_) #f)) #t))&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;not&lt;/strong&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (b) (if b #f #t))&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Note: these definitions themselves use forms like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/code&gt;,
+and multi-arg lambdas, which &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;churchify&lt;/code&gt; will process. So you need
+stages 1-8 working for these to work.&lt;/p&gt;
+
+&lt;p&gt;See the &lt;a href=&quot;/cis352-s26/church-encoding&quot;&gt;Church Encoding lecture notes&lt;/a&gt;
+for the derivation of each of these definitions.&lt;/p&gt;
+
+&lt;h3 id=&quot;stage-10-list-builtins&quot;&gt;Stage 10: List Builtins&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Tests:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-10a-cons-basic&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-10b-car&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-10c-cdr&lt;/code&gt;,
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-10d-null-true&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-10e-null-false&lt;/code&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;cons&lt;/strong&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (a b) (lambda (when-cons when-null) (when-cons a b)))&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;car&lt;/strong&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (p) (p (lambda (a b) a) (lambda () (lambda (x) x))))&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;cdr&lt;/strong&gt;: Follow the same pattern as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;car&lt;/code&gt; – what changes?&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;null?&lt;/strong&gt;: Think about what each callback should return.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;See the &lt;a href=&quot;/cis352-s26/church-encoding#encoding-cons-cells-and-lists&quot;&gt;Church Encoding lecture notes&lt;/a&gt;
+for the observer pattern behind these definitions.&lt;/p&gt;
+
+&lt;h3 id=&quot;stage-11-letrec-y-combinator&quot;&gt;Stage 11: Letrec (Y-combinator)&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Tests:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-11a-letrec-basic&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-11b-letrec-recursive&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;To handle &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;letrec&lt;/code&gt;, use the Y combinator for recursion:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(letrec ([f (lambda (args...) body)]) e1)&lt;/code&gt; -&amp;gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(let ([f (Y-comb (lambda (f) (lambda (args...) body)))]) e1)&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;You need to define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Y-comb&lt;/code&gt; in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-compile&lt;/code&gt;:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Y = ((lambda (u) (u u)) (lambda (y) (lambda (mk) (mk (lambda (x) (((y y) mk) x))))))&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;See the &lt;a href=&quot;/cis352-s26/church-encoding#encoding-letrec&quot;&gt;Church Encoding lecture notes&lt;/a&gt;
+for the full explanation of the Y combinator and how it enables recursion.
+The answer is surprisingly simple: you apply the Y combinator to
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (f) ...)&lt;/code&gt;, then bind the result with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;integration-tests&quot;&gt;Integration Tests&lt;/h3&gt;
+
+&lt;p&gt;The remaining tests (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-add&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-arith0&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;server-append&lt;/code&gt;,
+etc.) combine multiple features. Once you have stages 1-11 working,
+most of these should pass automatically.&lt;/p&gt;
+
+&lt;h3 id=&quot;extra-credit-sub1---&quot;&gt;Extra Credit: sub1, -, =&lt;/h3&gt;
+
+&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sub1&lt;/code&gt; (predecessor) function is significantly more complex than
+the other builtins. Look it up on Wikipedia if you’d like to attempt
+it. Interesting history:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“Be this as it may, Kleene did find a way to lambda define the
+predecessor function in the untyped lambda calculus, by using an
+appropriate data type (pairs of integers) as auxiliary device. In
+[69], he described how he found the solution while being
+anesthetized by laughing gas for the removal of four wisdom teeth.”
+– Henk Barendregt’s “Impact of the Lambda calculus”&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;debugging-tips&quot;&gt;Debugging Tips&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Call your compiler on smaller and smaller programs to isolate which
+part is broken.&lt;/li&gt;
+  &lt;li&gt;Use the staged tests: if &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-01a-nat-zero&lt;/code&gt; fails, focus on your
+natural number encoding. If &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;public-05a-if-true&lt;/code&gt; fails, look at
+your &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/code&gt;/boolean encoding.&lt;/li&gt;
+  &lt;li&gt;You can test &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;churchify&lt;/code&gt; directly in the REPL:
+    &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;churchify&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;churchify&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ft&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tt&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;You can evaluate and convert back:
+    &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;church-&amp;gt;nat&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;eval&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;churchify&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;make-base-namespace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Mon, 30 Mar 2026 00:00:00 -0400</pubDate>
+        <link>https://kmicinski.com/cis352-s26/projects/4</link>
+        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/projects/4</guid>
+        
+        
+        <category>assignment</category>
+        
+        <category>project</category>
+        
+      </item>
     
       <item>
         <title>More Exam 2 Practice</title>
@@ -79,12 +455,12 @@ harmonious way (along with defining the other operations we need on
 numbers), we should be good.&lt;/p&gt;
 
 &lt;p&gt;Our representation of the number &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N : nat&lt;/code&gt; will be: (λ(f) (fᴺ x)),
-where fᴺ is N applications of N. To give a few specific examples:&lt;/p&gt;
+where fᴺ is N applications of f. To give a few specific examples:&lt;/p&gt;
 
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(nat-&amp;gt;church 0) = (λ (f) (λ (x) x)) ;; call f 0 times
-(nat-&amp;gt;church 1) = (λ (f) (λ (x) (f x))) ;; call f 0 times
-(nat-&amp;gt;church 2) = (λ (f) (λ (x) (f (f x)))) ;; call f 0 times
-(nat-&amp;gt;church 3) = (λ (f) (λ (x) (f (f (f x))))) ;; call f 0 times
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(nat-&amp;gt;church 0) = (λ (f) (λ (x) x))           ;; call f 0 times
+(nat-&amp;gt;church 1) = (λ (f) (λ (x) (f x)))        ;; call f 1 time
+(nat-&amp;gt;church 2) = (λ (f) (λ (x) (f (f x))))    ;; call f 2 times
+(nat-&amp;gt;church 3) = (λ (f) (λ (x) (f (f (f x))))) ;; call f 3 times
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;blockquote&gt;
@@ -94,11 +470,24 @@ where fᴺ is N applications of N. To give a few specific examples:&lt;/p&gt;
     (λ (f) (λ (x) (f (f (f (f (f (f (f x)))))))))&lt;/p&gt;
 &lt;/blockquote&gt;
 
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;What number does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (f) (λ (x) x))&lt;/code&gt; represent? What about &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (g) (λ (y) (g y)))&lt;/code&gt;?
+Are these two terms α-equivalent?&lt;/p&gt;
+&lt;/blockquote&gt;
+
 &lt;p&gt;One immediate point we should make is that it may take an arbitrary
 amount of reductions (β, α, η) to get any given term into normal
-form. For example, consider the following term:&lt;/p&gt;
+form. For example, consider the following term. Click it to load it
+in the explorer and reduce it to normal form:&lt;/p&gt;
 
-&lt;p&gt;CLAUDE: Give a somewhat complex term which ultimately reduces to the encoding of 2.&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;le-term&quot;&gt;((λ (n) (λ (f) (λ (x) (f ((n f) x))))) (λ (g) (λ (y) (g y))))&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;After three β-reduction steps, you’ll find that this reduces to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ
+(f) (λ (x) (f (f x))))&lt;/code&gt;, the Church encoding of 2. Even though the
+original term doesn’t look anything like the encoding of 2, it
+&lt;em&gt;computes to&lt;/em&gt; 2 after reduction.&lt;/p&gt;
 
 &lt;p&gt;This is just as true in the λ-calculus as it is in arithmetic: we know
 that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;8 = 7 + 1 = 7 + 1 + 0 = 7 + 1 + 0 + 0 = ...&lt;/code&gt;. In general, there
@@ -113,9 +502,9 @@ form, it will be unique (up to α equivalence).&lt;/p&gt;
 &lt;blockquote&gt;
   &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-  &lt;p&gt;Use β-reduction to reduce the term to β-normal form:&lt;/p&gt;
+  &lt;p&gt;Use β-reduction to reduce the following term to β-normal form:&lt;/p&gt;
 
-  &lt;p&gt;((λ (g) (λ (f) (λ (x) (f ((g f) x))))) (λ (z) z))&lt;/p&gt;
+  &lt;p&gt;&lt;code class=&quot;le-term&quot;&gt;((λ (g) (λ (f) (λ (x) (f ((g f) x))))) (λ (z) z))&lt;/code&gt;&lt;/p&gt;
 
   &lt;p&gt;What Church-encoded number does it represent?&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -125,13 +514,13 @@ form, it will be unique (up to α equivalence).&lt;/p&gt;
 &lt;p&gt;Now let’s say we wanted to write a Racket function which generates a
 Church-encoded version of the number N. We can do that as follows:&lt;/p&gt;
 
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(define (nat-&amp;gt;church n)
-  (define (h n)
-    (match n
-      [0 &apos;x]
-      [_ `(f ,(h (- n 1)))]))
-  `(λ (f) (λ (x) ,(h n))))
-(nat-&amp;gt;church 4)
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-&amp;gt;church&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))]))&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-&amp;gt;church&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The function produces a quoted expression (i.e., a Racket quoted
@@ -139,8 +528,8 @@ list). If I actually want to &lt;em&gt;use&lt;/em&gt; that in Racket, I can call
 (you will rarely want to do this, so this is just for illustrative
 purposes here):&lt;/p&gt;
 
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(eval (nat-&amp;gt;church 4) (make-base-namespace))
-#&amp;lt;procedure&amp;gt; 
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;eval&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-&amp;gt;church&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;make-base-namespace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;#&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;&amp;lt;procedure&amp;gt;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The call to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(make-base-namespace)&lt;/code&gt; is required to tell eval how to
@@ -181,13 +570,21 @@ Racket’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ad
 &lt;p&gt;Thus, we can implement &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(church-&amp;gt;nat N)&lt;/code&gt; (where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt; is a
 &lt;em&gt;church-encoded representation of some number N&lt;/em&gt;) as follows:&lt;/p&gt;
 
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(define (church-&amp;gt;nat N) ((N add1) 0))
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;church-&amp;gt;nat&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;N&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;add1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Using the definition of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-&amp;gt;nat&lt;/code&gt; above, trace the evaluation of
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(church-&amp;gt;nat (lambda (f) (lambda (x) (f (f (f x))))))&lt;/code&gt;.
+What Racket value does it produce?&lt;/p&gt;
+&lt;/blockquote&gt;
 
 &lt;p&gt;Just to reiterate: there’s no special reason that we &lt;em&gt;must&lt;/em&gt; use this
 encoding. This is just the most direct encoding. There are other
 possible encodings that could work. Also, notice that nothing in
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-&amp;gt;nat&lt;/code&gt; requires &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt; to be a Church-encoed number: if we give
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-&amp;gt;nat&lt;/code&gt; requires &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt; to be a Church-encoded number: if we give
 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-&amp;gt;nat&lt;/code&gt; something that &lt;em&gt;isn’t&lt;/em&gt; a Church-encoded number, it will
 just produce nonsense. In our next lecture, we’ll start studying type
 theory: we’ll use type systems to ensure that everything is tied
@@ -218,8 +615,19 @@ it in Racket) our program until we get an answer.&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ul&gt;
 
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Using the definition of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt; above, what does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((N f) x)&lt;/code&gt; evaluate
+to when N is the Church encoding of 3? (Hint: N = (λ (f) (λ (x) (f
+(f (f x)))))).)&lt;/p&gt;
+&lt;/blockquote&gt;
+
 &lt;p&gt;This is a point that deserves some contemplation, so let’s work
-through it with a bit of practice:&lt;/p&gt;
+through it with a bit of practice. This will be our first
+&lt;strong&gt;compile-then-reduce&lt;/strong&gt; exercise: we take a Racket expression, compile
+it to the λ-calculus by substituting encodings, and then reduce in the
+explorer.&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;
@@ -235,13 +643,18 @@ we translate those.&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((λ (N) (λ (f) (λ (x) (f ((N f) x)))))
- (λ (f) (λ (x) (f (f x)))))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;&lt;code class=&quot;le-term&quot;&gt;((λ (N) (λ (f) (λ (x) (f ((N f) x))))) (λ (f) (λ (x) (f (f x)))))&lt;/code&gt;&lt;/p&gt;
 
-&lt;p&gt;Now, please take the above term and load it into the λ-explorer (on
-the right) and &lt;em&gt;prove&lt;/em&gt; that the above computation reduces to the
-Church-encoding of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;3&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Click this to load it in the explorer and &lt;em&gt;prove&lt;/em&gt; that it reduces to
+the Church encoding of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;3&lt;/code&gt;.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Church-encode &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(add1 0)&lt;/code&gt; by substituting the encodings for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt; and
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt;. Then reduce the resulting λ-term to β-normal form. What Church
+numeral do you get?&lt;/p&gt;
+&lt;/blockquote&gt;
 
 &lt;h2 id=&quot;aside-understanding-the-encoding&quot;&gt;Aside: Understanding the Encoding&lt;/h2&gt;
 
@@ -304,19 +717,31 @@ a pretty good intuition: a function of multiple parameters can take a
 theory–that will give us what we need to give a rigorous definition
 of a tuple (or even list) type.&lt;/p&gt;
 
-&lt;p&gt;First: how do we handle &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ () e)&lt;/code&gt;? This is not super common, but it
+&lt;p&gt;First: how do we handle &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda () e)&lt;/code&gt;? This is not super common, but it
 does sometimes happen in practical programs (e.g., thunks)
-sometimes. To convert &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ () e)&lt;/code&gt; into the λ-calculus, we just attach a
-superficial “bogus” parameter: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (_) e)&lt;/code&gt;. But we also have to
+sometimes. To convert &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda () e)&lt;/code&gt; into the λ-calculus, we just attach a
+superficial “bogus” parameter: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (_) e)&lt;/code&gt;. But we also have to
 remember that everywhere we apply &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e)&lt;/code&gt; with zero arguments (we can
 always identify this just by looking at the code), we translate that
-to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e (λ (x) x))&lt;/code&gt;: i.e., since we know &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; will eventually be &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (_)
+to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e (lambda (x) x))&lt;/code&gt;: i.e., since we know &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; will eventually be &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (_)
 e)&lt;/code&gt; (with a bogus argument).&lt;/p&gt;
 
-&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) e)&lt;/code&gt; is already encoded, so we just have to encode &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt;. Then,
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x y) e)&lt;/code&gt; is encoded as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) (λ (y) e))&lt;/code&gt;, and calls &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e x y)&lt;/code&gt;
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (x) e)&lt;/code&gt; is already encoded, so we just have to encode &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt;. Then,
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (x y) e)&lt;/code&gt; is encoded as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (x) (lambda (y) e))&lt;/code&gt;, and calls &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e x y)&lt;/code&gt;
 are encoded &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((e x) y)&lt;/code&gt;. We repeat this trick for any number of
 arguments, and that gives us the encoding of any fixed-arity function.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;How would you encode the following Racket expression into the
+λ-calculus?&lt;/p&gt;
+
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((lambda (x y z) (x z)) a b c)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;(Hint: curry both the lambda and the application.)&lt;/p&gt;
+&lt;/blockquote&gt;
 
 &lt;h2 id=&quot;addition-encoding-&quot;&gt;Addition (encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;)&lt;/h2&gt;
 
@@ -331,37 +756,670 @@ function:&lt;/p&gt;
 &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(λ (f) (λ (x) (f (f ... (f x)))))
                |
                v
-              n+k times 
+              n+k times
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;So let’s define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt; with the two arguments, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (n) (λ
-(k) (λ (f) (λ (x) ...))))&lt;/code&gt;. There are a lot of lamdbas here: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; and
+(k) (λ (f) (λ (x) ...))))&lt;/code&gt;. There are a lot of lambdas here: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; and
 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt; are the arguments to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;. That then returns the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (f) (λ (x)
 ...))&lt;/code&gt;. Now, to fill in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;...&lt;/code&gt;, we want to apply &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n+k&lt;/code&gt;
 times: this is the definition of the number &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n+k&lt;/code&gt;. To do that, we can
-just do &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((k f) ((n f) x))&lt;/code&gt;. Let’s think carefully about going on
-here; first, let’s look at the argument to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(k f)&lt;/code&gt;, which is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((n f)
-x)&lt;/code&gt;: this applies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; times to to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; (notice we have to be
+just do &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((k f) ((n f) x))&lt;/code&gt;. Let’s think carefully about what is going
+on here; first, let’s look at the argument to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(k f)&lt;/code&gt;, which is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((n f)
+x)&lt;/code&gt;: this applies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; times to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; (notice we have to be
 careful about currying). That is a term that builds a big stack of
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;s to materialize the number &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (f) (λ (x) (f (f ... n times
-... (f x)))))&lt;/code&gt;. That is passed to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(k f)&lt;/code&gt;, which is the function that
-does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt; times to some argument; in this case, that argument is
-the big stack of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; calls to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;. Then, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(k f)&lt;/code&gt; does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt; times to
-that stack of calls to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;, building a stack of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n+k&lt;/code&gt; calls to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;.&lt;/p&gt;
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;s to materialize the number &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f (f ... n times ... (f
+x)))&lt;/code&gt;. That is passed to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(k f)&lt;/code&gt;, which is the function that does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt; times to some argument; in this case, that argument is the big
+stack of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; calls to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;. Then, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(k f)&lt;/code&gt; does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt; times to that
+stack of calls to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;, building a stack of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n+k&lt;/code&gt; calls to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;So, the full definition is:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;+ = (λ (n) (λ (k) (λ (f) (λ (x) ((k f) ((n f) x))))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Let’s do a &lt;strong&gt;compile-then-reduce&lt;/strong&gt; exercise for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ 2 1)&lt;/code&gt;. We encode
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt;, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt;, then apply:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;le-term&quot;&gt;(((λ (n) (λ (k) (λ (f) (λ (x) ((k f) ((n f) x)))))) (λ (f) (λ (x) (f (f x))))) (λ (f) (λ (x) (f x))))&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Click to load and reduce. You should arrive at the Church encoding of 3.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Trace the first two β-reductions of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ 2 1)&lt;/code&gt; term above by
+hand (substituting &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; and then &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;). What does the term look like
+after those two steps?&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
 
 &lt;h2 id=&quot;multiplication-encoding-&quot;&gt;Multiplication (encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;)&lt;/h2&gt;
 
+&lt;p&gt;The encoding for multiplication has a beautiful intuition based on
+&lt;em&gt;function composition&lt;/em&gt;. Recall that a Church numeral &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt; is a function
+that takes &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; and applies it &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt; times. So what does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(N g)&lt;/code&gt; give
+us? It gives us a function that applies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;g&lt;/code&gt; N times.&lt;/p&gt;
+
+&lt;p&gt;Now, if &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;g&lt;/code&gt; itself is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(K f)&lt;/code&gt;, a function that applies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; K
+times, then &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(N (K f))&lt;/code&gt; is a function that applies “f-K-times” N
+times. That’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; applied &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N * K&lt;/code&gt; times total!&lt;/p&gt;
+
+&lt;p&gt;So, the definition is:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;* = (λ (n) (λ (k) (λ (f) (λ (x) ((n (k f)) x)))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Breaking it down:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(k f)&lt;/code&gt;: a function that applies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; K times&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(n (k f))&lt;/code&gt;: apply that “K-times” function N times, giving a function that
+applies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; N*K times&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((n (k f)) x)&lt;/code&gt;: start with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; and do it&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;In the definition of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;, what would happen if we used &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((k (n f)) x)&lt;/code&gt;
+instead of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((n (k f)) x)&lt;/code&gt;? Would we still get &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n * k&lt;/code&gt;?
+(Hint: is multiplication commutative?)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Let’s verify with a &lt;strong&gt;compile-then-reduce&lt;/strong&gt; exercise for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(* 2 3)&lt;/code&gt;.
+We expect the result to be the Church encoding of 6:&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;le-term&quot;&gt;(((λ (n) (λ (k) (λ (f) (λ (x) ((n (k f)) x))))) (λ (f) (λ (x) (f (f x))))) (λ (f) (λ (x) (f (f (f x))))))&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Click to load in the explorer and step through the reduction. You
+should eventually reach &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (f) (λ (x) (f (f (f (f (f (f x))))))))&lt;/code&gt;,
+which is the Church encoding of 6.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Using the definitions of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;, explain (informally) why
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(* n 0)&lt;/code&gt; always reduces to the Church encoding of 0 for any Church
+numeral &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt;. (Hint: what is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(0 f)&lt;/code&gt; for any &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;?)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
+
 &lt;h2 id=&quot;evaluating-arithmetic-expressions&quot;&gt;Evaluating Arithmetic Expressions&lt;/h2&gt;
 
-&lt;p&gt;Given the encodings we’ve discussed so far, we can now evaluate a
-simple expression algebra, here’s what we have so far…&lt;/p&gt;
+&lt;p&gt;Given the encodings we’ve discussed so far, we can now compile the
+following language entirely into the λ-calculus:&lt;/p&gt;
 
-&lt;p&gt;```
-e ::= n        – Literals
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;e ::= n        – Literals
     | (+ e e)  – Addition
     | (* e e)  – Multiplication
-    | (λ (x …) e) — λs of any arity
-    | (e …) – Applications of any arity&lt;/p&gt;
+    | (λ (x ...) e) — λs of any arity
+    | (e ...) – Applications of any arity
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The process is systematic: for each construct, we substitute its
+encoding. Let’s trace through a more complex example to see the full
+compilation pipeline. Consider &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ (* 2 1) 1)&lt;/code&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Step 1:&lt;/strong&gt; Encode the innermost subexpressions:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt; → &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (f) (λ (x) (f (f x))))&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt; → &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (f) (λ (x) (f x)))&lt;/code&gt; (appears twice)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Step 2:&lt;/strong&gt; Encode &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(* 2 1)&lt;/code&gt; by substituting the definition of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt; and currying:&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((* 2) 1)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Step 3:&lt;/strong&gt; Encode &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ (* 2 1) 1)&lt;/code&gt; by substituting the definition of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((+ (* 2 1)) 1)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The fully-encoded term is large, but it’s pure λ-calculus: no numbers,
+no &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;, no &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;: just lambdas, variables, and application.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Church-encode the expression &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ 1 (+ 1 1))&lt;/code&gt;. You don’t have to
+write out the full λ-term: just show the structure of how &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt;,
+and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt; get composed (using the curried form &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((+ a) b)&lt;/code&gt;).&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;This is the fundamental technique behind &lt;a href=&quot;/cis352-s26/projects/4&quot;&gt;Project 4&lt;/a&gt;:
+we are writing a &lt;em&gt;compiler&lt;/em&gt; that translates high-level programs into
+the λ-calculus. Each construct in the source language has a
+corresponding translation rule, and the compiler applies these rules
+recursively over the AST.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;beyond-numbers-encoding-booleans&quot;&gt;Beyond Numbers: Encoding Booleans&lt;/h2&gt;
+
+&lt;p&gt;Next let’s discuss the encoding of booleans. To start, we’ll assume
+that users of our language never break the types: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ 1 #f)&lt;/code&gt; will encode
+into the λ-calculus just fine, but it won’t reduce to anything
+meaningful. This is typical, because our compilation into the
+λ-calculus is not &lt;em&gt;injective&lt;/em&gt;: there’s plenty of stuff in the
+λ-calculus that has no sensible meaning in our translation. Our next
+topic will be type systems, where a big goal will be to use proof
+theory to ensure that we can only write well-typed things. But for
+now, we will simply say that if you use the encoding incorrectly, you
+get undefined behavior and the encoding won’t work.&lt;/p&gt;
+
+&lt;p&gt;Now on to the discussion of booleans. How should booleans work? Well,
+in the λ-calculus, the only way we can really “use” any data is by
+&lt;em&gt;calling&lt;/em&gt; it as a function. For a number, the way we “use” it is to
+apply it to two (curried) arguments: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;. The guarantee is
+that if &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt; &lt;em&gt;is&lt;/em&gt; a number, then we should be able to call it with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;
+and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; and it should apply &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N&lt;/code&gt; times to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;. For booleans, what
+do we do instead?&lt;/p&gt;
+
+&lt;p&gt;The idea is that a boolean is a &lt;em&gt;selector&lt;/em&gt;: it takes two
+arguments, one for “what to do when true” and one for “what to do
+when false,” and picks one of them. But there’s a subtlety: we need
+these arguments to be &lt;strong&gt;thunks&lt;/strong&gt; (zero-argument functions, i.e.,
+callbacks). The reason for thunks is that we want to avoid evaluating
+&lt;em&gt;both&lt;/em&gt; branches: under call-by-value (Racket’s evaluation strategy),
+both arguments would be fully evaluated before the boolean selects
+one. If one branch diverges, the whole thing diverges even if we
+wouldn’t take that branch. Thunks delay evaluation until the boolean
+makes its choice.&lt;/p&gt;
+
+&lt;p&gt;Here is the encoding. We write it first at the “source level” (using
+multi-arg functions and zero-arg calls), then show the compiled
+λ-calculus version:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Source level&lt;/strong&gt; (Racket-like):&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#t ≡ (λ (when-true when-false) (when-true))
+#f ≡ (λ (when-true when-false) (when-false))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt; takes two thunks and calls the first one. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt; takes two thunks
+and calls the second one.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Compiled to λ-calculus&lt;/strong&gt; (currying multi-arg, encoding zero-arg
+calls with a dummy argument):&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#t ≡ (λ (tt) (λ (ff) (tt (λ (z) z))))
+#f ≡ (λ (tt) (λ (ff) (ff (λ (z) z))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The zero-argument call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(when-true)&lt;/code&gt; becomes &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(tt (λ (z) z))&lt;/code&gt;: we
+call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tt&lt;/code&gt; with the identity function as a dummy argument (which will
+be ignored by the thunk).&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Given the Church encoding of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;, what does the following reduce to?&lt;/p&gt;
+
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((#t (λ (d) 42)) (λ (d) 0))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;(Substitute the definition of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt; and reduce. Remember &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;d&lt;/code&gt; is a
+dummy parameter that gets ignored.)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Now let’s encode &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;not&lt;/code&gt;. It takes a boolean and returns a new boolean.
+The trick: pass the input boolean two thunks, one that returns
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt;, and one that returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;not ≡ (λ (b) (b (λ () #f) (λ () #t)))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;b&lt;/code&gt; is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;, it calls the first thunk → returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt;. If &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;b&lt;/code&gt; is
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt;, it calls the second thunk → returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Trace through the evaluation of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(not #t)&lt;/code&gt; using the definitions
+above. Verify that it produces &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt;. (You can work at the “source
+level”: no need to fully expand into λ-calculus.)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;We can also define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;zero?&lt;/code&gt;, which tests whether a Church numeral is zero:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;zero? ≡ (λ (n) ((n (λ (d) #f)) #t))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The idea: if &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt;, then &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((0 (lambda (d) #f)) #t)&lt;/code&gt; applies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (d) #f)&lt;/code&gt; zero
+times to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;, returning &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;. If &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; is anything
+greater than 0, the function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (d) #f)&lt;/code&gt; is applied at least once to
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;, and since it ignores its argument and returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt;, the
+result is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt;.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Using the definition of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;zero?&lt;/code&gt; above, what does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(zero? 0)&lt;/code&gt; reduce
+to? What about &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(zero? 3)&lt;/code&gt;?
+(Hint: recall that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0 = (λ (f) (λ (x) x))&lt;/code&gt; and
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;3 = (λ (f) (λ (x) (f (f (f x)))))&lt;/code&gt;.)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;encoding-if-and--or&quot;&gt;Encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;and&lt;/code&gt; / &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;or&lt;/code&gt;&lt;/h2&gt;
+
+&lt;h3 id=&quot;encoding-if&quot;&gt;Encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;Since booleans are already functions that select between two thunks,
+encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/code&gt; is surprisingly simple:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(if e0 e1 e2)  compiles to  (e0 (λ () e1) (λ () e2))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;That’s it! We pass the condition &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e0&lt;/code&gt; two thunks: one wrapping the
+“then” branch and one wrapping the “else” branch. Since &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt; calls
+the first thunk and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt; calls the second, the boolean &lt;em&gt;is&lt;/em&gt; the
+if-expression.&lt;/p&gt;
+
+&lt;p&gt;After compiling to pure λ-calculus (currying the multi-arg
+application, encoding zero-arg lambdas with a dummy parameter):&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(if e0 e1 e2)  compiles to  ((e0 (λ (d) e1&apos;)) (λ (d) e2&apos;))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e1&apos;&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e2&apos;&lt;/code&gt; are the Church-encoded versions of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e2&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Let’s do a &lt;strong&gt;compile-then-reduce&lt;/strong&gt; exercise for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(if #t 1 0)&lt;/code&gt;:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Encode &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt; → &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (tt) (λ (ff) (tt (λ (z) z))))&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Wrap &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt; in a thunk → &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (d) (λ (f) (λ (x) (f x))))&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Wrap &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt; in a thunk → &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (d) (λ (f) (λ (x) x)))&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Assemble: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((#t thunk1) thunk2)&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;code class=&quot;le-term&quot;&gt;(((λ (tt) (λ (ff) (tt (λ (z) z)))) (λ (d) (λ (f) (λ (x) (f x))))) (λ (d) (λ (f) (λ (x) x))))&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Click to load and reduce. You should reach &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (f) (λ (x) (f x)))&lt;/code&gt; —
+the Church encoding of 1. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt;-wrapping thunk is never called.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;What would &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(if #f 1 0)&lt;/code&gt; reduce to? Try modifying the term above by
+swapping &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt; for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt;: replace &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(tt (λ (z) z))&lt;/code&gt; with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(ff (λ (z) z))&lt;/code&gt;
+in the boolean definition.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;encoding-and--or&quot;&gt;Encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;and&lt;/code&gt; / &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;or&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;Once we have &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/code&gt;, encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;and&lt;/code&gt; / &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;or&lt;/code&gt; is a simple desugaring:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(and e0 e1)  ≡  (if e0 e1 #f)
+(or  e0 e1)  ≡  (if e0 #t e1)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The base cases are: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(and)&lt;/code&gt; = &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(or)&lt;/code&gt; = &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt;. For more than
+two arguments, we desugar recursively:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(and e0 e1 e2 ...)  ≡  (if e0 (and e1 e2 ...) #f)
+(or  e0 e1 e2 ...)  ≡  (if e0 #t (or e1 e2 ...))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Using the desugaring above, what does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(and #f anything)&lt;/code&gt; reduce to
+for any expression &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;anything&lt;/code&gt;? What about &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(or #t anything)&lt;/code&gt;?
+(Hint: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(if #f e1 #f)&lt;/code&gt; → &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt; regardless of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e1&lt;/code&gt;.)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;This is exactly the approach used in &lt;a href=&quot;/cis352-s26/projects/4&quot;&gt;Project 4&lt;/a&gt;:
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;and&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;or&lt;/code&gt; are not primitive: they’re syntactic sugar that gets
+desugared into &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/code&gt; before compilation to the λ-calculus.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;encoding-cons-cells-and-lists&quot;&gt;Encoding Cons Cells and Lists&lt;/h2&gt;
+
+&lt;p&gt;Now we can encode numbers and booleans. Next, let’s tackle lists. In
+Racket, lists are built from two constructors: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cons&lt;/code&gt; (which builds a
+pair) and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;null&lt;/code&gt; (the empty list, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;()&lt;/code&gt;). We observe them with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;car&lt;/code&gt;,
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cdr&lt;/code&gt;, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;null?&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The encoding follows the same &lt;strong&gt;observer pattern&lt;/strong&gt; we used for
+booleans. A boolean takes two callbacks (“what if true” and “what if
+false”) and calls one. Similarly, a cons cell or null value will take
+two callbacks (“what if cons” and “what if null”) and call the
+appropriate one.&lt;/p&gt;
+
+&lt;h3 id=&quot;encoding-cons-and-null&quot;&gt;Encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cons&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;null&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;A cons cell stores two values &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;a&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;b&lt;/code&gt;. When observed, it passes
+them to the “when-cons” callback:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cons ≡ (λ (a b) (λ (when-cons when-null) (when-cons a b)))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In pure λ-calculus (after currying):&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cons ≡ (λ (a) (λ (b) (λ (wc) (λ (wn) ((wc a) b)))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The empty list, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;null&lt;/code&gt;, has no stored values. When observed, it calls
+the “when-null” callback (a thunk):&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;null ≡ (λ (when-cons when-null) (when-null))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In pure λ-calculus:&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;null ≡ (λ (wc) (λ (wn) (wn (λ (z) z))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;encoding-car&quot;&gt;Encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;car&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;To extract the first element of a pair, we pass a cons cell two
+callbacks: one that takes &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;a&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;b&lt;/code&gt; and returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;a&lt;/code&gt;, and a dummy
+“when-null” callback (since &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;car&lt;/code&gt; of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;null&lt;/code&gt; is undefined):&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;car ≡ (λ (p) (p (λ (a b) a) (λ () (λ (x) x))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;How does this work? &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;car&lt;/code&gt; takes a pair &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;p&lt;/code&gt; and calls it with two
+callbacks. The first callback &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (a b) a)&lt;/code&gt; selects the first element.
+The second callback &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ () (λ (x) x))&lt;/code&gt; is a dummy for the null case
+(which should never happen if &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;p&lt;/code&gt; is a cons cell). Since a cons cell
+always invokes &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;when-cons&lt;/code&gt;, the first callback fires and returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;a&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;compile-then-reduce-car-cons-1-2&quot;&gt;Compile-then-reduce: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(car (cons 1 2))&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;Let’s trace &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(car (cons 1 2))&lt;/code&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Step 1:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(cons 1 2)&lt;/code&gt; compiles to a function that, when given
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;when-cons&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;when-null&lt;/code&gt;, calls &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(when-cons 1 2)&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(λ (wc) (λ (wn) ((wc (λ (f) (λ (x) (f x)))) (λ (f) (λ (x) (f (f x)))))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Step 2:&lt;/strong&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;car&lt;/code&gt; passes this a callback &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (a) (λ (b) a))&lt;/code&gt; and a
+dummy. The cons cell calls the callback with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;a = 1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;b = 2&lt;/code&gt;,
+selecting &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;a&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The result is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (f) (λ (x) (f x)))&lt;/code&gt;, the Church encoding of 1.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Using the same observer pattern as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;car&lt;/code&gt;, write the encoding for
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cdr&lt;/code&gt;. (Hint: what do you change in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;when-cons&lt;/code&gt; callback to
+select the &lt;em&gt;second&lt;/em&gt; element instead of the first?)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Write the encoding for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;null?&lt;/code&gt;. It should return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt; when given
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;null&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt; when given a cons cell. (Hint: what should each
+callback return? The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;when-cons&lt;/code&gt; callback can ignore its arguments.)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Notice a pattern: numbers take &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;; booleans take
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;when-true&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;when-false&lt;/code&gt;; lists take &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;when-cons&lt;/code&gt; and
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;when-null&lt;/code&gt;. What is the common structure behind all three Church
+encodings? (Hint: think about how we “observe” or “use” each type
+of data.)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;encoding-letrec&quot;&gt;Encoding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;letrec&lt;/code&gt;&lt;/h2&gt;
+
+&lt;p&gt;We’ve now covered numbers, booleans, conditionals, and lists. The last
+major feature we need to encode is &lt;strong&gt;recursion&lt;/strong&gt;. In Racket, recursion
+is typically written using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;letrec&lt;/code&gt;:&lt;/p&gt;
+
+&lt;h3 id=&quot;aside-what-is-letrec-a-few-examples&quot;&gt;Aside: what is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;letrec&lt;/code&gt;, a few examples&lt;/h3&gt;
+
+&lt;p&gt;Recall &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;letrec&lt;/code&gt; from Racket:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;letrec&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;factorial&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                      &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;zero?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;factorial&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))))])&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;factorial&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; → 120&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The key property of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;letrec&lt;/code&gt; is that the binding is &lt;em&gt;in scope within
+its own definition&lt;/em&gt;. Compare with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))])&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;;; ERROR: f is not defined yet!&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;With &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt;, the right-hand side &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (x) (f x))&lt;/code&gt; can’t refer to
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; because &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; hasn’t been bound yet. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;letrec&lt;/code&gt; fixes this by making
+the binding available in its own definition, enabling recursion.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Why can’t &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt; be used for recursion? What goes wrong if we try
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(let ([f (lambda (x) (f x))]) (f 0))&lt;/code&gt;?&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;So how do we compile &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;letrec&lt;/code&gt; into the λ-calculus? There’s no notion
+of “named definitions” or “self-reference” in the λ-calculus. We need
+a trick.&lt;/p&gt;
+
+&lt;h3 id=&quot;the-u-combinator&quot;&gt;The U Combinator&lt;/h3&gt;
+
+&lt;p&gt;The trick starts with an observation about self-application. Consider
+the term &lt;code class=&quot;le-term&quot;&gt;((λ (x) (x x)) (λ (x) (x x)))&lt;/code&gt;.
+This is Ω, which we encountered before: it reduces to itself
+and loops forever.&lt;/p&gt;
+
+&lt;p&gt;But what if, instead of blindly self-applying, we do something &lt;em&gt;useful&lt;/em&gt;
+with the copy of ourselves? Consider:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(λ (self) (λ (n) ... (self self) ...))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The idea: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;self&lt;/code&gt; is a &lt;em&gt;copy of the function itself&lt;/em&gt;. Whenever we want
+to recurse, we call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(self self)&lt;/code&gt; to get another copy. This is
+self-application used productively rather than divergently.&lt;/p&gt;
+
+&lt;p&gt;Let’s see this concretely. Suppose we want to write &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add-to-zero&lt;/code&gt;:
+a function that takes a Church numeral and adds 1 to 0 that
+many times (effectively an identity on Church numerals, but
+computed recursively). Without named recursion, we can write:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;((λ (self) (self self))
+ (λ (self) (λ (n)
+   (if (zero? n) 0 (add1 ((self self) (sub1 n)))))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The outer &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (self) (self self))&lt;/code&gt; is called the &lt;strong&gt;U combinator&lt;/strong&gt;. It
+takes a function and passes it to itself. The inner function receives
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;self&lt;/code&gt; (a copy of itself) and uses &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(self self)&lt;/code&gt; whenever it needs to
+recurse.&lt;/p&gt;
+
+&lt;p&gt;This works, but it’s ugly: every recursive call has to say &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(self
+self)&lt;/code&gt; instead of just &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(self)&lt;/code&gt;. Can we clean this up?&lt;/p&gt;
+
+&lt;h3 id=&quot;the-y-combinator&quot;&gt;The Y Combinator&lt;/h3&gt;
+
+&lt;p&gt;The Y combinator abstracts away the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(self self)&lt;/code&gt; pattern, giving us a
+clean interface for recursion. Here it is:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Y = ((λ (u) (u u))
+     (λ (y) (λ (mk) (mk (λ (x) (((y y) mk) x))))))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The Y combinator has this crucial property:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(Y f) = (f (Y f))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In other words, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(Y f)&lt;/code&gt; is a &lt;strong&gt;fixed point&lt;/strong&gt; of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;: it’s a value
+that, when passed to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;, gives back itself. This is exactly what we
+need for recursion!&lt;/p&gt;
+
+&lt;p&gt;Here’s how it works, step by step:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(Y f)&lt;/code&gt; reduces to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(f (λ (x) ((Y f) x)))&lt;/code&gt;: the argument to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; is
+a thunk that, when called with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;, recursively invokes &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(Y f)&lt;/code&gt; on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;Inside &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;, this argument acts as the “recursive callback”: calling
+it triggers another round of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(Y f)&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;The η-expansion &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) (((y y) mk) x))&lt;/code&gt; instead of just &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((y y) mk)&lt;/code&gt;
+is &lt;strong&gt;crucial&lt;/strong&gt; for call-by-value evaluation. Without it, the
+self-application &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(y y)&lt;/code&gt; would be evaluated immediately, causing
+infinite recursion before &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt; even gets called. The extra lambda
+delays the self-application until an argument &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; is actually
+provided.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Why is the η-expansion &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(λ (x) (((y y) mk) x))&lt;/code&gt; crucial in the Y
+combinator under call-by-value? What would happen if we used
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((y y) mk)&lt;/code&gt; directly?&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;using-the-y-combinator-to-compile-letrec&quot;&gt;Using the Y Combinator to Compile &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;letrec&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;With the Y combinator, the compilation of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;letrec&lt;/code&gt; is straightforward:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(letrec ([f (lambda (args ...) body)]) e)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;compiles to:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(let ([f (Y (lambda (f) (lambda (args ...) body)))]) e)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The outer &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (f) ...)&lt;/code&gt; wraps the original function, giving it
+access to a “recursive callback” parameter named &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;. The Y combinator
+ensures that this callback &lt;em&gt;is&lt;/em&gt; the function itself.&lt;/p&gt;
+
+&lt;p&gt;Let’s trace through factorial:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;letrec&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fact&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;zero?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fact&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sub1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))))])&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fact&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This compiles to:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fact&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Y&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;zero?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fact&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sub1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))))))])&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fact&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Which desugars the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt; to:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fact&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+ &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Y&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;zero?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fact&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sub1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))))))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Y&lt;/code&gt; ensures that every reference to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fact&lt;/code&gt; inside the body points
+back to the function itself. When &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(fact 5)&lt;/code&gt; is called, it checks if
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n = 0&lt;/code&gt;; if not, it calls &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(fact (sub1 n))&lt;/code&gt;, which triggers another
+round through the Y combinator.&lt;/p&gt;
+
+&lt;p&gt;The fully church-encoded version of this term is very large: all of
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Y&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;zero?&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sub1&lt;/code&gt;, and the Church numerals get expanded into
+pure λ-calculus. In &lt;a href=&quot;/cis352-s26/projects/4&quot;&gt;Project 4&lt;/a&gt;, the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;church-compile&lt;/code&gt; function handles
+this by wrapping the program in a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt; that binds all the builtins:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Y-comb&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;zero?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;add1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sub1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cons&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;car&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cdr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;null?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;not&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+  &lt;span class=&quot;nv&quot;&gt;program&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Then the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;churchify&lt;/code&gt; function recursively translates this entire
+expression, including the builtin definitions, into pure λ-calculus.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Show how to compile the following &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;letrec&lt;/code&gt; using the Y combinator:&lt;/p&gt;
+
+  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;letrec&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;double&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;zero?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;add1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;add1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;double&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sub1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))))])&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;double&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;Write the result using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;let&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Y&lt;/code&gt; (you don’t need to expand everything into λ-calculus).&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
+
+&lt;p&gt;We’ve now seen how to Church-encode an entire programming language
+into pure λ-calculus:&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Source construct&lt;/th&gt;
+      &lt;th&gt;Encoding strategy&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Natural numbers&lt;/td&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;N = (λ (f) (λ (x) (fᴺ x)))&lt;/code&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add1&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Manipulate the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; structure&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Booleans&lt;/td&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt; select between two thunks&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e0 (lambda () e1) (lambda () e2))&lt;/code&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;and&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;or&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Desugar to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/code&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Cons cells&lt;/td&gt;
+      &lt;td&gt;Observer with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;when-cons&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;when-null&lt;/code&gt; callbacks&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Multi-arg functions&lt;/td&gt;
+      &lt;td&gt;Currying&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;letrec&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Y combinator provides fixed-point recursion&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;The key insight is the &lt;strong&gt;observer pattern&lt;/strong&gt;: every data type is a
+function that takes callbacks, one per constructor, and calls the
+appropriate one. Numbers, booleans, and lists all follow this pattern.&lt;/p&gt;
+
+&lt;p&gt;This encoding shows that the λ-calculus, despite having only three
+syntactic forms (variables, abstraction, application) and one
+computational rule (β-reduction), can express everything that Racket
+or any other Turing-complete language can express. In &lt;a href=&quot;/cis352-s26/projects/4&quot;&gt;Project
+4&lt;/a&gt;, you will implement this as a
+compiler: a function that translates high-level Scheme programs into
+pure λ-calculus.&lt;/p&gt;
 </description>
         <pubDate>Wed, 18 Mar 2026 00:00:00 -0400</pubDate>
         <link>https://kmicinski.com/cis352-s26/church-encoding</link>
@@ -3390,577 +4448,6 @@ can only emit logging statements).&lt;/p&gt;
         <pubDate>Tue, 03 Feb 2026 00:00:00 -0500</pubDate>
         <link>https://kmicinski.com/cis352-s26/evaluation-order</link>
         <guid isPermaLink="true">https://kmicinski.com/cis352-s26/evaluation-order</guid>
-        
-        
-      </item>
-    
-      <item>
-        <title>Programming with Algebra</title>
-        <description>&lt;h2 id=&quot;topics&quot;&gt;Topics&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Term algebras and equational reasoning&lt;/li&gt;
-  &lt;li&gt;Natural numbers as an algebraic data type&lt;/li&gt;
-  &lt;li&gt;Foldr and structural recursion&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://gist.github.com/kmicinski/3219342bd9fa3aac5feff74288b41e14&quot;&gt;Code for these lecture notes&lt;/a&gt;&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;Students often ask (in CIS352): “why learn Racket, a language with an arcane syntax that I might not use outside of this class?” It is a very reasonable question, and today we will answer it directly:&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;We use Racket because Racket is the language that lets us most rapidly experiment with and compute over &lt;em&gt;term algebras&lt;/em&gt;.&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Using algebra will allow us to reason rigorously about code, enabling us to (a) prove that certain fragments of code are &lt;em&gt;equal&lt;/em&gt; but also (b) giving us a way of gaining intuition for what the code is doing as we evaluate the program. The essential purpose of algebra is to be able to perform &lt;em&gt;equational reasoning&lt;/em&gt;: substituting equals by equals to iteratively establish the equality of increasingly-complex code via simple, easily-understood local conversions.&lt;/p&gt;
-
-&lt;p&gt;Computers are extremely complex, and the typical programmer’s mental model of the program’s execution probably involves (at least) some local variables, a stack, and memory (e.g., the heap). While this is not an unreasonable abstraction (although it is arguably a bit archaic for truly modern hardware), it relies on a lot of complexity which you (likely) do not fully understand. Our goal is to have you look at languages that are so simple, you can understand their execution completely, with &lt;em&gt;absolutely zero&lt;/em&gt; semantic ambiguity. To do that, we will start by connecting back to our high school algebra classes.&lt;/p&gt;
-
-&lt;p&gt;We all intuitively understand:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;f(x,y) = x^2 + cos(y/x)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In high-school algebra, we learn how to manipulate algebraic expressions, and in particular we know how to do substitution, e.g.:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;f(z+k, z^2) = (z+k)^2 + cos((z^2)/(z+k))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;High-school algebra then teaches us to “simplify” expressions into canonical forms. E.g., the “FOIL” rule, i.e., the identity:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(x + y)^2 = x^2 + 2xy + y^2
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;A significant amount of high-school algebra is about building our intuition for how to simplify these algebraic expressions into canonical forms.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;term-algebras&quot;&gt;Term Algebras&lt;/h2&gt;
-
-&lt;p&gt;&lt;em&gt;“Term algebras are finite trees.”&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Definition: Term Algebra&lt;/strong&gt; (not to be confused with high-school algebra, etc.)&lt;/p&gt;
-
-&lt;p&gt;Assume T is a signature: a set of constructors (names) along with associated arities. The term algebra over T is the set of terms which may be formed by applying constructors (respecting their associated arities) to other terms in the algebra. We may construe zero-arity constructors as the algebra’s “constants.”&lt;/p&gt;
-
-&lt;p&gt;For example, take C = {&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;0&lt;/code&gt; with arity 0, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;1&lt;/code&gt; with arity 0, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;+&lt;/code&gt; with arity 2}&lt;/p&gt;
-
-&lt;p&gt;Terms include: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0 + 1&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1 + (0 + 1)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(0 + 0) + 1&lt;/code&gt;, etc…&lt;/p&gt;
-
-&lt;p&gt;We wrote examples in infix style to be intuitive. Pedantically, we might write:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;0(), 1(), +(0(),1()), +(1(),+(0(),1()))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Without loss of generality, we will represent all function calls in prefix form. By doing this, we see a central advantage of using Racket for the course: Racket’s lists enable us to &lt;em&gt;trivially&lt;/em&gt; represent term algebras.&lt;/p&gt;
-
-&lt;p&gt;You can think of term algebras as “raw, uninterpreted terms.”&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;(Rhetorical) Question:&lt;/strong&gt; Why are they so closely related to Racket?&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Answer:&lt;/strong&gt; Racket makes term algebras &lt;em&gt;immediately visible&lt;/em&gt;:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;Constructors: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cons&lt;/code&gt; / &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;()&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;Functions defined via case analysis: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;match&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;Recursion mirrors the inductive structure of terms&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Now, let’s have you write this up in Racket: Write a type predicate, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add-expr?&lt;/code&gt;, which characterizes the set of expressions over the constants 1/0 and the two-argument +:&lt;/p&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;               &lt;span class=&quot;c1&quot;&gt;;; 0 is an add-expr?&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;               &lt;span class=&quot;c1&quot;&gt;;; 1 is an add-expr?&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;;; Hint: possible to use a predicate pattern: ,(? p? e0)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;;; (+ e0 e1) is an add-expr? if e0 / e1 are add-expr?s&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;Now, given an expression, e, we may write a Racket function that evaluates the expression &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; down to a &lt;em&gt;number&lt;/em&gt;. In fact, if we construe &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add-expr?&lt;/code&gt; to define a programming language, then we are writing our first &lt;em&gt;interpreter&lt;/em&gt;. We will use recursion and matching to build our interpreter, following a common style we will learn about later. We will not focus extensively on interpreters in today’s class, but we &lt;em&gt;will&lt;/em&gt; use algebraic data types to define the &lt;em&gt;abstract syntax&lt;/em&gt; of programming languages frequently.&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (add-expr-&amp;gt;number &apos;(+ 1 (+ 0 (+ 1 0)))) =&amp;gt; 2&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-&amp;gt;number&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Given any signature T (a set of constructors and associated arities), it is possible to write a type predicate using match.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Let the algebra &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bool?&lt;/code&gt; be formed by the following constructors:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;true&lt;/code&gt; – of arity 0&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;false&lt;/code&gt; – of arity 0&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;and&lt;/code&gt; – of arity 2&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;or&lt;/code&gt; – of arity 2&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bool?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;true&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;false&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;bool?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;bool?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;bool?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;bool?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;  &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Define a function that converts a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bool?&lt;/code&gt; to a Racket &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;boolean?&lt;/code&gt; (i.e., just #t/#f).&lt;/p&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bool?-&amp;gt;racket&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;the-natural-numbers-as-a-term-algebra&quot;&gt;The natural numbers, as a term algebra&lt;/h2&gt;
-
-&lt;p&gt;We now define the natural numbers as a term algebra whose signature is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt; with arity 0 and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;S&lt;/code&gt; (successor) with arity 1:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;0&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;nat?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;zero&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;three&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Convert a Racket natural to a number:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;0&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;n+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;add1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Assume n0 satisfies &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;, write &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-even?&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-even?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;0&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-even?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;&lt;em&gt;Don’t&lt;/em&gt; use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-&amp;gt;num&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-even?&lt;/code&gt;:&lt;/p&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-odd?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Assume n0 and n1 are &lt;em&gt;both&lt;/em&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;. Now, define &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(&amp;lt;= n0 n1)&lt;/code&gt;.&lt;/p&gt;
-
-  &lt;p&gt;Basic approach: use recursion over n0 / n1:&lt;/p&gt;
-  &lt;ul&gt;
-    &lt;li&gt;Match n0, if n0 is 0 then return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt;&lt;/li&gt;
-    &lt;li&gt;If n0 not 0, then what do you do…?&lt;/li&gt;
-  &lt;/ul&gt;
-
-  &lt;p&gt;DON’T use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat-&amp;gt;num&lt;/code&gt; (which makes this easier):&lt;/p&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;nat-lte&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;quasiquoting-and-recursive-functions-on-algebras&quot;&gt;Quasiquoting and Recursive Functions on Algebras&lt;/h2&gt;
-
-&lt;p&gt;Last lecture (and this lecture), we learned about quasipatterns, which allow us to match list-like patterns. We can use quasiquoting to &lt;em&gt;produce&lt;/em&gt; lists which “drop in” or “splice in” other expressions.&lt;/p&gt;
-
-&lt;p&gt;For example:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; notice, `, *NOT* &apos;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This expression produces a list of three elements:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;20&lt;/code&gt;, because &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; was &lt;em&gt;unquoted&lt;/em&gt; (i.e., evaluated, to be dropped in)
-    &lt;ul&gt;
-      &lt;li&gt;The comma &lt;em&gt;unquotes&lt;/em&gt;, it says: “evaluate the next expression you read and then drop it in.”&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt;, because x was under a quasiquote and not unquoted
-    &lt;ul&gt;
-      &lt;li&gt;Unless you unquote, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`&lt;/code&gt; acts like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;&lt;/code&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;21&lt;/code&gt;, because &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;,(+ x 1)&lt;/code&gt; says: evaluate &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ x 1)&lt;/code&gt;, then take its result and drop it in here.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;If we use quote &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;&lt;/code&gt; instead of quasiquote &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`&lt;/code&gt;, we will just get the literal expression, and no unquoting is possible:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; produces literally &apos;(,x x ,(+ x 1))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;We will start to &lt;em&gt;use&lt;/em&gt; quasiquotes pervasively to &lt;em&gt;produce&lt;/em&gt; algebraic data. For example, we will now define the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(add-two n)&lt;/code&gt; function.&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; Assume n satisfies nat?&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-two&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-two&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; &apos;(S (S (S (S (S 0)))))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Assume n0, n1 both nat. Define n0 + n1. Algebraically, we say:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(plus 0 k) = k
-(plus (S n) k) = (S (plus n k))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Your result must satisfy &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;, and forall n0, n1 which satisfy &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;, we must have that:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(nat-&amp;gt;num (plus n0 n1)) = (+ (nat-&amp;gt;num n0) (nat-&amp;gt;num n1))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;plus&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;S&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;plus&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Idea: recursion on n0&lt;/p&gt;
-
-  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(times 0 k) = 0
-(times (S n) k) = k + (times n k)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-
-  &lt;p&gt;Remember:&lt;/p&gt;
-
-  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(nat-&amp;gt;num (times n0 n1)) = (* (nat-&amp;gt;num n0) (nat-&amp;gt;num n1))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;times&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Now, we use recursion on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt; to define the factorial function:&lt;/p&gt;
-
-  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(fac 0) =&amp;gt; 1
-(fac (S n)) =&amp;gt; (S n) * (fac n)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-
-  &lt;p&gt;Remember, we must produce a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nat?&lt;/code&gt;:&lt;/p&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;factorial&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;;; (factorial &apos;(S (S (S (S 0)))))&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;;   =&amp;gt; &apos;(S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S (S 0))))))))))))))))))))))))&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;; (nat-&amp;gt;num (factorial &apos;(S (S (S (S 0)))))) =&amp;gt; 24&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;equality-and-canonical-terms-advanced&quot;&gt;Equality and Canonical Terms (Advanced)&lt;/h2&gt;
-
-&lt;p&gt;It is important to understand that the term algebra is a set of “raw” terms, which are not equated in any way. For example, although we may be tempted to think that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(+ 1 0)&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;`(+ 0 1)&lt;/code&gt; should represent the &lt;em&gt;same&lt;/em&gt; term (because they both evaluate to 1 in Racket), they are distinct terms from the perspective of the term algebra &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add-expr?&lt;/code&gt;. Specifically…&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; #f&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;definition-quotient-algebra&quot;&gt;Definition: Quotient Algebra&lt;/h3&gt;
-
-&lt;p&gt;In many settings, it will be desirable to define &lt;em&gt;equations&lt;/em&gt; over terms. These equations effectively partition the term algebra into equivalence classes. For example, for the algebra &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add-expr?&lt;/code&gt;, we might also consider the following equations:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(+ x y) = (+ y x)    (plus-comm)
-(+ 0 x) = x          (plus-id-0)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;From these two rules, we may prove that: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ x 0) = x&lt;/code&gt;&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ x 0) = (+ 0 x)&lt;/code&gt;     (applying plus-comm)&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ 0 x) = x&lt;/code&gt;           (applying plus-id-0)&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Recall that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;=&lt;/code&gt; is reflexive, antisymmetric, and transitive.&lt;/p&gt;
-
-&lt;p&gt;When we take a term algebra and add an equivalence relation, we get a &lt;em&gt;quotient algebra&lt;/em&gt;. It is an esoteric-sounding name, but it involves a key distinction:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;The term algebra is just a &lt;em&gt;raw set of terms&lt;/em&gt;, all of which are just finite trees.&lt;/li&gt;
-  &lt;li&gt;A quotient algebra refines this, equating some of the terms to each other, effectively partitioning the space.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;For example, while…&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;;; #f&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;…in Racket, the quotient algebra formed by the two equations above would disagree, instead saying that all of the following are equal:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(+ 0 (+ 1 1)) = (+ 1 (+ 0 1)) = (+ 1 1)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;IMPORTANT:&lt;/strong&gt; Specific proofs around quotient algebras are a more advanced topic, and you will &lt;em&gt;not&lt;/em&gt; need to deeply understand them for the course. However, it is important to be able to understand the difference between “structural equality” (i.e., &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;equal?&lt;/code&gt;) and “application-specific” equality.&lt;/p&gt;
-
-&lt;p&gt;In general, it is not possible to decide whether two arbitrary quotient algebra terms are &lt;em&gt;equal&lt;/em&gt; or not. The “word problem for equational theories” says that it is impossible, &lt;em&gt;in general&lt;/em&gt;, to decide the equivalence of two terms t0 and t1, under the set of equations E.&lt;/p&gt;
-
-&lt;p&gt;While we cannot decide the equivalence of arbitrary algebraic formulas, almost all of our day-to-day programming is done in a setting where equality is &lt;em&gt;trivially&lt;/em&gt; decidable: for example, deciding the equality of numbers is easy.&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; Compare two add-expr?s for equality&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;; Assume: n0 / n1 satisfy add-expr?&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-expr-&amp;gt;num&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;n1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This section was more advanced–let’s switch back to using algebra to do programming.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;folding-over-lists-foldr&quot;&gt;Folding over lists (foldr)&lt;/h2&gt;
-
-&lt;p&gt;We are now ready to use some of the algebra we have developed in this lecture to develop a very special function, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;foldr&lt;/code&gt;, which is defined via the following equations:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(fold-1)   (foldr f z &apos;()) = z
-(fold-2)   (foldr f z (cons hd tl)) = (f hd (foldr f z tl))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(foldr f z l)&lt;/code&gt; “folds” the function f across the list l with the initial value (“zero”) z. By “fold” f across the list, I actually mean “iterate” or “accumulate.” It will make more sense once we see an example:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (foldr + 0 &apos;(1 2 3)) =&amp;gt; 6&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;; (foldr + 3 &apos;(1 2 3)) =&amp;gt; 9&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;;; (foldr * 1 &apos;(2 3 4)) =&amp;gt; 24&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Fold’s second argument is a “folder” or “updater” function, which takes two inputs:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;The next element in the list being inspected.&lt;/li&gt;
-  &lt;li&gt;The current “accumulator” value.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;In the case of foldr (fold &lt;em&gt;right&lt;/em&gt;), the folder / updater function is applied from &lt;em&gt;right to left&lt;/em&gt;, and the initial accumulator value is z (the second argument, “zero”–a sensible default value).&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;hd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;tl&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;hd&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;tl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;equational-reasoning-example&quot;&gt;Equational reasoning example&lt;/h3&gt;
-
-&lt;p&gt;Let’s use equational reasoning to show that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(foldr + 0 &apos;(1 2 3)) = 6&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(foldr + 0 &apos;(1 2 3)) = (foldr + 0 (cons 1 (cons 2 (cons 3 &apos;()))))
-                     = (+ 1 (foldr + 0 (cons 2 (cons 3 &apos;())))) (via fold-2)
-                     = (+ 1 (+ 2 (foldr + 0 (cons 3 &apos;()))))    (via fold-2)
-                     = (+ 1 (+ 2 (+ 3 (foldr + 0 &apos;()))))       (via fold-2)
-                     = (+ 1 (+ 2 (+ 3 0)))                     (via fold-1)
-                     = (+ 1 (+ 2 3))
-                     = (+ 1 5)
-                     = 6
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Using the standard rules of arithmetic for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;, etc., and also the two rules:&lt;/p&gt;
-
-  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(fold-1)   (foldr f z &apos;()) = z
-(fold-2)   (foldr f z (cons hd tl)) = (f hd (foldr f z tl))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-
-  &lt;p&gt;Rigorously prove–via a series of equalities (annotate fold-1/2 when appropriate)–the following:&lt;/p&gt;
-
-  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(foldr * 1 &apos;(2 3 4)) = 24
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;h3 id=&quot;the-identity-l--foldr-cons--l&quot;&gt;The identity: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;l = (foldr cons &apos;() l)&lt;/code&gt;&lt;/h3&gt;
-
-&lt;p&gt;As a more advanced example of how we might use algebra for programming, I want to pose the following equality:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;forall l. l = (foldr cons &apos;() l)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Why is this the case intuitively?&lt;/p&gt;
-
-&lt;p&gt;Pictorially, here is what &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(foldr f z l)&lt;/code&gt; is doing:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;(cons x0 (cons x1 (cons x2 ... (cons xn-1 &apos;()) ...)))
-  |       |        |           |          | &apos;() maps to z
-  v       v        v           v          v
-( f   x0 ( f   x1 ( f   x2 ... (f    xn-1  z) ) ) )
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Notice how the fold transforms the list, effectively replacing each &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cons&lt;/code&gt; with a call to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;f&lt;/code&gt;, and the empty list &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;()&lt;/code&gt; by the zero (initial value) &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;z&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;Now, back to our original claim: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;forall l. l = (foldr cons &apos;() l)&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Pictorially, this is true because…&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  (cons x0 (cons x1 (cons x2 ... (cons xn-1 &apos;()) ...)))
-    |       |        |           |          |
-    v       v        v           v          v
-  (cons x0 (cons x1 (cons x2 ... (cons xn-1 &apos;()) ...)))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;ADVANCED (optional):&lt;/strong&gt; However, this picture is not a rigorous proof. To make a rigorous proof, we would do induction over the list l, establishing an inductive hypothesis that for all sublists xs of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(cons x xs)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;xs = (foldr cons &apos;() xs)&lt;/code&gt;, and we would prove that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(cons x xs) = (foldr cons &apos;() (cons x xs))&lt;/code&gt; by using (fold-2) and the induction hypothesis.&lt;/p&gt;
-
-&lt;p&gt;We will see this later on, when we look at using Lean.&lt;/p&gt;
-
-&lt;h3 id=&quot;the-power-of-fold&quot;&gt;The power of fold&lt;/h3&gt;
-
-&lt;p&gt;It is easy to miss the power of this idea, or see it as abstract pedantic nonsense. In fact, foldr characterizes an extremely common class of functions that process lists by accumulating a result, walking over the list in some order (right to left, as in foldr, or left to right as in foldl).&lt;/p&gt;
-
-&lt;p&gt;Foldr gives us a general-purpose way to transform lists by walking over each element one at a time and firing a two-argument “updater” function, which takes (a) the next value in the list, and (b) the current accumulator value (which defaults to “zero”, foldr’s third argument).&lt;/p&gt;
-
-&lt;p&gt;For example, we can define the function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(filter f l)&lt;/code&gt; via foldr:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;filter&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;next-elt&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;next-elt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cons&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;next-elt&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-         &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-         &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;Use foldr to add all &lt;em&gt;even&lt;/em&gt; numbers in the list l:&lt;/p&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;;; (add-evens &apos;(0 1 2 3 4 5)) =&amp;gt; 6&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add-evens&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-         &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
-         &lt;span class=&quot;nv&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;h3 id=&quot;fold-in-other-languages&quot;&gt;Fold in other languages&lt;/h3&gt;
-
-&lt;p&gt;Fold is a pervasive construct, popular across many languages. For example:&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Rust:&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&quot;language-rust highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nd&quot;&gt;vec!&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;.iter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;.fold&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;Python:&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;reduce&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;acc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;JavaScript:&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;reduce&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;acc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;C++:&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;std&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vector&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;std&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;accumulate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;begin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;end&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;SQL:&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;SELECT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;SUM&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;FROM&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;AS&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Fold is so popular because it represents the following imperative construct:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;acc = 0
-for (elt in list.reverse) { acc = f(elt,acc); }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In practice, &lt;em&gt;almost any function over lists can be written using fold&lt;/em&gt;.&lt;/p&gt;
-
-&lt;p&gt;Also, fold forms the basis for MapReduce, a popular distributed / parallel computing framework:
-https://www.ibm.com/think/topics/mapreduce&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;QuickAnswer&lt;/p&gt;
-
-  &lt;p&gt;What is the result of…&lt;/p&gt;
-
-  &lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;foldr&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;optional-using-algebra-for-proving-correctness-of-code&quot;&gt;Optional: Using algebra for proving correctness of code&lt;/h2&gt;
-
-&lt;p&gt;We will prove: for all l, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(filter (lambda (x) #t) l) = l&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Proof:&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;First, we show that:&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;next-elt&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;next-elt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cons&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;next-elt&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;=&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;cons&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Proving this equality is actually a bit tricky, because we have not talked about lambdas, but notice that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (x) #t)&lt;/code&gt; will &lt;em&gt;always&lt;/em&gt; return true, and thus the &lt;em&gt;guard&lt;/em&gt; is always true. Thus–because the guard is always true–the function is really equal to…&lt;/p&gt;
-
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;next-elt&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cons&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;next-elt&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;acc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This is &lt;em&gt;almost&lt;/em&gt; cons, and it is in fact &lt;em&gt;equal&lt;/em&gt; to cons, in the sense that the above lambda does the same things to the same arguments (i.e., the function is extensionally equal). We will see that they are related via a concept named η-expansion in the λ-calculus.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
-
-&lt;p&gt;Key concepts from this lecture:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;A “term algebra” is an infinite set of terms (all individually finite), each of which is formed via the application of constructors according to some signature T (constructors and their arities).&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Racket’s lists (“S-expressions”) naturally represent term algebras in prefix form, and it is easy to express term algebras via Racket type predicates using pattern matching.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Term algebras are all finite trees, and thus syntactic equality is dictated by structural equality (i.e., &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;equal?&lt;/code&gt; in Racket!).&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;It is sometimes desirable to extend term algebras with a set of equations. These equations partition the term algebra into equivalence classes, and form a quotient algebra–however, deciding equality of terms in an arbitrary quotient algebra is not possible (undecidable) in general via any algorithm. Instead, we must manually demonstrate a “proof,” via a chain of reasoning steps.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Algebra gives us a very powerful tool to reason about equality of programs by transitive term rewriting–each equality in the chain follows from some equation in the system.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Folding over lists is a fundamental looping construct, which allows us to “fold” an “updater” or “folder” function across a list, walking over it from right to left (hence fold&lt;em&gt;r&lt;/em&gt;) and starting with some initial accumulator zero.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Folds can be used for a wide range of list-processing tasks, we will begin to use them more frequently throughout class.&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-</description>
-        <pubDate>Mon, 02 Feb 2026 00:00:00 -0500</pubDate>
-        <link>https://kmicinski.com/cis352-s26/algebra</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/algebra</guid>
         
         
       </item>

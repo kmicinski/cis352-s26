@@ -137,12 +137,12 @@ harmonious way (along with defining the other operations we need on
 numbers), we should be good.</p>
 
 <p>Our representation of the number <code class="language-plaintext highlighter-rouge">N : nat</code> will be: (λ(f) (fᴺ x)),
-where fᴺ is N applications of N. To give a few specific examples:</p>
+where fᴺ is N applications of f. To give a few specific examples:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(nat-&gt;church 0) = (λ (f) (λ (x) x)) ;; call f 0 times
-(nat-&gt;church 1) = (λ (f) (λ (x) (f x))) ;; call f 0 times
-(nat-&gt;church 2) = (λ (f) (λ (x) (f (f x)))) ;; call f 0 times
-(nat-&gt;church 3) = (λ (f) (λ (x) (f (f (f x))))) ;; call f 0 times
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(nat-&gt;church 0) = (λ (f) (λ (x) x))           ;; call f 0 times
+(nat-&gt;church 1) = (λ (f) (λ (x) (f x)))        ;; call f 1 time
+(nat-&gt;church 2) = (λ (f) (λ (x) (f (f x))))    ;; call f 2 times
+(nat-&gt;church 3) = (λ (f) (λ (x) (f (f (f x))))) ;; call f 3 times
 </code></pre></div></div>
 
 <blockquote>
@@ -152,11 +152,24 @@ where fᴺ is N applications of N. To give a few specific examples:</p>
     (λ (f) (λ (x) (f (f (f (f (f (f (f x)))))))))</p>
 </blockquote>
 
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>What number does <code class="language-plaintext highlighter-rouge">(λ (f) (λ (x) x))</code> represent? What about <code class="language-plaintext highlighter-rouge">(λ (g) (λ (y) (g y)))</code>?
+Are these two terms α-equivalent?</p>
+</blockquote>
+
 <p>One immediate point we should make is that it may take an arbitrary
 amount of reductions (β, α, η) to get any given term into normal
-form. For example, consider the following term:</p>
+form. For example, consider the following term. Click it to load it
+in the explorer and reduce it to normal form:</p>
 
-<p>CLAUDE: Give a somewhat complex term which ultimately reduces to the encoding of 2.</p>
+<p><code class="le-term">((λ (n) (λ (f) (λ (x) (f ((n f) x))))) (λ (g) (λ (y) (g y))))</code></p>
+
+<p>After three β-reduction steps, you’ll find that this reduces to <code class="language-plaintext highlighter-rouge">(λ
+(f) (λ (x) (f (f x))))</code>, the Church encoding of 2. Even though the
+original term doesn’t look anything like the encoding of 2, it
+<em>computes to</em> 2 after reduction.</p>
 
 <p>This is just as true in the λ-calculus as it is in arithmetic: we know
 that <code class="language-plaintext highlighter-rouge">8 = 7 + 1 = 7 + 1 + 0 = 7 + 1 + 0 + 0 = ...</code>. In general, there
@@ -171,9 +184,9 @@ form, it will be unique (up to α equivalence).</p>
 <blockquote>
   <p>QuickAnswer</p>
 
-  <p>Use β-reduction to reduce the term to β-normal form:</p>
+  <p>Use β-reduction to reduce the following term to β-normal form:</p>
 
-  <p>((λ (g) (λ (f) (λ (x) (f ((g f) x))))) (λ (z) z))</p>
+  <p><code class="le-term">((λ (g) (λ (f) (λ (x) (f ((g f) x))))) (λ (z) z))</code></p>
 
   <p>What Church-encoded number does it represent?</p>
 </blockquote>
@@ -183,13 +196,13 @@ form, it will be unique (up to α equivalence).</p>
 <p>Now let’s say we wanted to write a Racket function which generates a
 Church-encoded version of the number N. We can do that as follows:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(define (nat-&gt;church n)
-  (define (h n)
-    (match n
-      [0 'x]
-      [_ `(f ,(h (- n 1)))]))
-  `(λ (f) (λ (x) ,(h n))))
-(nat-&gt;church 4)
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">nat-&gt;church</span> <span class="nv">n</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">h</span> <span class="nv">n</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">match</span> <span class="nv">n</span>
+      <span class="p">[</span><span class="nf">0</span> <span class="ss">'x</span><span class="p">]</span>
+      <span class="p">[</span><span class="nf">_</span> <span class="o">`</span><span class="p">(</span><span class="nf">f</span> <span class="o">,</span><span class="p">(</span><span class="nf">h</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">n</span> <span class="mi">1</span><span class="p">)))]))</span>
+  <span class="o">`</span><span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="nf">f</span><span class="p">)</span> <span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="nf">x</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">h</span> <span class="nv">n</span><span class="p">))))</span>
+<span class="p">(</span><span class="nf">nat-&gt;church</span> <span class="mi">4</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>The function produces a quoted expression (i.e., a Racket quoted
@@ -197,8 +210,8 @@ list). If I actually want to <em>use</em> that in Racket, I can call <code class
 (you will rarely want to do this, so this is just for illustrative
 purposes here):</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(eval (nat-&gt;church 4) (make-base-namespace))
-#&lt;procedure&gt; 
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nb">eval</span> <span class="p">(</span><span class="nf">nat-&gt;church</span> <span class="mi">4</span><span class="p">)</span> <span class="p">(</span><span class="nf">make-base-namespace</span><span class="p">))</span>
+<span class="o">#</span><span class="nv">&lt;procedure&gt;</span>
 </code></pre></div></div>
 
 <p>The call to <code class="language-plaintext highlighter-rouge">(make-base-namespace)</code> is required to tell eval how to
@@ -239,13 +252,21 @@ Racket’s <code class="language-plaintext highlighter-rouge">add1</code>, we ge
 <p>Thus, we can implement <code class="language-plaintext highlighter-rouge">(church-&gt;nat N)</code> (where <code class="language-plaintext highlighter-rouge">N</code> is a
 <em>church-encoded representation of some number N</em>) as follows:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(define (church-&gt;nat N) ((N add1) 0))
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">church-&gt;nat</span> <span class="nv">N</span><span class="p">)</span> <span class="p">((</span><span class="nf">N</span> <span class="nv">add1</span><span class="p">)</span> <span class="mi">0</span><span class="p">))</span>
 </code></pre></div></div>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Using the definition of <code class="language-plaintext highlighter-rouge">church-&gt;nat</code> above, trace the evaluation of
+<code class="language-plaintext highlighter-rouge">(church-&gt;nat (lambda (f) (lambda (x) (f (f (f x))))))</code>.
+What Racket value does it produce?</p>
+</blockquote>
 
 <p>Just to reiterate: there’s no special reason that we <em>must</em> use this
 encoding. This is just the most direct encoding. There are other
 possible encodings that could work. Also, notice that nothing in
-<code class="language-plaintext highlighter-rouge">church-&gt;nat</code> requires <code class="language-plaintext highlighter-rouge">N</code> to be a Church-encoed number: if we give
+<code class="language-plaintext highlighter-rouge">church-&gt;nat</code> requires <code class="language-plaintext highlighter-rouge">N</code> to be a Church-encoded number: if we give
 <code class="language-plaintext highlighter-rouge">church-&gt;nat</code> something that <em>isn’t</em> a Church-encoded number, it will
 just produce nonsense. In our next lecture, we’ll start studying type
 theory: we’ll use type systems to ensure that everything is tied
@@ -276,8 +297,19 @@ it in Racket) our program until we get an answer.</p>
   </li>
 </ul>
 
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Using the definition of <code class="language-plaintext highlighter-rouge">add1</code> above, what does <code class="language-plaintext highlighter-rouge">((N f) x)</code> evaluate
+to when N is the Church encoding of 3? (Hint: N = (λ (f) (λ (x) (f
+(f (f x)))))).)</p>
+</blockquote>
+
 <p>This is a point that deserves some contemplation, so let’s work
-through it with a bit of practice:</p>
+through it with a bit of practice. This will be our first
+<strong>compile-then-reduce</strong> exercise: we take a Racket expression, compile
+it to the λ-calculus by substituting encodings, and then reduce in the
+explorer.</p>
 
 <ul>
   <li>
@@ -293,13 +325,18 @@ we translate those.</p>
   </li>
 </ul>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((λ (N) (λ (f) (λ (x) (f ((N f) x)))))
- (λ (f) (λ (x) (f (f x)))))
-</code></pre></div></div>
+<p><code class="le-term">((λ (N) (λ (f) (λ (x) (f ((N f) x))))) (λ (f) (λ (x) (f (f x)))))</code></p>
 
-<p>Now, please take the above term and load it into the λ-explorer (on
-the right) and <em>prove</em> that the above computation reduces to the
-Church-encoding of <code class="language-plaintext highlighter-rouge">3</code>.</p>
+<p>Click this to load it in the explorer and <em>prove</em> that it reduces to
+the Church encoding of <code class="language-plaintext highlighter-rouge">3</code>.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Church-encode <code class="language-plaintext highlighter-rouge">(add1 0)</code> by substituting the encodings for <code class="language-plaintext highlighter-rouge">add1</code> and
+<code class="language-plaintext highlighter-rouge">0</code>. Then reduce the resulting λ-term to β-normal form. What Church
+numeral do you get?</p>
+</blockquote>
 
 <h2 id="aside-understanding-the-encoding">Aside: Understanding the Encoding</h2>
 
@@ -362,19 +399,31 @@ a pretty good intuition: a function of multiple parameters can take a
 theory–that will give us what we need to give a rigorous definition
 of a tuple (or even list) type.</p>
 
-<p>First: how do we handle <code class="language-plaintext highlighter-rouge">(λ () e)</code>? This is not super common, but it
+<p>First: how do we handle <code class="language-plaintext highlighter-rouge">(lambda () e)</code>? This is not super common, but it
 does sometimes happen in practical programs (e.g., thunks)
-sometimes. To convert <code class="language-plaintext highlighter-rouge">(λ () e)</code> into the λ-calculus, we just attach a
-superficial “bogus” parameter: <code class="language-plaintext highlighter-rouge">(λ (_) e)</code>. But we also have to
+sometimes. To convert <code class="language-plaintext highlighter-rouge">(lambda () e)</code> into the λ-calculus, we just attach a
+superficial “bogus” parameter: <code class="language-plaintext highlighter-rouge">(lambda (_) e)</code>. But we also have to
 remember that everywhere we apply <code class="language-plaintext highlighter-rouge">(e)</code> with zero arguments (we can
 always identify this just by looking at the code), we translate that
-to <code class="language-plaintext highlighter-rouge">(e (λ (x) x))</code>: i.e., since we know <code class="language-plaintext highlighter-rouge">e</code> will eventually be <code class="language-plaintext highlighter-rouge">(λ (_)
+to <code class="language-plaintext highlighter-rouge">(e (lambda (x) x))</code>: i.e., since we know <code class="language-plaintext highlighter-rouge">e</code> will eventually be <code class="language-plaintext highlighter-rouge">(lambda (_)
 e)</code> (with a bogus argument).</p>
 
-<p><code class="language-plaintext highlighter-rouge">(λ (x) e)</code> is already encoded, so we just have to encode <code class="language-plaintext highlighter-rouge">e</code>. Then,
-<code class="language-plaintext highlighter-rouge">(λ (x y) e)</code> is encoded as <code class="language-plaintext highlighter-rouge">(λ (x) (λ (y) e))</code>, and calls <code class="language-plaintext highlighter-rouge">(e x y)</code>
+<p><code class="language-plaintext highlighter-rouge">(lambda (x) e)</code> is already encoded, so we just have to encode <code class="language-plaintext highlighter-rouge">e</code>. Then,
+<code class="language-plaintext highlighter-rouge">(lambda (x y) e)</code> is encoded as <code class="language-plaintext highlighter-rouge">(lambda (x) (lambda (y) e))</code>, and calls <code class="language-plaintext highlighter-rouge">(e x y)</code>
 are encoded <code class="language-plaintext highlighter-rouge">((e x) y)</code>. We repeat this trick for any number of
 arguments, and that gives us the encoding of any fixed-arity function.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>How would you encode the following Racket expression into the
+λ-calculus?</p>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((lambda (x y z) (x z)) a b c)
+</code></pre></div>  </div>
+
+  <p>(Hint: curry both the lambda and the application.)</p>
+</blockquote>
 
 <h2 id="addition-encoding-">Addition (encoding <code class="language-plaintext highlighter-rouge">+</code>)</h2>
 
@@ -389,37 +438,670 @@ function:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(λ (f) (λ (x) (f (f ... (f x)))))
                |
                v
-              n+k times 
+              n+k times
 </code></pre></div></div>
 
 <p>So let’s define <code class="language-plaintext highlighter-rouge">+</code> with the two arguments, <code class="language-plaintext highlighter-rouge">n</code> and <code class="language-plaintext highlighter-rouge">k</code>: <code class="language-plaintext highlighter-rouge">(λ (n) (λ
-(k) (λ (f) (λ (x) ...))))</code>. There are a lot of lamdbas here: <code class="language-plaintext highlighter-rouge">n</code> and
+(k) (λ (f) (λ (x) ...))))</code>. There are a lot of lambdas here: <code class="language-plaintext highlighter-rouge">n</code> and
 <code class="language-plaintext highlighter-rouge">k</code> are the arguments to <code class="language-plaintext highlighter-rouge">+</code>. That then returns the <code class="language-plaintext highlighter-rouge">(λ (f) (λ (x)
 ...))</code>. Now, to fill in the <code class="language-plaintext highlighter-rouge">...</code>, we want to apply <code class="language-plaintext highlighter-rouge">f</code> to <code class="language-plaintext highlighter-rouge">x</code> <code class="language-plaintext highlighter-rouge">n+k</code>
 times: this is the definition of the number <code class="language-plaintext highlighter-rouge">n+k</code>. To do that, we can
-just do <code class="language-plaintext highlighter-rouge">((k f) ((n f) x))</code>. Let’s think carefully about going on
-here; first, let’s look at the argument to <code class="language-plaintext highlighter-rouge">(k f)</code>, which is <code class="language-plaintext highlighter-rouge">((n f)
-x)</code>: this applies <code class="language-plaintext highlighter-rouge">f</code> <code class="language-plaintext highlighter-rouge">n</code> times to to <code class="language-plaintext highlighter-rouge">x</code> (notice we have to be
+just do <code class="language-plaintext highlighter-rouge">((k f) ((n f) x))</code>. Let’s think carefully about what is going
+on here; first, let’s look at the argument to <code class="language-plaintext highlighter-rouge">(k f)</code>, which is <code class="language-plaintext highlighter-rouge">((n f)
+x)</code>: this applies <code class="language-plaintext highlighter-rouge">f</code> <code class="language-plaintext highlighter-rouge">n</code> times to <code class="language-plaintext highlighter-rouge">x</code> (notice we have to be
 careful about currying). That is a term that builds a big stack of
-<code class="language-plaintext highlighter-rouge">f</code>s to materialize the number <code class="language-plaintext highlighter-rouge">n</code>: <code class="language-plaintext highlighter-rouge">(λ (f) (λ (x) (f (f ... n times
-... (f x)))))</code>. That is passed to <code class="language-plaintext highlighter-rouge">(k f)</code>, which is the function that
-does <code class="language-plaintext highlighter-rouge">f</code> <code class="language-plaintext highlighter-rouge">k</code> times to some argument; in this case, that argument is
-the big stack of <code class="language-plaintext highlighter-rouge">n</code> calls to <code class="language-plaintext highlighter-rouge">f</code>. Then, <code class="language-plaintext highlighter-rouge">(k f)</code> does <code class="language-plaintext highlighter-rouge">f</code> <code class="language-plaintext highlighter-rouge">k</code> times to
-that stack of calls to <code class="language-plaintext highlighter-rouge">f</code>, building a stack of <code class="language-plaintext highlighter-rouge">n+k</code> calls to <code class="language-plaintext highlighter-rouge">f</code>.</p>
+<code class="language-plaintext highlighter-rouge">f</code>s to materialize the number <code class="language-plaintext highlighter-rouge">n</code>: <code class="language-plaintext highlighter-rouge">(f (f ... n times ... (f
+x)))</code>. That is passed to <code class="language-plaintext highlighter-rouge">(k f)</code>, which is the function that does <code class="language-plaintext highlighter-rouge">f</code>
+<code class="language-plaintext highlighter-rouge">k</code> times to some argument; in this case, that argument is the big
+stack of <code class="language-plaintext highlighter-rouge">n</code> calls to <code class="language-plaintext highlighter-rouge">f</code>. Then, <code class="language-plaintext highlighter-rouge">(k f)</code> does <code class="language-plaintext highlighter-rouge">f</code> <code class="language-plaintext highlighter-rouge">k</code> times to that
+stack of calls to <code class="language-plaintext highlighter-rouge">f</code>, building a stack of <code class="language-plaintext highlighter-rouge">n+k</code> calls to <code class="language-plaintext highlighter-rouge">f</code>.</p>
+
+<p>So, the full definition is:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+ = (λ (n) (λ (k) (λ (f) (λ (x) ((k f) ((n f) x))))))
+</code></pre></div></div>
+
+<p>Let’s do a <strong>compile-then-reduce</strong> exercise for <code class="language-plaintext highlighter-rouge">(+ 2 1)</code>. We encode
+<code class="language-plaintext highlighter-rouge">+</code>, <code class="language-plaintext highlighter-rouge">2</code>, and <code class="language-plaintext highlighter-rouge">1</code>, then apply:</p>
+
+<p><code class="le-term">(((λ (n) (λ (k) (λ (f) (λ (x) ((k f) ((n f) x)))))) (λ (f) (λ (x) (f (f x))))) (λ (f) (λ (x) (f x))))</code></p>
+
+<p>Click to load and reduce. You should arrive at the Church encoding of 3.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Trace the first two β-reductions of the <code class="language-plaintext highlighter-rouge">(+ 2 1)</code> term above by
+hand (substituting <code class="language-plaintext highlighter-rouge">n</code> and then <code class="language-plaintext highlighter-rouge">k</code>). What does the term look like
+after those two steps?</p>
+</blockquote>
+
+<hr />
 
 <h2 id="multiplication-encoding-">Multiplication (encoding <code class="language-plaintext highlighter-rouge">*</code>)</h2>
 
+<p>The encoding for multiplication has a beautiful intuition based on
+<em>function composition</em>. Recall that a Church numeral <code class="language-plaintext highlighter-rouge">N</code> is a function
+that takes <code class="language-plaintext highlighter-rouge">f</code> and applies it <code class="language-plaintext highlighter-rouge">N</code> times. So what does <code class="language-plaintext highlighter-rouge">(N g)</code> give
+us? It gives us a function that applies <code class="language-plaintext highlighter-rouge">g</code> N times.</p>
+
+<p>Now, if <code class="language-plaintext highlighter-rouge">g</code> itself is <code class="language-plaintext highlighter-rouge">(K f)</code>, a function that applies <code class="language-plaintext highlighter-rouge">f</code> K
+times, then <code class="language-plaintext highlighter-rouge">(N (K f))</code> is a function that applies “f-K-times” N
+times. That’s <code class="language-plaintext highlighter-rouge">f</code> applied <code class="language-plaintext highlighter-rouge">N * K</code> times total!</p>
+
+<p>So, the definition is:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>* = (λ (n) (λ (k) (λ (f) (λ (x) ((n (k f)) x)))))
+</code></pre></div></div>
+
+<p>Breaking it down:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">(k f)</code>: a function that applies <code class="language-plaintext highlighter-rouge">f</code> K times</li>
+  <li><code class="language-plaintext highlighter-rouge">(n (k f))</code>: apply that “K-times” function N times, giving a function that
+applies <code class="language-plaintext highlighter-rouge">f</code> N*K times</li>
+  <li><code class="language-plaintext highlighter-rouge">((n (k f)) x)</code>: start with <code class="language-plaintext highlighter-rouge">x</code> and do it</li>
+</ul>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>In the definition of <code class="language-plaintext highlighter-rouge">*</code>, what would happen if we used <code class="language-plaintext highlighter-rouge">((k (n f)) x)</code>
+instead of <code class="language-plaintext highlighter-rouge">((n (k f)) x)</code>? Would we still get <code class="language-plaintext highlighter-rouge">n * k</code>?
+(Hint: is multiplication commutative?)</p>
+</blockquote>
+
+<p>Let’s verify with a <strong>compile-then-reduce</strong> exercise for <code class="language-plaintext highlighter-rouge">(* 2 3)</code>.
+We expect the result to be the Church encoding of 6:</p>
+
+<p><code class="le-term">(((λ (n) (λ (k) (λ (f) (λ (x) ((n (k f)) x))))) (λ (f) (λ (x) (f (f x))))) (λ (f) (λ (x) (f (f (f x))))))</code></p>
+
+<p>Click to load in the explorer and step through the reduction. You
+should eventually reach <code class="language-plaintext highlighter-rouge">(λ (f) (λ (x) (f (f (f (f (f (f x))))))))</code>,
+which is the Church encoding of 6.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Using the definitions of <code class="language-plaintext highlighter-rouge">*</code> and <code class="language-plaintext highlighter-rouge">+</code>, explain (informally) why
+<code class="language-plaintext highlighter-rouge">(* n 0)</code> always reduces to the Church encoding of 0 for any Church
+numeral <code class="language-plaintext highlighter-rouge">n</code>. (Hint: what is <code class="language-plaintext highlighter-rouge">(0 f)</code> for any <code class="language-plaintext highlighter-rouge">f</code>?)</p>
+</blockquote>
+
+<hr />
+
 <h2 id="evaluating-arithmetic-expressions">Evaluating Arithmetic Expressions</h2>
 
-<p>Given the encodings we’ve discussed so far, we can now evaluate a
-simple expression algebra, here’s what we have so far…</p>
+<p>Given the encodings we’ve discussed so far, we can now compile the
+following language entirely into the λ-calculus:</p>
 
-<p>```
-e ::= n        – Literals
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>e ::= n        – Literals
     | (+ e e)  – Addition
     | (* e e)  – Multiplication
-    | (λ (x …) e) — λs of any arity
-    | (e …) – Applications of any arity</p>
+    | (λ (x ...) e) — λs of any arity
+    | (e ...) – Applications of any arity
+</code></pre></div></div>
+
+<p>The process is systematic: for each construct, we substitute its
+encoding. Let’s trace through a more complex example to see the full
+compilation pipeline. Consider <code class="language-plaintext highlighter-rouge">(+ (* 2 1) 1)</code>:</p>
+
+<p><strong>Step 1:</strong> Encode the innermost subexpressions:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">2</code> → <code class="language-plaintext highlighter-rouge">(λ (f) (λ (x) (f (f x))))</code></li>
+  <li><code class="language-plaintext highlighter-rouge">1</code> → <code class="language-plaintext highlighter-rouge">(λ (f) (λ (x) (f x)))</code> (appears twice)</li>
+</ul>
+
+<p><strong>Step 2:</strong> Encode <code class="language-plaintext highlighter-rouge">(* 2 1)</code> by substituting the definition of <code class="language-plaintext highlighter-rouge">*</code> and currying:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((* 2) 1)
+</code></pre></div></div>
+
+<p><strong>Step 3:</strong> Encode <code class="language-plaintext highlighter-rouge">(+ (* 2 1) 1)</code> by substituting the definition of <code class="language-plaintext highlighter-rouge">+</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((+ (* 2 1)) 1)
+</code></pre></div></div>
+
+<p>The fully-encoded term is large, but it’s pure λ-calculus: no numbers,
+no <code class="language-plaintext highlighter-rouge">+</code>, no <code class="language-plaintext highlighter-rouge">*</code>: just lambdas, variables, and application.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Church-encode the expression <code class="language-plaintext highlighter-rouge">(+ 1 (+ 1 1))</code>. You don’t have to
+write out the full λ-term: just show the structure of how <code class="language-plaintext highlighter-rouge">+</code>, <code class="language-plaintext highlighter-rouge">1</code>,
+and <code class="language-plaintext highlighter-rouge">1</code> get composed (using the curried form <code class="language-plaintext highlighter-rouge">((+ a) b)</code>).</p>
+</blockquote>
+
+<p>This is the fundamental technique behind <a href="/cis352-s26/projects/4">Project 4</a>:
+we are writing a <em>compiler</em> that translates high-level programs into
+the λ-calculus. Each construct in the source language has a
+corresponding translation rule, and the compiler applies these rules
+recursively over the AST.</p>
+
+<hr />
+
+<h2 id="beyond-numbers-encoding-booleans">Beyond Numbers: Encoding Booleans</h2>
+
+<p>Next let’s discuss the encoding of booleans. To start, we’ll assume
+that users of our language never break the types: <code class="language-plaintext highlighter-rouge">(+ 1 #f)</code> will encode
+into the λ-calculus just fine, but it won’t reduce to anything
+meaningful. This is typical, because our compilation into the
+λ-calculus is not <em>injective</em>: there’s plenty of stuff in the
+λ-calculus that has no sensible meaning in our translation. Our next
+topic will be type systems, where a big goal will be to use proof
+theory to ensure that we can only write well-typed things. But for
+now, we will simply say that if you use the encoding incorrectly, you
+get undefined behavior and the encoding won’t work.</p>
+
+<p>Now on to the discussion of booleans. How should booleans work? Well,
+in the λ-calculus, the only way we can really “use” any data is by
+<em>calling</em> it as a function. For a number, the way we “use” it is to
+apply it to two (curried) arguments: <code class="language-plaintext highlighter-rouge">f</code> and <code class="language-plaintext highlighter-rouge">x</code>. The guarantee is
+that if <code class="language-plaintext highlighter-rouge">N</code> <em>is</em> a number, then we should be able to call it with <code class="language-plaintext highlighter-rouge">f</code>
+and <code class="language-plaintext highlighter-rouge">x</code> and it should apply <code class="language-plaintext highlighter-rouge">f</code> <code class="language-plaintext highlighter-rouge">N</code> times to <code class="language-plaintext highlighter-rouge">x</code>. For booleans, what
+do we do instead?</p>
+
+<p>The idea is that a boolean is a <em>selector</em>: it takes two
+arguments, one for “what to do when true” and one for “what to do
+when false,” and picks one of them. But there’s a subtlety: we need
+these arguments to be <strong>thunks</strong> (zero-argument functions, i.e.,
+callbacks). The reason for thunks is that we want to avoid evaluating
+<em>both</em> branches: under call-by-value (Racket’s evaluation strategy),
+both arguments would be fully evaluated before the boolean selects
+one. If one branch diverges, the whole thing diverges even if we
+wouldn’t take that branch. Thunks delay evaluation until the boolean
+makes its choice.</p>
+
+<p>Here is the encoding. We write it first at the “source level” (using
+multi-arg functions and zero-arg calls), then show the compiled
+λ-calculus version:</p>
+
+<p><strong>Source level</strong> (Racket-like):</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#t ≡ (λ (when-true when-false) (when-true))
+#f ≡ (λ (when-true when-false) (when-false))
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">#t</code> takes two thunks and calls the first one. <code class="language-plaintext highlighter-rouge">#f</code> takes two thunks
+and calls the second one.</p>
+
+<p><strong>Compiled to λ-calculus</strong> (currying multi-arg, encoding zero-arg
+calls with a dummy argument):</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#t ≡ (λ (tt) (λ (ff) (tt (λ (z) z))))
+#f ≡ (λ (tt) (λ (ff) (ff (λ (z) z))))
+</code></pre></div></div>
+
+<p>The zero-argument call <code class="language-plaintext highlighter-rouge">(when-true)</code> becomes <code class="language-plaintext highlighter-rouge">(tt (λ (z) z))</code>: we
+call <code class="language-plaintext highlighter-rouge">tt</code> with the identity function as a dummy argument (which will
+be ignored by the thunk).</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Given the Church encoding of <code class="language-plaintext highlighter-rouge">#t</code>, what does the following reduce to?</p>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((#t (λ (d) 42)) (λ (d) 0))
+</code></pre></div>  </div>
+
+  <p>(Substitute the definition of <code class="language-plaintext highlighter-rouge">#t</code> and reduce. Remember <code class="language-plaintext highlighter-rouge">d</code> is a
+dummy parameter that gets ignored.)</p>
+</blockquote>
+
+<p>Now let’s encode <code class="language-plaintext highlighter-rouge">not</code>. It takes a boolean and returns a new boolean.
+The trick: pass the input boolean two thunks, one that returns
+<code class="language-plaintext highlighter-rouge">#f</code>, and one that returns <code class="language-plaintext highlighter-rouge">#t</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>not ≡ (λ (b) (b (λ () #f) (λ () #t)))
+</code></pre></div></div>
+
+<p>If <code class="language-plaintext highlighter-rouge">b</code> is <code class="language-plaintext highlighter-rouge">#t</code>, it calls the first thunk → returns <code class="language-plaintext highlighter-rouge">#f</code>. If <code class="language-plaintext highlighter-rouge">b</code> is
+<code class="language-plaintext highlighter-rouge">#f</code>, it calls the second thunk → returns <code class="language-plaintext highlighter-rouge">#t</code>.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Trace through the evaluation of <code class="language-plaintext highlighter-rouge">(not #t)</code> using the definitions
+above. Verify that it produces <code class="language-plaintext highlighter-rouge">#f</code>. (You can work at the “source
+level”: no need to fully expand into λ-calculus.)</p>
+</blockquote>
+
+<p>We can also define <code class="language-plaintext highlighter-rouge">zero?</code>, which tests whether a Church numeral is zero:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>zero? ≡ (λ (n) ((n (λ (d) #f)) #t))
+</code></pre></div></div>
+
+<p>The idea: if <code class="language-plaintext highlighter-rouge">n</code> is <code class="language-plaintext highlighter-rouge">0</code>, then <code class="language-plaintext highlighter-rouge">((0 (lambda (d) #f)) #t)</code> applies <code class="language-plaintext highlighter-rouge">(lambda (d) #f)</code> zero
+times to <code class="language-plaintext highlighter-rouge">#t</code>, returning <code class="language-plaintext highlighter-rouge">#t</code>. If <code class="language-plaintext highlighter-rouge">n</code> is anything
+greater than 0, the function <code class="language-plaintext highlighter-rouge">(lambda (d) #f)</code> is applied at least once to
+<code class="language-plaintext highlighter-rouge">#t</code>, and since it ignores its argument and returns <code class="language-plaintext highlighter-rouge">#f</code>, the
+result is <code class="language-plaintext highlighter-rouge">#f</code>.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Using the definition of <code class="language-plaintext highlighter-rouge">zero?</code> above, what does <code class="language-plaintext highlighter-rouge">(zero? 0)</code> reduce
+to? What about <code class="language-plaintext highlighter-rouge">(zero? 3)</code>?
+(Hint: recall that <code class="language-plaintext highlighter-rouge">0 = (λ (f) (λ (x) x))</code> and
+<code class="language-plaintext highlighter-rouge">3 = (λ (f) (λ (x) (f (f (f x)))))</code>.)</p>
+</blockquote>
+
+<hr />
+
+<h2 id="encoding-if-and--or">Encoding <code class="language-plaintext highlighter-rouge">if</code>, <code class="language-plaintext highlighter-rouge">and</code> / <code class="language-plaintext highlighter-rouge">or</code></h2>
+
+<h3 id="encoding-if">Encoding <code class="language-plaintext highlighter-rouge">if</code></h3>
+
+<p>Since booleans are already functions that select between two thunks,
+encoding <code class="language-plaintext highlighter-rouge">if</code> is surprisingly simple:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(if e0 e1 e2)  compiles to  (e0 (λ () e1) (λ () e2))
+</code></pre></div></div>
+
+<p>That’s it! We pass the condition <code class="language-plaintext highlighter-rouge">e0</code> two thunks: one wrapping the
+“then” branch and one wrapping the “else” branch. Since <code class="language-plaintext highlighter-rouge">#t</code> calls
+the first thunk and <code class="language-plaintext highlighter-rouge">#f</code> calls the second, the boolean <em>is</em> the
+if-expression.</p>
+
+<p>After compiling to pure λ-calculus (currying the multi-arg
+application, encoding zero-arg lambdas with a dummy parameter):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(if e0 e1 e2)  compiles to  ((e0 (λ (d) e1')) (λ (d) e2'))
+</code></pre></div></div>
+
+<p>where <code class="language-plaintext highlighter-rouge">e1'</code> and <code class="language-plaintext highlighter-rouge">e2'</code> are the Church-encoded versions of <code class="language-plaintext highlighter-rouge">e1</code> and <code class="language-plaintext highlighter-rouge">e2</code>.</p>
+
+<p>Let’s do a <strong>compile-then-reduce</strong> exercise for <code class="language-plaintext highlighter-rouge">(if #t 1 0)</code>:</p>
+
+<ol>
+  <li>Encode <code class="language-plaintext highlighter-rouge">#t</code> → <code class="language-plaintext highlighter-rouge">(λ (tt) (λ (ff) (tt (λ (z) z))))</code></li>
+  <li>Wrap <code class="language-plaintext highlighter-rouge">1</code> in a thunk → <code class="language-plaintext highlighter-rouge">(λ (d) (λ (f) (λ (x) (f x))))</code></li>
+  <li>Wrap <code class="language-plaintext highlighter-rouge">0</code> in a thunk → <code class="language-plaintext highlighter-rouge">(λ (d) (λ (f) (λ (x) x)))</code></li>
+  <li>Assemble: <code class="language-plaintext highlighter-rouge">((#t thunk1) thunk2)</code></li>
+</ol>
+
+<p><code class="le-term">(((λ (tt) (λ (ff) (tt (λ (z) z)))) (λ (d) (λ (f) (λ (x) (f x))))) (λ (d) (λ (f) (λ (x) x))))</code></p>
+
+<p>Click to load and reduce. You should reach <code class="language-plaintext highlighter-rouge">(λ (f) (λ (x) (f x)))</code> —
+the Church encoding of 1. The <code class="language-plaintext highlighter-rouge">#f</code>-wrapping thunk is never called.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>What would <code class="language-plaintext highlighter-rouge">(if #f 1 0)</code> reduce to? Try modifying the term above by
+swapping <code class="language-plaintext highlighter-rouge">#t</code> for <code class="language-plaintext highlighter-rouge">#f</code>: replace <code class="language-plaintext highlighter-rouge">(tt (λ (z) z))</code> with <code class="language-plaintext highlighter-rouge">(ff (λ (z) z))</code>
+in the boolean definition.</p>
+</blockquote>
+
+<h3 id="encoding-and--or">Encoding <code class="language-plaintext highlighter-rouge">and</code> / <code class="language-plaintext highlighter-rouge">or</code></h3>
+
+<p>Once we have <code class="language-plaintext highlighter-rouge">if</code>, encoding <code class="language-plaintext highlighter-rouge">and</code> / <code class="language-plaintext highlighter-rouge">or</code> is a simple desugaring:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(and e0 e1)  ≡  (if e0 e1 #f)
+(or  e0 e1)  ≡  (if e0 #t e1)
+</code></pre></div></div>
+
+<p>The base cases are: <code class="language-plaintext highlighter-rouge">(and)</code> = <code class="language-plaintext highlighter-rouge">#t</code> and <code class="language-plaintext highlighter-rouge">(or)</code> = <code class="language-plaintext highlighter-rouge">#f</code>. For more than
+two arguments, we desugar recursively:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(and e0 e1 e2 ...)  ≡  (if e0 (and e1 e2 ...) #f)
+(or  e0 e1 e2 ...)  ≡  (if e0 #t (or e1 e2 ...))
+</code></pre></div></div>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Using the desugaring above, what does <code class="language-plaintext highlighter-rouge">(and #f anything)</code> reduce to
+for any expression <code class="language-plaintext highlighter-rouge">anything</code>? What about <code class="language-plaintext highlighter-rouge">(or #t anything)</code>?
+(Hint: <code class="language-plaintext highlighter-rouge">(if #f e1 #f)</code> → <code class="language-plaintext highlighter-rouge">#f</code> regardless of <code class="language-plaintext highlighter-rouge">e1</code>.)</p>
+</blockquote>
+
+<p>This is exactly the approach used in <a href="/cis352-s26/projects/4">Project 4</a>:
+<code class="language-plaintext highlighter-rouge">and</code> and <code class="language-plaintext highlighter-rouge">or</code> are not primitive: they’re syntactic sugar that gets
+desugared into <code class="language-plaintext highlighter-rouge">if</code> before compilation to the λ-calculus.</p>
+
+<hr />
+
+<h2 id="encoding-cons-cells-and-lists">Encoding Cons Cells and Lists</h2>
+
+<p>Now we can encode numbers and booleans. Next, let’s tackle lists. In
+Racket, lists are built from two constructors: <code class="language-plaintext highlighter-rouge">cons</code> (which builds a
+pair) and <code class="language-plaintext highlighter-rouge">null</code> (the empty list, <code class="language-plaintext highlighter-rouge">'()</code>). We observe them with <code class="language-plaintext highlighter-rouge">car</code>,
+<code class="language-plaintext highlighter-rouge">cdr</code>, and <code class="language-plaintext highlighter-rouge">null?</code>.</p>
+
+<p>The encoding follows the same <strong>observer pattern</strong> we used for
+booleans. A boolean takes two callbacks (“what if true” and “what if
+false”) and calls one. Similarly, a cons cell or null value will take
+two callbacks (“what if cons” and “what if null”) and call the
+appropriate one.</p>
+
+<h3 id="encoding-cons-and-null">Encoding <code class="language-plaintext highlighter-rouge">cons</code> and <code class="language-plaintext highlighter-rouge">null</code></h3>
+
+<p>A cons cell stores two values <code class="language-plaintext highlighter-rouge">a</code> and <code class="language-plaintext highlighter-rouge">b</code>. When observed, it passes
+them to the “when-cons” callback:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cons ≡ (λ (a b) (λ (when-cons when-null) (when-cons a b)))
+</code></pre></div></div>
+
+<p>In pure λ-calculus (after currying):</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cons ≡ (λ (a) (λ (b) (λ (wc) (λ (wn) ((wc a) b)))))
+</code></pre></div></div>
+
+<p>The empty list, <code class="language-plaintext highlighter-rouge">null</code>, has no stored values. When observed, it calls
+the “when-null” callback (a thunk):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>null ≡ (λ (when-cons when-null) (when-null))
+</code></pre></div></div>
+
+<p>In pure λ-calculus:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>null ≡ (λ (wc) (λ (wn) (wn (λ (z) z))))
+</code></pre></div></div>
+
+<h3 id="encoding-car">Encoding <code class="language-plaintext highlighter-rouge">car</code></h3>
+
+<p>To extract the first element of a pair, we pass a cons cell two
+callbacks: one that takes <code class="language-plaintext highlighter-rouge">a</code> and <code class="language-plaintext highlighter-rouge">b</code> and returns <code class="language-plaintext highlighter-rouge">a</code>, and a dummy
+“when-null” callback (since <code class="language-plaintext highlighter-rouge">car</code> of <code class="language-plaintext highlighter-rouge">null</code> is undefined):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>car ≡ (λ (p) (p (λ (a b) a) (λ () (λ (x) x))))
+</code></pre></div></div>
+
+<p>How does this work? <code class="language-plaintext highlighter-rouge">car</code> takes a pair <code class="language-plaintext highlighter-rouge">p</code> and calls it with two
+callbacks. The first callback <code class="language-plaintext highlighter-rouge">(λ (a b) a)</code> selects the first element.
+The second callback <code class="language-plaintext highlighter-rouge">(λ () (λ (x) x))</code> is a dummy for the null case
+(which should never happen if <code class="language-plaintext highlighter-rouge">p</code> is a cons cell). Since a cons cell
+always invokes <code class="language-plaintext highlighter-rouge">when-cons</code>, the first callback fires and returns <code class="language-plaintext highlighter-rouge">a</code>.</p>
+
+<h3 id="compile-then-reduce-car-cons-1-2">Compile-then-reduce: <code class="language-plaintext highlighter-rouge">(car (cons 1 2))</code></h3>
+
+<p>Let’s trace <code class="language-plaintext highlighter-rouge">(car (cons 1 2))</code>:</p>
+
+<p><strong>Step 1:</strong> <code class="language-plaintext highlighter-rouge">(cons 1 2)</code> compiles to a function that, when given
+<code class="language-plaintext highlighter-rouge">when-cons</code> and <code class="language-plaintext highlighter-rouge">when-null</code>, calls <code class="language-plaintext highlighter-rouge">(when-cons 1 2)</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(λ (wc) (λ (wn) ((wc (λ (f) (λ (x) (f x)))) (λ (f) (λ (x) (f (f x)))))))
+</code></pre></div></div>
+
+<p><strong>Step 2:</strong> <code class="language-plaintext highlighter-rouge">car</code> passes this a callback <code class="language-plaintext highlighter-rouge">(λ (a) (λ (b) a))</code> and a
+dummy. The cons cell calls the callback with <code class="language-plaintext highlighter-rouge">a = 1</code> and <code class="language-plaintext highlighter-rouge">b = 2</code>,
+selecting <code class="language-plaintext highlighter-rouge">a</code>.</p>
+
+<p>The result is <code class="language-plaintext highlighter-rouge">(λ (f) (λ (x) (f x)))</code>, the Church encoding of 1.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Using the same observer pattern as <code class="language-plaintext highlighter-rouge">car</code>, write the encoding for
+<code class="language-plaintext highlighter-rouge">cdr</code>. (Hint: what do you change in the <code class="language-plaintext highlighter-rouge">when-cons</code> callback to
+select the <em>second</em> element instead of the first?)</p>
+</blockquote>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Write the encoding for <code class="language-plaintext highlighter-rouge">null?</code>. It should return <code class="language-plaintext highlighter-rouge">#t</code> when given
+<code class="language-plaintext highlighter-rouge">null</code> and <code class="language-plaintext highlighter-rouge">#f</code> when given a cons cell. (Hint: what should each
+callback return? The <code class="language-plaintext highlighter-rouge">when-cons</code> callback can ignore its arguments.)</p>
+</blockquote>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Notice a pattern: numbers take <code class="language-plaintext highlighter-rouge">f</code> and <code class="language-plaintext highlighter-rouge">x</code>; booleans take
+<code class="language-plaintext highlighter-rouge">when-true</code> and <code class="language-plaintext highlighter-rouge">when-false</code>; lists take <code class="language-plaintext highlighter-rouge">when-cons</code> and
+<code class="language-plaintext highlighter-rouge">when-null</code>. What is the common structure behind all three Church
+encodings? (Hint: think about how we “observe” or “use” each type
+of data.)</p>
+</blockquote>
+
+<hr />
+
+<h2 id="encoding-letrec">Encoding <code class="language-plaintext highlighter-rouge">letrec</code></h2>
+
+<p>We’ve now covered numbers, booleans, conditionals, and lists. The last
+major feature we need to encode is <strong>recursion</strong>. In Racket, recursion
+is typically written using <code class="language-plaintext highlighter-rouge">letrec</code>:</p>
+
+<h3 id="aside-what-is-letrec-a-few-examples">Aside: what is <code class="language-plaintext highlighter-rouge">letrec</code>, a few examples</h3>
+
+<p>Recall <code class="language-plaintext highlighter-rouge">letrec</code> from Racket:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">letrec</span> <span class="p">([</span><span class="nf">factorial</span> <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">n</span><span class="p">)</span>
+                      <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">zero?</span> <span class="nv">n</span><span class="p">)</span> <span class="mi">1</span> <span class="p">(</span><span class="nb">*</span> <span class="nv">n</span> <span class="p">(</span><span class="nf">factorial</span> <span class="p">(</span><span class="nb">-</span> <span class="nv">n</span> <span class="mi">1</span><span class="p">)))))])</span>
+  <span class="p">(</span><span class="nf">factorial</span> <span class="mi">5</span><span class="p">))</span>
+<span class="c1">;; → 120</span>
+</code></pre></div></div>
+
+<p>The key property of <code class="language-plaintext highlighter-rouge">letrec</code> is that the binding is <em>in scope within
+its own definition</em>. Compare with <code class="language-plaintext highlighter-rouge">let</code>:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">f</span> <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">x</span><span class="p">)</span> <span class="p">(</span><span class="nf">f</span> <span class="nv">x</span><span class="p">))])</span> <span class="p">(</span><span class="nf">f</span> <span class="mi">0</span><span class="p">))</span>  <span class="c1">;; ERROR: f is not defined yet!</span>
+</code></pre></div></div>
+
+<p>With <code class="language-plaintext highlighter-rouge">let</code>, the right-hand side <code class="language-plaintext highlighter-rouge">(lambda (x) (f x))</code> can’t refer to
+<code class="language-plaintext highlighter-rouge">f</code> because <code class="language-plaintext highlighter-rouge">f</code> hasn’t been bound yet. <code class="language-plaintext highlighter-rouge">letrec</code> fixes this by making
+the binding available in its own definition, enabling recursion.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Why can’t <code class="language-plaintext highlighter-rouge">let</code> be used for recursion? What goes wrong if we try
+<code class="language-plaintext highlighter-rouge">(let ([f (lambda (x) (f x))]) (f 0))</code>?</p>
+</blockquote>
+
+<p>So how do we compile <code class="language-plaintext highlighter-rouge">letrec</code> into the λ-calculus? There’s no notion
+of “named definitions” or “self-reference” in the λ-calculus. We need
+a trick.</p>
+
+<h3 id="the-u-combinator">The U Combinator</h3>
+
+<p>The trick starts with an observation about self-application. Consider
+the term <code class="le-term">((λ (x) (x x)) (λ (x) (x x)))</code>.
+This is Ω, which we encountered before: it reduces to itself
+and loops forever.</p>
+
+<p>But what if, instead of blindly self-applying, we do something <em>useful</em>
+with the copy of ourselves? Consider:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(λ (self) (λ (n) ... (self self) ...))
+</code></pre></div></div>
+
+<p>The idea: <code class="language-plaintext highlighter-rouge">self</code> is a <em>copy of the function itself</em>. Whenever we want
+to recurse, we call <code class="language-plaintext highlighter-rouge">(self self)</code> to get another copy. This is
+self-application used productively rather than divergently.</p>
+
+<p>Let’s see this concretely. Suppose we want to write <code class="language-plaintext highlighter-rouge">add-to-zero</code>:
+a function that takes a Church numeral and adds 1 to 0 that
+many times (effectively an identity on Church numerals, but
+computed recursively). Without named recursion, we can write:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>((λ (self) (self self))
+ (λ (self) (λ (n)
+   (if (zero? n) 0 (add1 ((self self) (sub1 n)))))))
+</code></pre></div></div>
+
+<p>The outer <code class="language-plaintext highlighter-rouge">(λ (self) (self self))</code> is called the <strong>U combinator</strong>. It
+takes a function and passes it to itself. The inner function receives
+<code class="language-plaintext highlighter-rouge">self</code> (a copy of itself) and uses <code class="language-plaintext highlighter-rouge">(self self)</code> whenever it needs to
+recurse.</p>
+
+<p>This works, but it’s ugly: every recursive call has to say <code class="language-plaintext highlighter-rouge">(self
+self)</code> instead of just <code class="language-plaintext highlighter-rouge">(self)</code>. Can we clean this up?</p>
+
+<h3 id="the-y-combinator">The Y Combinator</h3>
+
+<p>The Y combinator abstracts away the <code class="language-plaintext highlighter-rouge">(self self)</code> pattern, giving us a
+clean interface for recursion. Here it is:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Y = ((λ (u) (u u))
+     (λ (y) (λ (mk) (mk (λ (x) (((y y) mk) x))))))
+</code></pre></div></div>
+
+<p>The Y combinator has this crucial property:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(Y f) = (f (Y f))
+</code></pre></div></div>
+
+<p>In other words, <code class="language-plaintext highlighter-rouge">(Y f)</code> is a <strong>fixed point</strong> of <code class="language-plaintext highlighter-rouge">f</code>: it’s a value
+that, when passed to <code class="language-plaintext highlighter-rouge">f</code>, gives back itself. This is exactly what we
+need for recursion!</p>
+
+<p>Here’s how it works, step by step:</p>
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">(Y f)</code> reduces to <code class="language-plaintext highlighter-rouge">(f (λ (x) ((Y f) x)))</code>: the argument to <code class="language-plaintext highlighter-rouge">f</code> is
+a thunk that, when called with <code class="language-plaintext highlighter-rouge">x</code>, recursively invokes <code class="language-plaintext highlighter-rouge">(Y f)</code> on <code class="language-plaintext highlighter-rouge">x</code>.</li>
+  <li>Inside <code class="language-plaintext highlighter-rouge">f</code>, this argument acts as the “recursive callback”: calling
+it triggers another round of <code class="language-plaintext highlighter-rouge">(Y f)</code>.</li>
+  <li>The η-expansion <code class="language-plaintext highlighter-rouge">(λ (x) (((y y) mk) x))</code> instead of just <code class="language-plaintext highlighter-rouge">((y y) mk)</code>
+is <strong>crucial</strong> for call-by-value evaluation. Without it, the
+self-application <code class="language-plaintext highlighter-rouge">(y y)</code> would be evaluated immediately, causing
+infinite recursion before <code class="language-plaintext highlighter-rouge">f</code> even gets called. The extra lambda
+delays the self-application until an argument <code class="language-plaintext highlighter-rouge">x</code> is actually
+provided.</li>
+</ol>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Why is the η-expansion <code class="language-plaintext highlighter-rouge">(λ (x) (((y y) mk) x))</code> crucial in the Y
+combinator under call-by-value? What would happen if we used
+<code class="language-plaintext highlighter-rouge">((y y) mk)</code> directly?</p>
+</blockquote>
+
+<h3 id="using-the-y-combinator-to-compile-letrec">Using the Y Combinator to Compile <code class="language-plaintext highlighter-rouge">letrec</code></h3>
+
+<p>With the Y combinator, the compilation of <code class="language-plaintext highlighter-rouge">letrec</code> is straightforward:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(letrec ([f (lambda (args ...) body)]) e)
+</code></pre></div></div>
+
+<p>compiles to:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(let ([f (Y (lambda (f) (lambda (args ...) body)))]) e)
+</code></pre></div></div>
+
+<p>The outer <code class="language-plaintext highlighter-rouge">(lambda (f) ...)</code> wraps the original function, giving it
+access to a “recursive callback” parameter named <code class="language-plaintext highlighter-rouge">f</code>. The Y combinator
+ensures that this callback <em>is</em> the function itself.</p>
+
+<p>Let’s trace through factorial:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">letrec</span> <span class="p">([</span><span class="nf">fact</span> <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">n</span><span class="p">)</span>
+                 <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">zero?</span> <span class="nv">n</span><span class="p">)</span> <span class="mi">1</span> <span class="p">(</span><span class="nb">*</span> <span class="nv">n</span> <span class="p">(</span><span class="nf">fact</span> <span class="p">(</span><span class="nb">sub1</span> <span class="nv">n</span><span class="p">)))))])</span>
+  <span class="p">(</span><span class="nf">fact</span> <span class="mi">5</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>This compiles to:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">fact</span> <span class="p">(</span><span class="nf">Y</span> <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">fact</span><span class="p">)</span>
+                 <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">n</span><span class="p">)</span>
+                   <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">zero?</span> <span class="nv">n</span><span class="p">)</span> <span class="mi">1</span> <span class="p">(</span><span class="nb">*</span> <span class="nv">n</span> <span class="p">(</span><span class="nf">fact</span> <span class="p">(</span><span class="nb">sub1</span> <span class="nv">n</span><span class="p">)))))))])</span>
+  <span class="p">(</span><span class="nf">fact</span> <span class="mi">5</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>Which desugars the <code class="language-plaintext highlighter-rouge">let</code> to:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">((</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">fact</span><span class="p">)</span> <span class="p">(</span><span class="nf">fact</span> <span class="mi">5</span><span class="p">))</span>
+ <span class="p">(</span><span class="nf">Y</span> <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">fact</span><span class="p">)</span>
+      <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">n</span><span class="p">)</span>
+        <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">zero?</span> <span class="nv">n</span><span class="p">)</span> <span class="mi">1</span> <span class="p">(</span><span class="nb">*</span> <span class="nv">n</span> <span class="p">(</span><span class="nf">fact</span> <span class="p">(</span><span class="nb">sub1</span> <span class="nv">n</span><span class="p">))))))))</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">Y</code> ensures that every reference to <code class="language-plaintext highlighter-rouge">fact</code> inside the body points
+back to the function itself. When <code class="language-plaintext highlighter-rouge">(fact 5)</code> is called, it checks if
+<code class="language-plaintext highlighter-rouge">n = 0</code>; if not, it calls <code class="language-plaintext highlighter-rouge">(fact (sub1 n))</code>, which triggers another
+round through the Y combinator.</p>
+
+<p>The fully church-encoded version of this term is very large: all of
+<code class="language-plaintext highlighter-rouge">Y</code>, <code class="language-plaintext highlighter-rouge">zero?</code>, <code class="language-plaintext highlighter-rouge">*</code>, <code class="language-plaintext highlighter-rouge">sub1</code>, and the Church numerals get expanded into
+pure λ-calculus. In <a href="/cis352-s26/projects/4">Project 4</a>, the <code class="language-plaintext highlighter-rouge">church-compile</code> function handles
+this by wrapping the program in a <code class="language-plaintext highlighter-rouge">let</code> that binds all the builtins:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">Y-comb</span> <span class="o">...</span><span class="p">]</span>
+      <span class="p">[</span><span class="nb">zero?</span> <span class="o">...</span><span class="p">]</span>
+      <span class="p">[</span><span class="nb">+</span> <span class="o">...</span><span class="p">]</span>
+      <span class="p">[</span><span class="nb">*</span> <span class="o">...</span><span class="p">]</span>
+      <span class="p">[</span><span class="nb">add1</span> <span class="o">...</span><span class="p">]</span>
+      <span class="p">[</span><span class="nb">sub1</span> <span class="o">...</span><span class="p">]</span>
+      <span class="p">[</span><span class="nb">cons</span> <span class="o">...</span><span class="p">]</span>
+      <span class="p">[</span><span class="nb">car</span> <span class="o">...</span><span class="p">]</span>
+      <span class="p">[</span><span class="nb">cdr</span> <span class="o">...</span><span class="p">]</span>
+      <span class="p">[</span><span class="nb">null?</span> <span class="o">...</span><span class="p">]</span>
+      <span class="p">[</span><span class="nb">not</span> <span class="o">...</span><span class="p">])</span>
+  <span class="nv">program</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Then the <code class="language-plaintext highlighter-rouge">churchify</code> function recursively translates this entire
+expression, including the builtin definitions, into pure λ-calculus.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Show how to compile the following <code class="language-plaintext highlighter-rouge">letrec</code> using the Y combinator:</p>
+
+  <div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">letrec</span> <span class="p">([</span><span class="nf">double</span> <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">n</span><span class="p">)</span> <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">zero?</span> <span class="nv">n</span><span class="p">)</span> <span class="mi">0</span> <span class="p">(</span><span class="nb">add1</span> <span class="p">(</span><span class="nb">add1</span> <span class="p">(</span><span class="nf">double</span> <span class="p">(</span><span class="nb">sub1</span> <span class="nv">n</span><span class="p">))))))])</span>
+  <span class="p">(</span><span class="nf">double</span> <span class="mi">3</span><span class="p">))</span>
+</code></pre></div>  </div>
+
+  <p>Write the result using <code class="language-plaintext highlighter-rouge">let</code> and <code class="language-plaintext highlighter-rouge">Y</code> (you don’t need to expand everything into λ-calculus).</p>
+</blockquote>
+
+<hr />
+
+<h2 id="summary">Summary</h2>
+
+<p>We’ve now seen how to Church-encode an entire programming language
+into pure λ-calculus:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Source construct</th>
+      <th>Encoding strategy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Natural numbers</td>
+      <td><code class="language-plaintext highlighter-rouge">N = (λ (f) (λ (x) (fᴺ x)))</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">add1</code>, <code class="language-plaintext highlighter-rouge">+</code>, <code class="language-plaintext highlighter-rouge">*</code></td>
+      <td>Manipulate the <code class="language-plaintext highlighter-rouge">f</code>/<code class="language-plaintext highlighter-rouge">x</code> structure</td>
+    </tr>
+    <tr>
+      <td>Booleans</td>
+      <td><code class="language-plaintext highlighter-rouge">#t</code>/<code class="language-plaintext highlighter-rouge">#f</code> select between two thunks</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">if</code></td>
+      <td><code class="language-plaintext highlighter-rouge">(e0 (lambda () e1) (lambda () e2))</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">and</code>/<code class="language-plaintext highlighter-rouge">or</code></td>
+      <td>Desugar to <code class="language-plaintext highlighter-rouge">if</code></td>
+    </tr>
+    <tr>
+      <td>Cons cells</td>
+      <td>Observer with <code class="language-plaintext highlighter-rouge">when-cons</code>/<code class="language-plaintext highlighter-rouge">when-null</code> callbacks</td>
+    </tr>
+    <tr>
+      <td>Multi-arg functions</td>
+      <td>Currying</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">letrec</code></td>
+      <td>Y combinator provides fixed-point recursion</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The key insight is the <strong>observer pattern</strong>: every data type is a
+function that takes callbacks, one per constructor, and calls the
+appropriate one. Numbers, booleans, and lists all follow this pattern.</p>
+
+<p>This encoding shows that the λ-calculus, despite having only three
+syntactic forms (variables, abstraction, application) and one
+computational rule (β-reduction), can express everything that Racket
+or any other Turing-complete language can express. In <a href="/cis352-s26/projects/4">Project
+4</a>, you will implement this as a
+compiler: a function that translates high-level Scheme programs into
+pure λ-calculus.</p>
 
                 </div>
               </article>
