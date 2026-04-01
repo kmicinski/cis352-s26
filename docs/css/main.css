@@ -424,6 +424,139 @@ pre > code {
   }
 }
 
+/**
+ * Advanced topic badge + notice
+ * Syracuse palette: Orange #F76900, Navy #000E54
+ */
+.advanced-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 14px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #000E54 0%, #1a2a6c 100%);
+  border-radius: 20px;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.advanced-badge-icon {
+  font-size: 0.72rem;
+  color: #F76900;
+}
+
+.advanced-notice {
+  margin-top: 8px;
+  margin-bottom: 4px;
+  padding: 10px 16px;
+  background: #fff7f0;
+  border-left: 3px solid #F76900;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #000E54;
+}
+
+/**
+ * Rule cards: side-by-side natural deduction + Lean4
+ */
+.rule-card {
+  display: flex;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1.2em 0;
+  background: #fff;
+}
+
+.rule-card-name {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #F76900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rule-card-math {
+  flex: 1;
+  min-width: 0;
+  padding: 32px 20px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #fafbfc;
+  border-right: 1px solid #e5e7eb;
+}
+
+.rule-card-lean {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow-x: auto;
+}
+
+.rule-card-lean pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.rule-card-lean code {
+  background: transparent;
+}
+
+.rule-card-lean-label {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rule-card-math-label {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rule-card-condition {
+  font-size: 0.78rem;
+  color: #6b7280;
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .rule-card {
+    flex-direction: column;
+  }
+  .rule-card-math {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+}
 .writeup-content {
   font-size: 14.4px;
 }

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Simply-Typed λ-Calculus</title>
+  <meta name="description" content="In our Church encoding lecture, we saw that the λ-calculus can encode numbers, booleans, lists,and recursion. But we also saw a problem: there’s nothing stop...">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://kmicinski.com/cis352-s26/css/main.css">
+  <link rel="canonical" href="https://kmicinski.com/cis352-s26/stlc">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="https://kmicinski.com/cis352-s26/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  
+  <link rel="stylesheet" href="/cis352-s26/assets/proof-tree.css">
+  <script src="/cis352-s26/assets/proof-tree.js"></script>
+  <link rel="stylesheet" href="/cis352-s26/assets/proof-checker.css">
+  <script src="/cis352-s26/assets/proof-checker-glue.js"></script>
+  
+</head>
+
+  <link rel="stylesheet" href="/cis352-s26/css/proof-explorer.css">
+  <body class="proof-explorer-page">
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="https://kmicinski.com//cis352-s26/">CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/#schedule">Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/syllabus">Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/playground">Proof Playground</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/lambda-explorer">Lambda Explorer</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/playground">Proof Tree Playground</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <!-- Top bar -->
+        <div id="pe-topbar">
+          <a href="/cis352-s26/" class="pe-back-link">
+            <i class="fas fa-arrow-left"></i> CIS352
+          </a>
+          <h1 class="pe-title">Simply-Typed λ-Calculus</h1>
+          <div class="pe-topbar-spacer"></div>
+          <button class="pe-toggle-btn" id="pe-toggle-explorer" title="Toggle proof explorer">
+            <i class="fas fa-project-diagram"></i> Proof Explorer
+          </button>
+        </div>
+
+        <!-- Split pane container -->
+        <div id="pe-split">
+          <!-- Left pane: lecture notes -->
+          <div id="pe-notes" class="pe-pane">
+            <div class="pe-notes-inner">
+              <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+                <div class="post-content" itemprop="articleBody">
+                  <p>In our <a href="/cis352-s26/church-encoding">Church encoding lecture</a>, we saw that the λ-calculus can encode numbers, booleans, lists,
+and recursion. But we also saw a problem: there’s nothing stopping you
+from writing nonsense like <code class="language-plaintext highlighter-rouge">(+ 1 #f)</code>. It encodes just fine, but
+reduces to garbage. In this lecture, we introduce <strong>type systems</strong>: a
+formal mechanism for ruling out programs that would exhibit runtime
+type errors.</p>
+
+<h2 id="why-type-systems">Why Type Systems?</h2>
+
+<p>Consider the following expressions. Which ones should be allowed to
+run?</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(λ (g) (g 5))
+((λ (f x) (f x)) g)
+(λ (f) (+ (f 1) (if (= 0 (string-length (f 1))) 1 0)))
+</code></pre></div></div>
+
+<p>The first looks fine: nothing obviously wrong, as long as <code class="language-plaintext highlighter-rouge">g</code> is a
+function that can accept 5. The second is problematic: it takes two
+arguments, so <code class="language-plaintext highlighter-rouge">((λ (f x) (f x)) g)</code> only passes one, and <code class="language-plaintext highlighter-rouge">(f x)</code>
+tries to call <code class="language-plaintext highlighter-rouge">g</code> as a function with whatever <code class="language-plaintext highlighter-rouge">x</code> is. The third is
+deeply broken: <code class="language-plaintext highlighter-rouge">(f 1)</code> would need to return both a number (for <code class="language-plaintext highlighter-rouge">+</code>)
+and a string (for <code class="language-plaintext highlighter-rouge">string-length</code>).</p>
+
+<p>A <strong>type system</strong> assigns each subexpression a <strong>type</strong>, a rough
+approximation of how it will behave at runtime. For example, <code class="language-plaintext highlighter-rouge">int</code>
+represents integers, and <code class="language-plaintext highlighter-rouge">int → int</code> represents functions from
+integers to integers. The goal: rule out programs that would crash
+with a type error, <em>before we even run them</em>.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>In Racket, what happens if you evaluate <code class="language-plaintext highlighter-rouge">(+ 1 #t)</code>? At what point
+does the error occur: compile time or runtime?</p>
+</blockquote>
+
+<hr />
+
+<h2 id="the-simply-typed-λ-calculus">The Simply-Typed λ-Calculus</h2>
+
+<p>The <strong>Simply-Typed Lambda Calculus</strong> (STLC) is a restriction of the
+untyped λ-calculus. Not all untyped terms are well-typed: STLC
+rejects programs that could go wrong. This is deliberate. By
+restricting which programs can be written, we gain a guarantee: every
+well-typed program is safe.</p>
+
+<h3 id="term-syntax">Term syntax</h3>
+
+<p>STLC extends the λ-calculus with type annotations on lambda
+parameters:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>e ::= (λ (x : τ) e)    – annotated lambda
+    | (e e)             – application
+    | x                 – variable
+    | n                 – integer literal
+    | b                 – boolean literal (#t, #f)
+    | (+ e e)           – addition
+    | (- e)             – negation
+    | (if0 e e e)       – conditional (if first arg is 0)
+    | (let ([x e]) e)   – let binding
+</code></pre></div></div>
+
+<p>The key difference from the untyped λ-calculus: every lambda must
+annotate its parameter with a type. This is what makes type checking
+straightforward.</p>
+
+<h3 id="type-syntax">Type syntax</h3>
+
+<p>Types in STLC are simple:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>τ ::= int              – integers
+    | bool             – booleans
+    | τ → τ            – function types
+</code></pre></div></div>
+
+<p>The arrow type <code class="language-plaintext highlighter-rouge">τ₁ → τ₂</code> describes functions that accept an argument
+of type <code class="language-plaintext highlighter-rouge">τ₁</code> and return a result of type <code class="language-plaintext highlighter-rouge">τ₂</code>. Arrow is
+right-associative: <code class="language-plaintext highlighter-rouge">int → int → int</code> means <code class="language-plaintext highlighter-rouge">int → (int → int)</code>.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>What is the type of a function that takes an integer and returns a
+function from integers to integers? Write it using the arrow
+notation.</p>
+</blockquote>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>What is the type of <code class="language-plaintext highlighter-rouge">(λ (x : int) (λ (y : bool) y))</code>?
+(Hint: the outer lambda takes an int, the inner returns a bool.)</p>
+</blockquote>
+
+<hr />
+
+<h2 id="the-typing-judgement">The Typing Judgement</h2>
+
+<p>We express “expression <code class="language-plaintext highlighter-rouge">e</code> has type <code class="language-plaintext highlighter-rouge">τ</code>” using a <strong>typing judgement</strong>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Γ ⊢ e : τ
+</code></pre></div></div>
+
+<p>This reads: “under the typing environment Γ, expression e has type
+τ.” The environment Γ maps variables to their types, just as our
+interpreter environments mapped variables to values. For a closed term
+(no free variables), Γ is empty.</p>
+
+<p>For example:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">⊢ 42 : int</code> says “42 has type int” (empty environment)</li>
+  <li><code class="language-plaintext highlighter-rouge">x : int ⊢ x : int</code> says “assuming x is an int, x has type int”</li>
+  <li><code class="language-plaintext highlighter-rouge">⊢ (λ (x : int) x) : int → int</code> says “the identity function on
+ints has type int → int”</li>
+</ul>
+
+<p>We prove these judgements using natural deduction rules, just as we
+did for <a href="/cis352-s26/closures">evaluation in our closures lecture</a>. Each rule tells us how to conclude that an expression has a
+certain type, based on the types of its subexpressions.</p>
+
+<hr />
+
+<h2 id="typing-rules">Typing Rules</h2>
+
+<h3 id="literals-t-int-and-t-bool">Literals: T-Int and T-Bool</h3>
+
+<p>The simplest rules. A literal integer has type <code class="language-plaintext highlighter-rouge">int</code>, a literal
+boolean has type <code class="language-plaintext highlighter-rouge">bool</code>, regardless of the environment:</p>
+
+<div data-proof-tree="((&quot;T-Int&quot; :right) --- &quot;Γ ⊢ n : int&quot;)" data-proof-tree-zoom="false"></div>
+
+<div data-proof-tree="((&quot;T-Bool&quot; :right) --- &quot;Γ ⊢ b : bool&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>These rules have no premises (nothing above the line). They are
+<em>axioms</em>: you can always conclude that a number is an int.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Using the T-Int rule, what is the type of <code class="language-plaintext highlighter-rouge">42</code>? What about <code class="language-plaintext highlighter-rouge">-7</code>?
+Does the environment matter?</p>
+</blockquote>
+
+<h3 id="variables-t-var">Variables: T-Var</h3>
+
+<p>To type a variable, we look it up in the environment:</p>
+
+<div data-proof-tree="((&quot;T-Var&quot; :right) --- &quot;Γ ⊢ x : τ&quot;)" data-proof-tree-zoom="false"></div>
+
+<p><em>Side condition:</em> <code class="language-plaintext highlighter-rouge">(x : τ) ∈ Γ</code></p>
+
+<p>This says: if the environment maps <code class="language-plaintext highlighter-rouge">x</code> to type <code class="language-plaintext highlighter-rouge">τ</code>, then <code class="language-plaintext highlighter-rouge">x</code> has type
+<code class="language-plaintext highlighter-rouge">τ</code>. The side condition is critical: if <code class="language-plaintext highlighter-rouge">x</code> is not in <code class="language-plaintext highlighter-rouge">Γ</code>, the
+variable is unbound and the term is ill-typed.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Using T-Var, complete this judgement:</p>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{x : int, y : bool} ⊢ y : ???
+</code></pre></div>  </div>
+</blockquote>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Can we derive a type for <code class="language-plaintext highlighter-rouge">x</code> under the empty environment <code class="language-plaintext highlighter-rouge">{}</code>?
+Why or why not?</p>
+</blockquote>
+
+<h3 id="functions-t-lam">Functions: T-Lam</h3>
+
+<p>This is the central rule. It says: if, <em>assuming</em> <code class="language-plaintext highlighter-rouge">x</code> has type <code class="language-plaintext highlighter-rouge">τ₁</code>,
+you can show the body <code class="language-plaintext highlighter-rouge">e</code> has type <code class="language-plaintext highlighter-rouge">τ₂</code>, then the whole lambda has
+type <code class="language-plaintext highlighter-rouge">τ₁ → τ₂</code>:</p>
+
+<div data-proof-tree="((&quot;T-Lam&quot; :right) (--- &quot;Γ, x:τ₁ ⊢ e : τ₂&quot;) --- &quot;Γ ⊢ (λ (x : τ₁) e) : τ₁ → τ₂&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>The notation <code class="language-plaintext highlighter-rouge">Γ, x:τ₁</code> means “extend Γ with the binding x : τ₁.”
+Because the lambda is annotated with <code class="language-plaintext highlighter-rouge">τ₁</code>, we don’t have to guess the
+type of <code class="language-plaintext highlighter-rouge">x</code>: it’s written right there in the syntax.</p>
+
+<p>Let’s prove that <code class="language-plaintext highlighter-rouge">(λ (x : int) x)</code> has type <code class="language-plaintext highlighter-rouge">int → int</code>. Click to
+load this into the proof explorer and try building the derivation:</p>
+
+<p><code class="pe-judgement">⊢ (λ (x : int) x) : int → int</code></p>
+
+<p>The completed derivation looks like this:</p>
+
+<div data-proof-tree="((&quot;T-Lam&quot; :right) ((&quot;T-Var&quot; :right) --- &quot;x : int ⊢ x : int&quot;) --- &quot;⊢ (λ (x : int) x) : int → int&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>Reading bottom-up: we want to show <code class="language-plaintext highlighter-rouge">⊢ (λ (x : int) x) : int → int</code>.
+By T-Lam, we need to show <code class="language-plaintext highlighter-rouge">x : int ⊢ x : int</code>. By T-Var (since <code class="language-plaintext highlighter-rouge">x :
+int</code> is in the environment), this holds.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>What is the type of <code class="language-plaintext highlighter-rouge">(λ (x : int) 42)</code>? Build the typing
+derivation.</p>
+</blockquote>
+
+<h3 id="application-t-app">Application: T-App</h3>
+
+<p>To type a function application, we need the function to have an arrow
+type, and the argument to match the input type:</p>
+
+<div data-proof-tree="((&quot;T-App&quot; :right) (--- &quot;Γ ⊢ e₁ : τ₁ → τ₂&quot;) (--- &quot;Γ ⊢ e₂ : τ₁&quot;) --- &quot;Γ ⊢ (e₁ e₂) : τ₂&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>This is where type checking catches errors. If <code class="language-plaintext highlighter-rouge">e₁</code> has type <code class="language-plaintext highlighter-rouge">int →
+bool</code> but <code class="language-plaintext highlighter-rouge">e₂</code> has type <code class="language-plaintext highlighter-rouge">bool</code>, the types don’t match (we need <code class="language-plaintext highlighter-rouge">e₂ :
+int</code>) and the application is ill-typed.</p>
+
+<p>Let’s prove that <code class="language-plaintext highlighter-rouge">((λ (x : int) x) 5)</code> has type <code class="language-plaintext highlighter-rouge">int</code>. Click to try:</p>
+
+<p><code class="pe-judgement">⊢ ((λ (x : int) x) 5) : int</code></p>
+
+<p>The completed derivation:</p>
+
+<div data-proof-tree="((&quot;T-App&quot; :right) ((&quot;T-Lam&quot; :right) ((&quot;T-Var&quot; :right) --- &quot;x : int ⊢ x : int&quot;) --- &quot;⊢ (λ (x : int) x) : int → int&quot;) ((&quot;T-Int&quot; :right) --- &quot;⊢ 5 : int&quot;) --- &quot;⊢ ((λ (x : int) x) 5) : int&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>Notice how T-App requires <em>two</em> premises: one for the function, one
+for the argument. The key constraint is that the argument type <code class="language-plaintext highlighter-rouge">τ₁</code>
+must match in both premises.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Try building the derivation for the following in the proof explorer:</p>
+
+  <p><code class="pe-judgement">⊢ ((λ (f : int → int) (f 1)) (λ (x : int) x)) : int</code></p>
+</blockquote>
+
+<h3 id="arithmetic-t-add-and-t-neg">Arithmetic: T-Add and T-Neg</h3>
+
+<p>Addition requires both arguments to be integers:</p>
+
+<div data-proof-tree="((&quot;T-Add&quot; :right) (--- &quot;Γ ⊢ e₁ : int&quot;) (--- &quot;Γ ⊢ e₂ : int&quot;) --- &quot;Γ ⊢ (+ e₁ e₂) : int&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>Negation takes one integer argument:</p>
+
+<div data-proof-tree="((&quot;T-Neg&quot; :right) (--- &quot;Γ ⊢ e : int&quot;) --- &quot;Γ ⊢ (- e) : int&quot;)" data-proof-tree-zoom="false"></div>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Build the derivation for:</p>
+
+  <p><code class="pe-judgement">x : int ⊢ (+ x 1) : int</code></p>
+</blockquote>
+
+<h3 id="conditionals-t-if">Conditionals: T-If</h3>
+
+<p>Our conditional is <code class="language-plaintext highlighter-rouge">if0</code>: it tests whether its first argument is zero.
+Both branches must have the <em>same</em> type:</p>
+
+<div data-proof-tree="((&quot;T-If&quot; :right) (--- &quot;Γ ⊢ e₁ : int&quot;) (--- &quot;Γ ⊢ e₂ : τ&quot;) (--- &quot;Γ ⊢ e₃ : τ&quot;) --- &quot;Γ ⊢ (if0 e₁ e₂ e₃) : τ&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>The condition <code class="language-plaintext highlighter-rouge">e₁</code> must be an integer (we test if it’s zero), and
+both branches <code class="language-plaintext highlighter-rouge">e₂</code> and <code class="language-plaintext highlighter-rouge">e₃</code> must have the same type <code class="language-plaintext highlighter-rouge">τ</code>. This
+prevents the problem from the motivation: we can’t have one branch
+return an int and the other return a bool.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Why does STLC require both branches of <code class="language-plaintext highlighter-rouge">if0</code> to have the same type?
+What would go wrong if we allowed <code class="language-plaintext highlighter-rouge">(if0 0 42 #t)</code>?</p>
+</blockquote>
+
+<h3 id="let-bindings-t-let">Let bindings: T-Let</h3>
+
+<p>The T-Let rule binds a variable for use in the body:</p>
+
+<div data-proof-tree="((&quot;T-Let&quot; :right) (--- &quot;Γ ⊢ e₁ : τ₁&quot;) (--- &quot;Γ, x:τ₁ ⊢ e₂ : τ₂&quot;) --- &quot;Γ ⊢ (let ([x e₁]) e₂) : τ₂&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>First, type check <code class="language-plaintext highlighter-rouge">e₁</code> to get its type <code class="language-plaintext highlighter-rouge">τ₁</code>. Then, type check the
+body <code class="language-plaintext highlighter-rouge">e₂</code> with <code class="language-plaintext highlighter-rouge">x : τ₁</code> added to the environment.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Build the derivation for:</p>
+
+  <p><code class="pe-judgement">⊢ (let ([x 5]) (+ x 1)) : int</code></p>
+</blockquote>
+
+<hr />
+
+<h2 id="building-complete-derivations">Building Complete Derivations</h2>
+
+<p>Now that we have all the rules, let’s practice building complete
+derivations. The key skill is working <em>bottom-up</em>: start with the
+conclusion you want to prove, identify which rule applies (based on
+the outermost form of the expression), and generate the premises.</p>
+
+<h3 id="example-a-higher-order-function">Example: a higher-order function</h3>
+
+<p>Let’s type <code class="language-plaintext highlighter-rouge">(λ (f : int → int) (f 1))</code>. This takes a function <code class="language-plaintext highlighter-rouge">f</code> and
+applies it to <code class="language-plaintext highlighter-rouge">1</code>. Click to try:</p>
+
+<p><code class="pe-judgement">⊢ (λ (f : int → int) (f 1)) : (int → int) → int</code></p>
+
+<p>The derivation:</p>
+
+<div data-proof-tree="((&quot;T-Lam&quot; :right) ((&quot;T-App&quot; :right) ((&quot;T-Var&quot; :right) --- &quot;f : int → int ⊢ f : int → int&quot;) ((&quot;T-Int&quot; :right) --- &quot;f : int → int ⊢ 1 : int&quot;) --- &quot;f : int → int ⊢ (f 1) : int&quot;) --- &quot;⊢ (λ (f : int → int) (f 1)) : (int → int) → int&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>Notice the type of the whole expression: <code class="language-plaintext highlighter-rouge">(int → int) → int</code>. This is
+a function that takes a <em>function</em> as input, making it higher-order.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>What is the type of <code class="language-plaintext highlighter-rouge">(λ (f : int → int) (λ (x : int) (f (f x))))</code>?
+This is a function that applies <code class="language-plaintext highlighter-rouge">f</code> twice. Build the derivation in
+the proof explorer.</p>
+
+  <p><code class="pe-judgement">⊢ (λ (f : int → int) (λ (x : int) (f (f x)))) : (int → int) → int → int</code></p>
+</blockquote>
+
+<hr />
+
+<h2 id="what-stlc-cant-type">What STLC Can’t Type</h2>
+
+<p>STLC is deliberately <em>less expressive</em> than the untyped λ-calculus.
+Some important terms cannot be typed:</p>
+
+<p><strong>Self-application is untypable.</strong> Consider <code class="language-plaintext highlighter-rouge">(λ (f) (f f))</code>. For this
+to type check, <code class="language-plaintext highlighter-rouge">f</code> would need to have type <code class="language-plaintext highlighter-rouge">τ → τ'</code> (so we can apply
+it), but also type <code class="language-plaintext highlighter-rouge">τ</code> (since it’s the argument). So we’d need <code class="language-plaintext highlighter-rouge">τ = τ
+→ τ'</code>, which is an infinite type: no finite type works.</p>
+
+<p><strong>Ω is untypable.</strong> Since <code class="language-plaintext highlighter-rouge">(λ (x) (x x))</code> can’t be typed, neither
+can <code class="language-plaintext highlighter-rouge">((λ (x) (x x)) (λ (x) (x x)))</code>. This means the term that loops
+forever is rejected by STLC.</p>
+
+<p><strong>The Y combinator is untypable.</strong> Since the Y combinator uses
+self-application internally, STLC rejects it. This means we cannot
+write general recursion in STLC.</p>
+
+<p>This is a <em>feature</em>, not a bug. In fact, every well-typed STLC program
+is guaranteed to terminate. The price we pay for this safety is that
+we can’t express some useful programs (like recursive functions). More
+advanced type systems, such as System F and those in OCaml or
+Haskell, recover expressiveness while maintaining safety by adding
+controlled forms of polymorphism and recursion.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Why can’t <code class="language-plaintext highlighter-rouge">(λ (f : ???) (f f))</code> be typed in STLC, no matter what
+type we write for <code class="language-plaintext highlighter-rouge">???</code>?</p>
+</blockquote>
+
+<hr />
+
+<h2 id="type-soundness-preview">Type Soundness (Preview)</h2>
+
+<p>The payoff of type systems is a strong guarantee:</p>
+
+<p><strong>Theorem (Type Soundness):</strong> Well-typed programs don’t go wrong.</p>
+
+<p>This is traditionally split into two properties:</p>
+
+<ul>
+  <li>
+    <p><strong>Progress:</strong> If <code class="language-plaintext highlighter-rouge">⊢ e : τ</code> (i.e., <code class="language-plaintext highlighter-rouge">e</code> is well-typed and closed),
+then either <code class="language-plaintext highlighter-rouge">e</code> is already a value, or <code class="language-plaintext highlighter-rouge">e</code> can take a step of
+evaluation.</p>
+  </li>
+  <li>
+    <p><strong>Preservation:</strong> If <code class="language-plaintext highlighter-rouge">⊢ e : τ</code> and <code class="language-plaintext highlighter-rouge">e</code> steps to <code class="language-plaintext highlighter-rouge">e'</code>, then
+<code class="language-plaintext highlighter-rouge">⊢ e' : τ</code>. Evaluation preserves the type.</p>
+  </li>
+</ul>
+
+<p>Together, these say: a well-typed program never reaches a stuck state
+(like trying to add a boolean to a number). It either produces a value
+or keeps computing, and its type never changes along the way.</p>
+
+<p>We will not prove type soundness in this class, but it is the
+foundational result that justifies type systems. In CIS552, you would
+prove this formally.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>What does “progress” guarantee about the expression
+<code class="language-plaintext highlighter-rouge">((λ (x : int) (+ x 1)) 5)</code> if it type checks?</p>
+</blockquote>
+
+<hr />
+
+<h2 id="from-rules-to-code">From Rules to Code</h2>
+
+<p>A beautiful property of STLC: the typing rules are
+<strong>syntax-directed</strong>. Each rule applies to exactly one syntactic form
+(T-Int for integers, T-Lam for lambdas, T-App for applications,
+etc.). This means we can implement type checking as a simple recursive
+function over the expression:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">type-check</span> <span class="nv">Γ</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">e</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">integer?</span><span class="p">)</span>       <span class="ss">'int</span><span class="p">]</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">boolean?</span><span class="p">)</span>       <span class="ss">'bool</span><span class="p">]</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">symbol?</span> <span class="nv">x</span><span class="p">)</span>      <span class="p">(</span><span class="nf">hash-ref</span> <span class="nv">Γ</span> <span class="nv">x</span><span class="p">)]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span> <span class="nv">:</span> <span class="o">,</span><span class="nv">τ</span><span class="p">)</span> <span class="o">,</span><span class="nv">body</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">define</span> <span class="nv">τ-body</span> <span class="p">(</span><span class="nf">type-check</span> <span class="p">(</span><span class="nf">hash-set</span> <span class="nv">Γ</span> <span class="nv">x</span> <span class="nv">τ</span><span class="p">)</span> <span class="nv">body</span><span class="p">))</span>
+     <span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">τ</span> <span class="nv">→</span> <span class="o">,</span><span class="nv">τ-body</span><span class="p">)]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">e1</span> <span class="o">,</span><span class="nv">e2</span><span class="p">)</span>
+     <span class="p">(</span><span class="nf">match</span> <span class="p">(</span><span class="nf">type-check</span> <span class="nv">Γ</span> <span class="nv">e1</span><span class="p">)</span>
+       <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">τ1</span> <span class="nv">→</span> <span class="o">,</span><span class="nv">τ2</span><span class="p">)</span>
+        <span class="p">(</span><span class="k">define</span> <span class="nv">τ-arg</span> <span class="p">(</span><span class="nf">type-check</span> <span class="nv">Γ</span> <span class="nv">e2</span><span class="p">))</span>
+        <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">equal?</span> <span class="nv">τ1</span> <span class="nv">τ-arg</span><span class="p">)</span> <span class="nv">τ2</span>
+            <span class="p">(</span><span class="nb">error</span> <span class="s">"type mismatch"</span><span class="p">))]</span>
+       <span class="p">[</span><span class="nf">_</span> <span class="p">(</span><span class="nb">error</span> <span class="s">"not a function"</span><span class="p">)])]</span>
+    <span class="o">...</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>Each <code class="language-plaintext highlighter-rouge">match</code> case corresponds to exactly one typing rule. The
+structure of the code mirrors the structure of the proof. This is a
+recurring theme in programming languages: proofs and programs are
+deeply connected.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>In the type checker above, what does the <code class="language-plaintext highlighter-rouge">T-Lam</code> case do with the
+environment? How does this correspond to the premise of the T-Lam
+rule?</p>
+</blockquote>
+
+<hr />
+
+<h2 id="summary">Summary</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Concept</th>
+      <th>Key idea</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Types</td>
+      <td>Rough approximation of runtime behavior</td>
+    </tr>
+    <tr>
+      <td>Typing judgement</td>
+      <td><code class="language-plaintext highlighter-rouge">Γ ⊢ e : τ</code>: “under Γ, e has type τ”</td>
+    </tr>
+    <tr>
+      <td>Environment Γ</td>
+      <td>Maps variables to their types</td>
+    </tr>
+    <tr>
+      <td>Typing rules</td>
+      <td>Natural deduction rules, one per syntactic form</td>
+    </tr>
+    <tr>
+      <td>Type soundness</td>
+      <td>Well-typed programs don’t go wrong</td>
+    </tr>
+    <tr>
+      <td>STLC limitations</td>
+      <td>Can’t type self-application, Ω, or Y</td>
+    </tr>
+    <tr>
+      <td>Syntax-directed</td>
+      <td>One rule per form → type checking is a recursive function</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The STLC is the foundation of type systems in modern functional
+languages. In our next lecture, we’ll study <strong>type inference</strong>: how to
+automatically deduce types without requiring annotations, using
+Hindley-Milner type inference as implemented in languages like OCaml,
+Haskell, and Rust.</p>
+
+<p><strong>Advanced reading:</strong> For a complete proof that well-typed STLC
+programs never go wrong (progress and preservation), with a companion
+<a href="https://github.com/kmicinski/cis352-s26/tree/main/lecture-projects/stlc-lean">Lean4 formalization</a>,
+see the <a href="/cis352-s26/stlc-formal">Type Soundness notes</a>.</p>
+
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <!-- Draggable divider -->
+          <div id="pe-divider" title="Drag to resize, double-click to reset">
+            <div class="pe-divider-grip">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+
+          <!-- Right pane: proof editor -->
+          <div id="pe-explorer" class="pe-pane">
+            <div id="pe-toolbar">
+              <span class="pe-toolbar-title"><i class="fas fa-project-diagram"></i> STLC Type Checker</span>
+              <div class="pe-toolbar-actions">
+                <button id="pe-undo-btn" class="pe-btn" title="Undo (Ctrl+Z)">
+                  <i class="fas fa-undo"></i>
+                </button>
+                <button id="pe-check-btn" class="pe-btn pe-btn-primary" title="Check proof (Ctrl+Enter)">
+                  <i class="fas fa-check"></i> Check
+                </button>
+                <button id="pe-clear-btn" class="pe-btn" title="Clear proof">
+                  <i class="fas fa-eraser"></i>
+                </button>
+                <button id="pe-rules-btn" class="pe-btn" title="Toggle rules reference">
+                  <i class="fas fa-book"></i> Rules
+                </button>
+              </div>
+            </div>
+            <div id="pe-editor-area">
+              <div id="pe-editor-wrap"></div>
+              <div id="pe-rules-panel" class="pe-panel-hidden">
+                <div class="pe-rules-header">
+                  <span>STLC Typing Rules</span>
+                  <button id="pe-rules-close" class="pe-btn-close"><i class="fas fa-times"></i></button>
+                </div>
+                <div id="pe-rules-content"></div>
+              </div>
+            </div>
+            <div id="pe-status"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '26) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src="/cis352-s26/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="/cis352-s26/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js"></script>
+
+
+    <script src="/cis352-s26/assets/js/proof-explorer.js"></script>
+  </body>
+</html>

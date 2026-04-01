@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Type Soundness for STLC</title>
+  <meta name="description" content="Companion to the STLC lecture. Read that first.">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://kmicinski.com/cis352-s26/css/main.css">
+  <link rel="canonical" href="https://kmicinski.com/cis352-s26/stlc-formal">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="https://kmicinski.com/cis352-s26/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  
+  <link rel="stylesheet" href="/cis352-s26/assets/proof-tree.css">
+  <script src="/cis352-s26/assets/proof-tree.js"></script>
+  <link rel="stylesheet" href="/cis352-s26/assets/proof-checker.css">
+  <script src="/cis352-s26/assets/proof-checker-glue.js"></script>
+  
+</head>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="https://kmicinski.com//cis352-s26/">CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/#schedule">Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/syllabus">Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/playground">Proof Playground</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/lambda-explorer">Lambda Explorer</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/playground">Proof Tree Playground</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    
+    <div class="advanced-badge">
+      <span class="advanced-badge-icon"><i class="fas fa-flask"></i></span>
+      <span class="advanced-badge-label">Advanced Topics</span>
+    </div>
+    
+    <h1 class="post-title" itemprop="name headline">Type Soundness for STLC</h1>
+    
+    <div class="advanced-notice">
+      This is supplementary material and is <strong>not required reading</strong>
+      for the course. It is intended for students who want to go deeper
+      into the formal foundations.
+    </div>
+    
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p><em>Companion to the <a href="/cis352-s26/stlc">STLC lecture</a>. Read that first.</em></p>
+
+<p>In the STLC lecture, we claimed that well-typed programs don’t go
+wrong. In this lecture, we make that claim precise and prove it. The
+proof has two parts, <strong>progress</strong> and <strong>preservation</strong>, proved by
+induction over the typing derivation. We will also develop the proof
+in <a href="https://lean-lang.org/">Lean4</a>, a proof assistant where the
+computer <em>checks</em> every step of our reasoning.</p>
+
+<p>The emphasis throughout is on <em>why</em> each step works, not just the
+formal mechanics. If you find yourself losing the forest for the
+trees, come back to this: type soundness says that evaluation never
+produces a nonsensical state. Progress says you’re never stuck.
+Preservation says you never drift off course.</p>
+
+<hr />
+
+<h2 id="what-does-safe-mean">What Does “Safe” Mean?</h2>
+
+<p>A term is <strong>stuck</strong> if it is not a value and cannot take a step. For
+example, <code class="language-plaintext highlighter-rouge">(5 3)</code> is stuck in the untyped λ-calculus: 5 is not a
+function, so we can’t β-reduce, and it’s not a value either. Stuck
+terms are the runtime type errors we want to prevent.</p>
+
+<p><strong>Type soundness</strong> says: if a term is well-typed, it never gets stuck.
+No matter how many steps of evaluation we take, we either reach a
+value or we can keep going.</p>
+
+<p>This decomposes into two properties:</p>
+
+<ul>
+  <li>
+    <p><strong>Progress</strong>: a well-typed closed term is either a value or can step.
+(“You can always make a move.”)</p>
+  </li>
+  <li>
+    <p><strong>Preservation</strong>: if a well-typed term steps, the result is still
+well-typed at the same type. (“You stay on the right track.”)</p>
+  </li>
+</ul>
+
+<p>Together: you can always make a move (progress), and each move keeps
+your type the same (preservation), so you never arrive at a stuck
+state with a bad type.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Give an example of a stuck term in the untyped λ-calculus. Why is it
+stuck? (Hint: try applying a non-function to something.)</p>
+</blockquote>
+
+<hr />
+
+<h2 id="lean4-definitions-syntax-typing-semantics">Lean4 Definitions: Syntax, Typing, Semantics</h2>
+
+<p>Before the proofs, let’s see the full system in Lean4. Every
+definition here corresponds to something from the STLC lecture. Lean4
+is a <em>dependently-typed</em> language: it can express propositions as
+types and proofs as programs. We define our STLC system as inductive
+data types, then prove properties about them using tactics.</p>
+
+<h3 id="types">Types</h3>
+
+<p>Types are <code class="language-plaintext highlighter-rouge">int</code>, <code class="language-plaintext highlighter-rouge">bool</code>, or function types <code class="language-plaintext highlighter-rouge">τ₁ ⇒ τ₂</code>:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>inductive Ty : Type where
+  | int  : Ty
+  | bool : Ty
+  | arrow : Ty → Ty → Ty
+  deriving DecidableEq, Repr
+</code></pre></div></div>
+
+<h3 id="de-bruijn-indices-how-variables-work">De Bruijn indices: how variables work</h3>
+
+<p>In the STLC lecture, we used named variables: <code class="language-plaintext highlighter-rouge">(λ (x : int) x)</code>. But
+names create headaches in formal proofs: we need α-equivalence,
+capture-avoiding substitution, and freshness conditions. De Bruijn
+indices eliminate all of this by replacing names with <em>numbers</em>.</p>
+
+<p>The idea: a variable is a natural number that counts how many binders
+you have to skip over to reach the one that binds it. Variable <code class="language-plaintext highlighter-rouge">0</code>
+refers to the nearest enclosing binder, <code class="language-plaintext highlighter-rouge">1</code> to the next one out, and
+so on:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Named:       (λ (x : int) (λ (y : bool) x))
+De Bruijn:   (λ int (λ bool (var 1)))
+                                  ↑
+                          skip 1 binder (past y) to reach x
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Named:       (λ (x : int) (λ (y : bool) y))
+De Bruijn:   (λ int (λ bool (var 0)))
+                                  ↑
+                          skip 0 binders: nearest binder is y
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Named:       (λ (f : int → int) (λ (x : int) (f x)))
+De Bruijn:   (λ (int ⇒ int) (λ int (app (var 1) (var 0))))
+                                          ↑          ↑
+                                      f = skip 1   x = skip 0
+</code></pre></div></div>
+
+<p>The payoff: two terms that differ only in variable names (α-equivalent
+terms) get the <em>exact same</em> de Bruijn representation. We never need to
+rename variables, and substitution becomes a mechanical operation on
+indices.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Write <code class="language-plaintext highlighter-rouge">(λ (x : int) (λ (y : int) (+ x y)))</code> in de Bruijn notation.
+What index does <code class="language-plaintext highlighter-rouge">x</code> get? What about <code class="language-plaintext highlighter-rouge">y</code>?</p>
+</blockquote>
+
+<h3 id="expressions-and-values">Expressions and values</h3>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>inductive Expr : Type where
+  | var     : Nat → Expr
+  | litInt  : Int → Expr
+  | litBool : Bool → Expr
+  | lam     : Ty → Expr → Expr
+  | app     : Expr → Expr → Expr
+  | add     : Expr → Expr → Expr
+  | neg     : Expr → Expr
+  | ifz     : Expr → Expr → Expr → Expr
+  | letE    : Expr → Expr → Expr
+  deriving Repr
+
+inductive Value : Expr → Prop where
+  | litInt  (n : Int)              : Value (.litInt n)
+  | litBool (b : Bool)             : Value (.litBool b)
+  | lam     (τ : Ty) (body : Expr) : Value (.lam τ body)
+</code></pre></div></div>
+
+<p><strong>A note on the <code class="language-plaintext highlighter-rouge">.foo</code> syntax in Lean4.</strong> You’ll see <code class="language-plaintext highlighter-rouge">.litInt</code>,
+<code class="language-plaintext highlighter-rouge">.lam</code>, <code class="language-plaintext highlighter-rouge">.app</code>, etc. throughout this code. The dot prefix is Lean4’s
+shorthand for a constructor when the type can be inferred from
+context. Writing <code class="language-plaintext highlighter-rouge">.litInt n</code> is short for <code class="language-plaintext highlighter-rouge">Expr.litInt n</code>: Lean knows
+from the surrounding type that we’re building an <code class="language-plaintext highlighter-rouge">Expr</code>, so we can
+drop the <code class="language-plaintext highlighter-rouge">Expr.</code> prefix and just write <code class="language-plaintext highlighter-rouge">.litInt</code>. Similarly, <code class="language-plaintext highlighter-rouge">.int</code>
+is short for <code class="language-plaintext highlighter-rouge">Ty.int</code>. You’ll see this everywhere in Lean4 code: it
+keeps things concise without losing information, because the type
+checker always knows which type’s constructor you mean. If you see
+<code class="language-plaintext highlighter-rouge">.foo</code>, mentally read it as “the <code class="language-plaintext highlighter-rouge">foo</code> constructor of whatever type
+is expected here.”</p>
+
+<p><code class="language-plaintext highlighter-rouge">Value</code> is a <em>proposition</em>: <code class="language-plaintext highlighter-rouge">Value e</code> is a type that is inhabited
+exactly when <code class="language-plaintext highlighter-rouge">e</code> is a literal or a lambda. The constructors are
+<em>proofs</em>: <code class="language-plaintext highlighter-rouge">Value.litInt 42</code> proves that <code class="language-plaintext highlighter-rouge">.litInt 42</code> is a value.</p>
+
+<h3 id="shifting-and-substitution">Shifting and substitution</h3>
+
+<p>De Bruijn indices require two operations that named variables don’t.</p>
+
+<p><strong>Shifting</strong> (<code class="language-plaintext highlighter-rouge">shift d c e</code>): when we move a term under a new binder,
+its free variables need to be incremented so they still point to the
+right place. The cutoff <code class="language-plaintext highlighter-rouge">c</code> tracks how many binders we’ve entered, so
+bound variables (below <code class="language-plaintext highlighter-rouge">c</code>) are left alone:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Before shift:    (λ int (var 0) (var 1))
+                              ↑          ↑
+                          bound (0)   free (1)
+
+After shift 1 0: (λ int (var 0) (var 2))
+                              ↑          ↑
+                        still bound   free, shifted up
+</code></pre></div></div>
+
+<p><strong>Substitution</strong> (<code class="language-plaintext highlighter-rouge">subst j s e</code>): replace variable <code class="language-plaintext highlighter-rouge">j</code> with term <code class="language-plaintext highlighter-rouge">s</code>,
+and decrement variables above <code class="language-plaintext highlighter-rouge">j</code> (since the binder that introduced
+variable <code class="language-plaintext highlighter-rouge">j</code> has been consumed by β-reduction). Under a binder, <code class="language-plaintext highlighter-rouge">j</code>
+increments and <code class="language-plaintext highlighter-rouge">s</code> gets shifted:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def shift (d : Nat) (c : Nat) : Expr → Expr
+  | .var k      =&gt; if k &lt; c then .var k else .var (k + d)
+  | .litInt n   =&gt; .litInt n
+  | .litBool b  =&gt; .litBool b
+  | .lam τ body =&gt; .lam τ (shift d (c + 1) body)
+  | .app e₁ e₂  =&gt; .app (shift d c e₁) (shift d c e₂)
+  | .add e₁ e₂  =&gt; .add (shift d c e₁) (shift d c e₂)
+  | .neg e      =&gt; .neg (shift d c e)
+  | .ifz e₁ e₂ e₃ =&gt; .ifz (shift d c e₁) (shift d c e₂) (shift d c e₃)
+  | .letE e₁ e₂ =&gt; .letE (shift d c e₁) (shift d (c + 1) e₂)
+
+def subst (j : Nat) (s : Expr) : Expr → Expr
+  | .var k      =&gt; if k == j then s
+                    else if j &lt; k then .var (k - 1)
+                    else .var k
+  | .litInt n   =&gt; .litInt n
+  | .litBool b  =&gt; .litBool b
+  | .lam τ body =&gt; .lam τ (subst (j + 1) (shift 1 0 s) body)
+  | .app e₁ e₂  =&gt; .app (subst j s e₁) (subst j s e₂)
+  | .add e₁ e₂  =&gt; .add (subst j s e₁) (subst j s e₂)
+  | .neg e      =&gt; .neg (subst j s e)
+  | .ifz e₁ e₂ e₃ =&gt; .ifz (subst j s e₁) (subst j s e₂) (subst j s e₃)
+  | .letE e₁ e₂ =&gt; .letE (subst j s e₁) (subst (j + 1) (shift 1 0 s) e₂)
+</code></pre></div></div>
+
+<p>Notice how <code class="language-plaintext highlighter-rouge">subst</code> under a <code class="language-plaintext highlighter-rouge">lam</code> increments <code class="language-plaintext highlighter-rouge">j</code> (the variable being
+replaced is one deeper) and shifts <code class="language-plaintext highlighter-rouge">s</code> (so its free variables still
+refer to the right things). This is the standard TAPL Chapter 6
+formulation.</p>
+
+<h3 id="typing-contexts">Typing contexts</h3>
+
+<p>A context maps de Bruijn indices to types. We represent it as a
+function <code class="language-plaintext highlighter-rouge">Nat → Option Ty</code>: position 0 is the most recent binder.
+<code class="language-plaintext highlighter-rouge">extend</code> pushes a new type at position 0. <code class="language-plaintext highlighter-rouge">insertAt</code> inserts at an
+arbitrary position (needed for the weakening lemma).</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>abbrev Ctx := Nat → Option Ty
+
+def Ctx.empty : Ctx := fun _ =&gt; none
+
+def Ctx.extend (Γ : Ctx) (τ : Ty) : Ctx
+  | 0     =&gt; some τ
+  | n + 1 =&gt; Γ n
+
+def Ctx.insertAt (Γ : Ctx) (c : Nat) (τ : Ty) : Ctx :=
+  fun n =&gt; if n &lt; c then Γ n
+           else if n = c then some τ
+           else Γ (n - 1)
+</code></pre></div></div>
+
+<p>Using a function (rather than a list) makes context operations simple
+and avoids all list-index arithmetic.</p>
+
+<h3 id="the-typing-relation">The typing relation</h3>
+
+<p>Each constructor of <code class="language-plaintext highlighter-rouge">HasType</code> corresponds to one natural deduction
+typing rule from the <a href="/cis352-s26/stlc">STLC lecture</a>.
+Here they are side by side: the mathematical rule on the left, its
+Lean4 encoding on the right. Everything above the inference line
+becomes a premise (an argument before the <code class="language-plaintext highlighter-rouge">→</code>); everything below the
+line becomes the conclusion (the return type).</p>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;T-Int&quot; :right) --- &quot;Γ ⊢ n : int&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| tInt (Γ : Ctx) (n : Int)
+  : HasType Γ (.litInt n) .int</code></pre>
+</div>
+</div>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;T-Bool&quot; :right) --- &quot;Γ ⊢ b : bool&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| tBool (Γ : Ctx) (b : Bool)
+  : HasType Γ (.litBool b) .bool</code></pre>
+</div>
+</div>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;T-Var&quot; :right) --- &quot;Γ ⊢ x : τ&quot;)" data-proof-tree-zoom="false"></div>
+<div class="rule-card-condition">where (x : τ) ∈ Γ</div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| tVar (Γ : Ctx) (i : Nat) (τ : Ty)
+  (h : Γ i = some τ)
+  : HasType Γ (.var i) τ</code></pre>
+</div>
+</div>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;T-Lam&quot; :right) (--- &quot;Γ, x:τ₁ ⊢ e : τ₂&quot;) --- &quot;Γ ⊢ (λ (x : τ₁) e) : τ₁ → τ₂&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| tLam (Γ : Ctx) (τ₁ τ₂ : Ty)
+  (body : Expr)
+  : HasType (Γ.extend τ₁) body τ₂
+  → HasType Γ (.lam τ₁ body) (τ₁ ⇒ τ₂)</code></pre>
+</div>
+</div>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;T-App&quot; :right) (--- &quot;Γ ⊢ e₁ : τ₁ → τ₂&quot;) (--- &quot;Γ ⊢ e₂ : τ₁&quot;) --- &quot;Γ ⊢ (e₁ e₂) : τ₂&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| tApp (Γ : Ctx) (e₁ e₂ : Expr)
+  (τ₁ τ₂ : Ty)
+  : HasType Γ e₁ (τ₁ ⇒ τ₂)
+  → HasType Γ e₂ τ₁
+  → HasType Γ (.app e₁ e₂) τ₂</code></pre>
+</div>
+</div>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;T-Add&quot; :right) (--- &quot;Γ ⊢ e₁ : int&quot;) (--- &quot;Γ ⊢ e₂ : int&quot;) --- &quot;Γ ⊢ (+ e₁ e₂) : int&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| tAdd (Γ : Ctx) (e₁ e₂ : Expr)
+  : HasType Γ e₁ .int
+  → HasType Γ e₂ .int
+  → HasType Γ (.add e₁ e₂) .int</code></pre>
+</div>
+</div>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;T-If&quot; :right) (--- &quot;Γ ⊢ e₁ : int&quot;) (--- &quot;Γ ⊢ e₂ : τ&quot;) (--- &quot;Γ ⊢ e₃ : τ&quot;) --- &quot;Γ ⊢ (if0 e₁ e₂ e₃) : τ&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| tIf (Γ : Ctx) (e₁ e₂ e₃ : Expr)
+  (τ : Ty)
+  : HasType Γ e₁ .int
+  → HasType Γ e₂ τ → HasType Γ e₃ τ
+  → HasType Γ (.ifz e₁ e₂ e₃) τ</code></pre>
+</div>
+</div>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;T-Let&quot; :right) (--- &quot;Γ ⊢ e₁ : τ₁&quot;) (--- &quot;Γ, x:τ₁ ⊢ e₂ : τ₂&quot;) --- &quot;Γ ⊢ (let ([x e₁]) e₂) : τ₂&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| tLet (Γ : Ctx) (e₁ e₂ : Expr)
+  (τ₁ τ₂ : Ty)
+  : HasType Γ e₁ τ₁
+  → HasType (Γ.extend τ₁) e₂ τ₂
+  → HasType Γ (.letE e₁ e₂) τ₂</code></pre>
+</div>
+</div>
+
+<p>The pattern: premises (above the line) become arguments before <code class="language-plaintext highlighter-rouge">→</code>,
+the conclusion (below the line) becomes the return type. Side
+conditions like “(x : τ) ∈ Γ” become explicit proof arguments like
+<code class="language-plaintext highlighter-rouge">(h : Γ i = some τ)</code>.</p>
+
+<h3 id="small-step-semantics">Small-step semantics</h3>
+
+<p>Each constructor of <code class="language-plaintext highlighter-rouge">Step</code> is one evaluation rule. Here are the key
+rules side by side. The <code class="language-plaintext highlighter-rouge">+</code> in E-AddN is metalanguage integer
+addition (computing the result), not the object-language <code class="language-plaintext highlighter-rouge">add</code> form.</p>
+
+<p><strong>Computation rules</strong> (the ones that do real work):</p>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;E-AppAbs&quot; :right) --- &quot;((λ (x:τ) body) v) -&gt; body[x := v]&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| appAbs (τ : Ty) (body v₂ : Expr)
+  : Value v₂
+  → Step (.app (.lam τ body) v₂)
+         (subst 0 v₂ body)</code></pre>
+</div>
+</div>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;E-AddN&quot; :right) --- &quot;(+ n1 n2) -&gt; n&quot;)" data-proof-tree-zoom="false"></div>
+<div class="rule-card-condition">n = n1 + n2 (metalanguage addition)</div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| addN (n₁ n₂ : Int)
+  : Step (.add (.litInt n₁) (.litInt n₂))
+         (.litInt (n₁ + n₂))</code></pre>
+</div>
+</div>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;E-IfTrue&quot; :right) --- &quot;(if0 0 e2 e3) -&gt; e2&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| ifTrue (e₂ e₃ : Expr)
+  : Step (.ifz (.litInt 0) e₂ e₃) e₂</code></pre>
+</div>
+</div>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;E-IfFalse&quot; :right) --- &quot;(if0 n e2 e3) -&gt; e3&quot;)" data-proof-tree-zoom="false"></div>
+<div class="rule-card-condition">where n ≠ 0</div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| ifFalse (n : Int) (e₂ e₃ : Expr)
+  : n ≠ 0
+  → Step (.ifz (.litInt n) e₂ e₃) e₃</code></pre>
+</div>
+</div>
+
+<p><strong>Congruence rules</strong> (stepping inside a compound expression):</p>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;E-AppL&quot; :right) (--- &quot;e1 -&gt; e1'&quot;) --- &quot;(e1 e2) -&gt; (e1' e2)&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| appL (e₁ e₁' e₂ : Expr)
+  : Step e₁ e₁'
+  → Step (.app e₁ e₂) (.app e₁' e₂)</code></pre>
+</div>
+</div>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Rule</span>
+<div data-proof-tree="((&quot;E-AppR&quot; :right) (--- &quot;e2 -&gt; e2'&quot;) --- &quot;(v1 e2) -&gt; (v1 e2')&quot;)" data-proof-tree-zoom="false"></div>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Lean4</span>
+<pre><code>| appR (v₁ e₂ e₂' : Expr)
+  : Value v₁ → Step e₂ e₂'
+  → Step (.app v₁ e₂) (.app v₁ e₂')</code></pre>
+</div>
+</div>
+
+<p>Plus analogous congruence rules for <code class="language-plaintext highlighter-rouge">add</code>, <code class="language-plaintext highlighter-rouge">neg</code>, <code class="language-plaintext highlighter-rouge">if0</code>, and <code class="language-plaintext highlighter-rouge">let</code>
+(same pattern: step one subexpression, leave the rest unchanged).</p>
+
+<p>The full <code class="language-plaintext highlighter-rouge">Step</code> inductive in Lean4:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>inductive Step : Expr → Expr → Prop where
+  | appL    (e₁ e₁' e₂ : Expr)
+    : Step e₁ e₁' → Step (.app e₁ e₂) (.app e₁' e₂)
+  | appR    (v₁ e₂ e₂' : Expr)
+    : Value v₁ → Step e₂ e₂' → Step (.app v₁ e₂) (.app v₁ e₂')
+  | appAbs  (τ : Ty) (body v₂ : Expr)
+    : Value v₂ → Step (.app (.lam τ body) v₂) (subst 0 v₂ body)
+  | addL    (e₁ e₁' e₂ : Expr)
+    : Step e₁ e₁' → Step (.add e₁ e₂) (.add e₁' e₂)
+  | addR    (v₁ e₂ e₂' : Expr)
+    : Value v₁ → Step e₂ e₂' → Step (.add v₁ e₂) (.add v₁ e₂')
+  | addN    (n₁ n₂ : Int)
+    : Step (.add (.litInt n₁) (.litInt n₂)) (.litInt (n₁ + n₂))
+  | negStep (e e' : Expr)
+    : Step e e' → Step (.neg e) (.neg e')
+  | negN    (n : Int)
+    : Step (.neg (.litInt n)) (.litInt (-n))
+  | ifStep  (e₁ e₁' e₂ e₃ : Expr)
+    : Step e₁ e₁' → Step (.ifz e₁ e₂ e₃) (.ifz e₁' e₂ e₃)
+  | ifTrue  (e₂ e₃ : Expr)
+    : Step (.ifz (.litInt 0) e₂ e₃) e₂
+  | ifFalse (n : Int) (e₂ e₃ : Expr)
+    : n ≠ 0 → Step (.ifz (.litInt n) e₂ e₃) e₃
+  | letStep (e₁ e₁' e₂ : Expr)
+    : Step e₁ e₁' → Step (.letE e₁ e₂) (.letE e₁' e₂)
+  | letVal  (v₁ e₂ : Expr)
+    : Value v₁ → Step (.letE v₁ e₂) (subst 0 v₁ e₂)
+</code></pre></div></div>
+
+<p>The pattern: congruence rules (<code class="language-plaintext highlighter-rouge">appL</code>, <code class="language-plaintext highlighter-rouge">appR</code>, <code class="language-plaintext highlighter-rouge">addL</code>, etc.) step
+inside a compound expression. Computation rules (<code class="language-plaintext highlighter-rouge">appAbs</code>, <code class="language-plaintext highlighter-rouge">addN</code>,
+<code class="language-plaintext highlighter-rouge">ifTrue</code>, etc.) do the actual work when all operands are values.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Using the rules above, what does <code class="language-plaintext highlighter-rouge">((λ (x : int) (+ x 1)) 5)</code> step
+to? Which rule applies?</p>
+</blockquote>
+
+<hr />
+
+<h2 id="canonical-forms">Canonical Forms</h2>
+
+<p>Before we tackle the main theorems, we need a small observation that
+will come up repeatedly. Think about what happens when we know
+something is a <em>value</em> with a specific type. There are only three
+kinds of values: integer literals, boolean literals, and lambdas. And
+each one can only have certain types:</p>
+
+<ul>
+  <li>An integer literal like <code class="language-plaintext highlighter-rouge">42</code> can only have type <code class="language-plaintext highlighter-rouge">int</code> (by T-Int).</li>
+  <li>A boolean literal can only have type <code class="language-plaintext highlighter-rouge">bool</code> (by T-Bool).</li>
+  <li>A lambda can only have an arrow type <code class="language-plaintext highlighter-rouge">τ₁ → τ₂</code> (by T-Lam).</li>
+</ul>
+
+<p>The canonical forms lemma just makes this official: <strong>if you know both
+the type and that something is a value, you know its exact shape.</strong></p>
+
+<p>Why do we care? Imagine you’re trying to prove progress for
+<code class="language-plaintext highlighter-rouge">(e₁ e₂)</code>. You’ve established (via the IH) that <code class="language-plaintext highlighter-rouge">e₁</code> is a value with
+type <code class="language-plaintext highlighter-rouge">τ₁ → τ₂</code>. You want to use E-AppAbs, but that rule requires
+<code class="language-plaintext highlighter-rouge">e₁</code> to literally be <code class="language-plaintext highlighter-rouge">(λ (x:τ₁) body)</code>. Canonical forms bridges the
+gap: “value with arrow type” implies “is a lambda.”</p>
+
+<p>The proof is by cases on the value. Each impossible combination
+(e.g., <code class="language-plaintext highlighter-rouge">litBool</code> with type <code class="language-plaintext highlighter-rouge">int</code>) is a contradiction, which Lean
+resolves automatically with <code class="language-plaintext highlighter-rouge">cases ht</code>:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>theorem canonical_int {Γ : Ctx} {e : Expr}
+    (ht : HasType Γ e .int) (hv : Value e) :
+    ∃ n : Int, e = .litInt n := by
+  cases hv with
+  | litInt n       =&gt; exact ⟨n, rfl⟩
+  | litBool b      =&gt; cases ht
+  | lam τ body     =&gt; cases ht
+
+theorem canonical_bool {Γ : Ctx} {e : Expr}
+    (ht : HasType Γ e .bool) (hv : Value e) :
+    ∃ b : Bool, e = .litBool b := by
+  cases hv with
+  | litBool b      =&gt; exact ⟨b, rfl⟩
+  | litInt n       =&gt; cases ht
+  | lam τ body     =&gt; cases ht
+
+theorem canonical_arrow {Γ : Ctx} {e : Expr} {τ₁ τ₂ : Ty}
+    (ht : HasType Γ e (τ₁ ⇒ τ₂)) (hv : Value e) :
+    ∃ body : Expr, e = .lam τ₁ body := by
+  cases hv with
+  | lam τ body =&gt;
+    cases ht with
+    | tLam =&gt; exact ⟨body, rfl⟩
+  | litInt n       =&gt; cases ht
+  | litBool b      =&gt; cases ht
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">⟨n, rfl⟩</code> syntax is Lean’s way of providing an existential
+witness: “the witness is <code class="language-plaintext highlighter-rouge">n</code>, and the proof of equality is
+reflexivity.” The <code class="language-plaintext highlighter-rouge">cases ht</code> tactic asks Lean to find a typing
+rule that could assign the given type to the given value form; when
+none exists, the case is impossible and Lean closes it.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Why is the case <code class="language-plaintext highlighter-rouge">Value.lam τ body</code> impossible when the type is <code class="language-plaintext highlighter-rouge">int</code>?
+Which typing rule would have to apply, and why does it fail?</p>
+</blockquote>
+
+<hr />
+
+<h2 id="progress">Progress</h2>
+
+<p><strong>Theorem.</strong> If <code class="language-plaintext highlighter-rouge">HasType Ctx.empty e τ</code> (well-typed, closed), then
+either <code class="language-plaintext highlighter-rouge">e</code> is a value or there exists <code class="language-plaintext highlighter-rouge">e'</code> such that <code class="language-plaintext highlighter-rouge">Step e e'</code>.</p>
+
+<h3 id="how-would-you-approach-this-proof">How would you approach this proof?</h3>
+
+<p>The first question: what do we induct on? We have a well-typed
+expression <code class="language-plaintext highlighter-rouge">e</code>, so our options are: induction on <code class="language-plaintext highlighter-rouge">e</code> (the expression
+structure), or induction on the typing derivation (the proof that <code class="language-plaintext highlighter-rouge">e</code>
+has type <code class="language-plaintext highlighter-rouge">τ</code>). Let’s think about what each gives us.</p>
+
+<p>If we induct on <code class="language-plaintext highlighter-rouge">e</code>, we’d case-split on whether <code class="language-plaintext highlighter-rouge">e</code> is a variable, a
+literal, a lambda, an application, etc. For a literal, we’re done
+(it’s a value). For an application <code class="language-plaintext highlighter-rouge">(e₁ e₂)</code>, we’d know by IH that
+<code class="language-plaintext highlighter-rouge">e₁</code> and <code class="language-plaintext highlighter-rouge">e₂</code> satisfy progress… but wait, we only know they satisfy
+progress <em>if they’re well-typed</em>. The IH from structural induction on
+<code class="language-plaintext highlighter-rouge">e</code> doesn’t give us that. We’d have to extract the subderivations
+from the typing proof, which is awkward.</p>
+
+<p>Induction on the <em>typing derivation</em> is cleaner. Each case of the
+induction corresponds to a typing rule (T-Int, T-App, T-Lam, etc.),
+and the IH gives us progress for the premises of that rule. For
+T-App, the IH directly says “e₁ satisfies progress” and “e₂ satisfies
+progress,” which is exactly what we need.</p>
+
+<p><strong>Lesson: when your theorem’s hypothesis is a derivation (like a
+typing proof), induct on the derivation.</strong></p>
+
+<h3 id="walking-through-a-concrete-example">Walking through a concrete example</h3>
+
+<p>Consider <code class="language-plaintext highlighter-rouge">((λ (x : int) x) 5) : int</code>. Its typing derivation is:</p>
+
+<div data-proof-tree="((&quot;T-App&quot; :right) ((&quot;T-Lam&quot; :right) ((&quot;T-Var&quot; :right) --- &quot;x : int ⊢ x : int&quot;) --- &quot;⊢ (λ (x : int) x) : int → int&quot;) ((&quot;T-Int&quot; :right) --- &quot;⊢ 5 : int&quot;) --- &quot;⊢ ((λ (x : int) x) 5) : int&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>The progress proof walks this tree bottom-up. We’re at the root,
+T-App, so we need to show the application can step. The IH tells us
+about the two children:</p>
+
+<ul>
+  <li><strong>Left child</strong> <code class="language-plaintext highlighter-rouge">(λ (x : int) x)</code>: typed by T-Lam, which is a
+value (lambdas are values). IH says: “it’s a value.” Good.</li>
+  <li><strong>Right child</strong> <code class="language-plaintext highlighter-rouge">5</code>: typed by T-Int, which is a value (literals are
+values). IH says: “it’s a value.” Good.</li>
+</ul>
+
+<p>Both are values. Now what? We know <code class="language-plaintext highlighter-rouge">e₁</code> has type <code class="language-plaintext highlighter-rouge">int → int</code> and is a
+value. By canonical forms, it must be a lambda. So <code class="language-plaintext highlighter-rouge">e₁ = (λ τ body)</code>
+for some <code class="language-plaintext highlighter-rouge">body</code>. Now E-AppAbs applies: <code class="language-plaintext highlighter-rouge">((λ τ body) 5) → subst 0 5
+body</code>. We found our step.</p>
+
+<p>Now consider a different example: <code class="language-plaintext highlighter-rouge">((+ 3 5) 7)</code>. This is typed by
+T-App, where the left child is <code class="language-plaintext highlighter-rouge">(+ 3 5)</code> typed by T-Add. The IH on
+the left child says: both <code class="language-plaintext highlighter-rouge">3</code> and <code class="language-plaintext highlighter-rouge">5</code> are values (by T-Int), both are
+integers (by canonical forms), so E-AddN fires and <code class="language-plaintext highlighter-rouge">(+ 3 5) → 8</code>.
+Since the left child can step, E-AppL fires: <code class="language-plaintext highlighter-rouge">((+ 3 5) 7) → (8 7)</code>.
+We didn’t even need to look at the right child.</p>
+
+<p>This is the general pattern for all compound cases:</p>
+
+<ol>
+  <li>Ask the IH about each subexpression.</li>
+  <li>If any subexpression can step, use the corresponding congruence
+rule (E-AppL, E-AppR, E-AddL, etc.).</li>
+  <li>If all subexpressions are values, use canonical forms to determine
+their shapes, then identify the computation rule.</li>
+</ol>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Consider the term <code class="language-plaintext highlighter-rouge">(+ ((λ (x:int) x) 3) 5)</code>. Trace through the
+progress argument. Which subexpression steps first? Which rules fire?</p>
+</blockquote>
+
+<h3 id="the-proof-case-by-case">The proof, case by case</h3>
+
+<p><strong>Values (T-Int, T-Bool, T-Lam):</strong> These are already values. Done
+immediately.</p>
+
+<p><strong>Variables (T-Var):</strong> The term is closed (empty context), so no
+variable can be in scope. The context lookup <code class="language-plaintext highlighter-rouge">Γ i = some τ</code> is
+impossible when <code class="language-plaintext highlighter-rouge">Γ = Ctx.empty</code>. Contradiction.</p>
+
+<p><strong>Application (T-App):</strong> The interesting case. We have <code class="language-plaintext highlighter-rouge">⊢ (e₁ e₂) :
+τ₂</code> with <code class="language-plaintext highlighter-rouge">⊢ e₁ : τ₁ → τ₂</code> and <code class="language-plaintext highlighter-rouge">⊢ e₂ : τ₁</code>. The IH gives us
+progress for both children. Three subcases:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">e₁</code> can step → use E-AppL: <code class="language-plaintext highlighter-rouge">(e₁ e₂) → (e₁' e₂)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">e₁</code> is a value, <code class="language-plaintext highlighter-rouge">e₂</code> can step → use E-AppR: <code class="language-plaintext highlighter-rouge">(v₁ e₂) → (v₁ e₂')</code></li>
+  <li>Both values → canonical forms on <code class="language-plaintext highlighter-rouge">e₁</code> gives us a lambda → E-AppAbs</li>
+</ul>
+
+<p><strong>Addition (T-Add):</strong> Same pattern. If either operand steps, use
+E-AddL or E-AddR. If both are values, canonical forms gives us
+integer literals, so E-AddN fires.</p>
+
+<p><strong>Conditional (T-If):</strong> The condition <code class="language-plaintext highlighter-rouge">e₁</code> has type <code class="language-plaintext highlighter-rouge">int</code>. If it
+steps, use E-IfStep. If it’s a value, canonical forms gives us an
+integer <code class="language-plaintext highlighter-rouge">n</code>. Then we decide: if <code class="language-plaintext highlighter-rouge">n = 0</code>, use E-IfTrue; otherwise
+E-IfFalse.</p>
+
+<p><strong>Let (T-Let):</strong> Simplest compound case. If <code class="language-plaintext highlighter-rouge">e₁</code> steps, E-LetStep.
+If <code class="language-plaintext highlighter-rouge">e₁</code> is a value, E-LetVal.</p>
+
+<h3 id="the-full-lean4-proof">The full Lean4 proof</h3>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>private theorem progress_aux (Γ : Ctx) (e : Expr) (τ : Ty)
+    (ht : HasType Γ e τ) (hΓ : Γ = Ctx.empty) :
+    Value e ∨ ∃ e' : Expr, Step e e' := by
+  induction ht with
+  | tInt  =&gt; left; exact Value.litInt _
+  | tBool =&gt; left; exact Value.litBool _
+  | tVar _ i _ h =&gt; subst hΓ; simp [Ctx.empty] at h
+  | tLam =&gt; left; exact Value.lam _ _
+  | tApp _ e₁ e₂ τ₁ τ₂ ht₁ ht₂ ih₁ ih₂ =&gt;
+    right
+    rcases ih₁ hΓ with hv₁ | ⟨e₁', hs₁⟩
+    · rcases ih₂ hΓ with hv₂ | ⟨e₂', hs₂⟩
+      · obtain ⟨body, rfl⟩ := canonical_arrow ht₁ hv₁
+        exact ⟨_, Step.appAbs _ _ _ hv₂⟩
+      · exact ⟨_, Step.appR _ _ _ hv₁ hs₂⟩
+    · exact ⟨_, Step.appL _ _ _ hs₁⟩
+  | tAdd _ e₁ e₂ ht₁ ht₂ ih₁ ih₂ =&gt;
+    right
+    rcases ih₁ hΓ with hv₁ | ⟨e₁', hs₁⟩
+    · rcases ih₂ hΓ with hv₂ | ⟨e₂', hs₂⟩
+      · obtain ⟨n₁, rfl⟩ := canonical_int ht₁ hv₁
+        obtain ⟨n₂, rfl⟩ := canonical_int ht₂ hv₂
+        exact ⟨_, Step.addN _ _⟩
+      · exact ⟨_, Step.addR _ _ _ hv₁ hs₂⟩
+    · exact ⟨_, Step.addL _ _ _ hs₁⟩
+  | tNeg _ e ht ih =&gt;
+    right
+    rcases ih hΓ with hv | ⟨e', hs⟩
+    · obtain ⟨n, rfl⟩ := canonical_int ht hv
+      exact ⟨_, Step.negN _⟩
+    · exact ⟨_, Step.negStep _ _ hs⟩
+  | tIf _ e₁ e₂ e₃ τ ht₁ _ _ ih₁ _ _ =&gt;
+    right
+    rcases ih₁ hΓ with hv₁ | ⟨e₁', hs₁⟩
+    · obtain ⟨n, rfl⟩ := canonical_int ht₁ hv₁
+      by_cases h : n = 0
+      · subst h; exact ⟨_, Step.ifTrue _ _⟩
+      · exact ⟨_, Step.ifFalse _ _ _ h⟩
+    · exact ⟨_, Step.ifStep _ _ _ _ hs₁⟩
+  | tLet _ e₁ e₂ τ₁ τ₂ _ _ ih₁ _ =&gt;
+    right
+    rcases ih₁ hΓ with hv₁ | ⟨e₁', hs₁⟩
+    · exact ⟨_, Step.letVal _ _ hv₁⟩
+    · exact ⟨_, Step.letStep _ _ _ hs₁⟩
+
+theorem progress {e : Expr} {τ : Ty} (ht : HasType Ctx.empty e τ) :
+    Value e ∨ ∃ e' : Expr, Step e e' :=
+  progress_aux Ctx.empty e τ ht rfl
+</code></pre></div></div>
+
+<p><strong>Reading the proof case by case:</strong></p>
+
+<ul>
+  <li><strong>tInt/tBool/tLam</strong>: already a value. <code class="language-plaintext highlighter-rouge">left</code> picks the first
+disjunct.</li>
+  <li><strong>tVar</strong>: <code class="language-plaintext highlighter-rouge">subst hΓ</code> replaces the context with <code class="language-plaintext highlighter-rouge">Ctx.empty</code>, then
+<code class="language-plaintext highlighter-rouge">simp [Ctx.empty] at h</code> shows the lookup <code class="language-plaintext highlighter-rouge">h</code> is impossible (empty
+context maps everything to <code class="language-plaintext highlighter-rouge">none</code>).</li>
+  <li><strong>tApp</strong>: <code class="language-plaintext highlighter-rouge">right</code> says we’ll find a step. <code class="language-plaintext highlighter-rouge">rcases ih₁ hΓ</code> splits
+the IH on <code class="language-plaintext highlighter-rouge">e₁</code> into “value” or “steps.” If <code class="language-plaintext highlighter-rouge">e₁</code> steps, use
+<code class="language-plaintext highlighter-rouge">appL</code>. If <code class="language-plaintext highlighter-rouge">e₁</code> is a value, split the IH on <code class="language-plaintext highlighter-rouge">e₂</code>. If both are
+values, <code class="language-plaintext highlighter-rouge">canonical_arrow</code> tells us <code class="language-plaintext highlighter-rouge">e₁</code> is a lambda, so <code class="language-plaintext highlighter-rouge">appAbs</code>
+fires.</li>
+  <li><strong>tAdd</strong>: same pattern, but <code class="language-plaintext highlighter-rouge">canonical_int</code> extracts literal
+integers, so <code class="language-plaintext highlighter-rouge">addN</code> fires.</li>
+  <li><strong>tIf</strong>: after canonical forms gives us an integer, <code class="language-plaintext highlighter-rouge">by_cases h :
+n = 0</code> decides which branch.</li>
+  <li><strong>tLet</strong>: simplest compound case: if <code class="language-plaintext highlighter-rouge">e₁</code> is a value, <code class="language-plaintext highlighter-rouge">letVal</code>;
+if it steps, <code class="language-plaintext highlighter-rouge">letStep</code>.</li>
+</ul>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>In the tApp case, why do we need canonical forms? What would go
+wrong if we only knew “e₁ is a value” without knowing its shape?</p>
+</blockquote>
+
+<hr />
+
+<h2 id="the-substitution-lemma">The Substitution Lemma</h2>
+
+<p>This is the hardest proof in the development, and the most important
+one to understand deeply. Let’s build it from scratch, starting with
+<em>why</em> we need it and discovering the complications as we go.</p>
+
+<h3 id="why-we-need-this-lemma">Why we need this lemma</h3>
+
+<p>When β-reduction fires, <code class="language-plaintext highlighter-rouge">(λ body) v → body[0 := v]</code>, we need to know
+the result is still well-typed. We have:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Γ.extend τ₁ ⊢ body : τ₂</code> (the body is typed with variable 0 bound to τ₁)</li>
+  <li><code class="language-plaintext highlighter-rouge">Γ ⊢ v : τ₁</code> (the argument has the right type)</li>
+</ul>
+
+<p>We need: <code class="language-plaintext highlighter-rouge">Γ ⊢ body[0 := v] : τ₂</code>. Intuitively this should work:
+every place <code class="language-plaintext highlighter-rouge">body</code> used variable 0, it expected a <code class="language-plaintext highlighter-rouge">τ₁</code>, and <code class="language-plaintext highlighter-rouge">v</code> is a
+<code class="language-plaintext highlighter-rouge">τ₁</code>. But “intuitively should work” isn’t a proof. Let’s try.</p>
+
+<h3 id="first-attempt-induction-at-position-0">First attempt: induction at position 0</h3>
+
+<p>We try to prove: if <code class="language-plaintext highlighter-rouge">Γ.extend τ₁ ⊢ e : τ₂</code> and <code class="language-plaintext highlighter-rouge">Γ ⊢ v : τ₁</code>, then
+<code class="language-plaintext highlighter-rouge">Γ ⊢ subst 0 v e : τ₂</code>. We induct on the typing derivation of <code class="language-plaintext highlighter-rouge">e</code>.</p>
+
+<p><strong>T-Var case, variable is 0:</strong> The substitution replaces variable 0
+with <code class="language-plaintext highlighter-rouge">v</code>. We need <code class="language-plaintext highlighter-rouge">Γ ⊢ v : τ₁</code>. That’s exactly our hypothesis.</p>
+
+<p><strong>T-Var case, variable is <code class="language-plaintext highlighter-rouge">i &gt; 0</code>:</strong> The substitution decrements <code class="language-plaintext highlighter-rouge">i</code>
+to <code class="language-plaintext highlighter-rouge">i-1</code>. We need <code class="language-plaintext highlighter-rouge">Γ (i-1) = some τ</code>. Since the original lookup was
+<code class="language-plaintext highlighter-rouge">(Γ.extend τ₁) i = some τ</code>, and <code class="language-plaintext highlighter-rouge">i &gt; 0</code>, this is <code class="language-plaintext highlighter-rouge">Γ (i-1)</code>. Works.</p>
+
+<p><strong>T-App case:</strong> Structural, apply IH to both subexpressions. Fine.</p>
+
+<p><strong>T-Lam case: here’s where we get stuck.</strong> We have a nested lambda:
+<code class="language-plaintext highlighter-rouge">(λ σ body')</code> typed under <code class="language-plaintext highlighter-rouge">Γ.extend τ₁</code>. The premise is:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(Γ.extend τ₁).extend σ ⊢ body' : τ₂'
+</code></pre></div></div>
+
+<p>After substitution, <code class="language-plaintext highlighter-rouge">subst 0 v (λ σ body')</code> becomes <code class="language-plaintext highlighter-rouge">λ σ (subst 1
+(shift 1 0 v) body')</code>. So we need:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Γ.extend σ ⊢ subst 1 (shift 1 0 v) body' : τ₂'
+</code></pre></div></div>
+
+<p>But our IH only talks about substitution <em>at position 0</em>! We need
+position 1 here. The IH doesn’t apply.</p>
+
+<h3 id="the-fix-generalize-over-the-position">The fix: generalize over the position</h3>
+
+<p>The failed attempt reveals what we need: a lemma that works at
+<em>any</em> substitution position <code class="language-plaintext highlighter-rouge">j</code>, not just 0. Under each binder, <code class="language-plaintext highlighter-rouge">j</code>
+increments. The generalized statement:</p>
+
+<p><strong>If <code class="language-plaintext highlighter-rouge">Γ.insertAt j τ₁ ⊢ e : τ₂</code> and <code class="language-plaintext highlighter-rouge">Γ ⊢ v : τ₁</code>, then
+<code class="language-plaintext highlighter-rouge">Γ ⊢ subst j v e : τ₂</code>.</strong></p>
+
+<p>Now in the T-Lam case, the IH gives us substitution at position
+<code class="language-plaintext highlighter-rouge">j+1</code>, which is exactly what we need after going under the binder.</p>
+
+<h3 id="but-we-hit-another-wall-weakening">But we hit another wall: weakening</h3>
+
+<p>In the T-Lam case with the generalized lemma, we have <code class="language-plaintext highlighter-rouge">Γ ⊢ v : τ₁</code>
+and we need <code class="language-plaintext highlighter-rouge">Γ.extend σ ⊢ shift 1 0 v : τ₁</code> (because <code class="language-plaintext highlighter-rouge">v</code> gets
+shifted when it goes under the new binder). This is a <strong>weakening</strong>
+lemma: adding a type to the context (and shifting accordingly)
+preserves typing.</p>
+
+<p>Weakening is itself proved by induction on the typing derivation. The
+interesting case is T-Lam, which uses a <strong>commutation lemma</strong>: extending
+a context and then inserting at position <code class="language-plaintext highlighter-rouge">c</code> is the same as inserting
+at position <code class="language-plaintext highlighter-rouge">c+1</code> and then extending. This is the key piece of de
+Bruijn bookkeeping.</p>
+
+<p>So the full dependency chain is:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>commutation (extend_insertAt)
+    ↓
+weakening
+    ↓
+substitution (generalized)
+    ↓
+substitution (at position 0)
+</code></pre></div></div>
+
+<p>Each lemma was <em>discovered</em> by getting stuck in the proof of the next
+one. This is typical of formalization: the proof attempt itself
+tells you what lemmas you need.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Why does the naive substitution lemma (at position 0 only) fail in
+the T-Lam case? What position does the substitution need to happen
+at after going under one binder?</p>
+</blockquote>
+
+<h3 id="lean4-code-building-up-the-infrastructure">Lean4 code: building up the infrastructure</h3>
+
+<p><strong>Context helper lemmas</strong> (properties of <code class="language-plaintext highlighter-rouge">insertAt</code>):</p>
+
+<p>These are the basic facts about inserting into a context. They say:
+looking up the inserted position gives the inserted type; below is
+unchanged; above is shifted down. We’ll use these throughout.</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>theorem Ctx.insertAt_self (Γ : Ctx) (j : Nat) (σ : Ty) :
+    (Γ.insertAt j σ) j = some σ := by
+  simp [Ctx.insertAt]
+
+theorem Ctx.insertAt_lt (Γ : Ctx) (j i : Nat) (σ : Ty) (h : i &lt; j) :
+    (Γ.insertAt j σ) i = Γ i := by
+  simp [Ctx.insertAt, h]
+
+theorem Ctx.insertAt_gt (Γ : Ctx) (j i : Nat) (σ : Ty) (h : j &lt; i) :
+    (Γ.insertAt j σ) i = Γ (i - 1) := by
+  unfold Ctx.insertAt
+  have h1 : ¬(i &lt; j) := by omega
+  have h2 : ¬(i = j) := by omega
+  rw [if_neg h1, if_neg h2]
+
+theorem Ctx.insertAt_zero (Γ : Ctx) (σ : Ty) :
+    Γ.insertAt 0 σ = Γ.extend σ := by
+  funext n; simp [Ctx.insertAt, Ctx.extend]; cases n &lt;;&gt; simp
+</code></pre></div></div>
+
+<p><strong>Weakening</strong> (the lemma we discovered was needed in the T-Lam case):</p>
+
+<p>The key case is T-Lam, which uses the commutation lemma
+<code class="language-plaintext highlighter-rouge">extend_insertAt</code>. The rest are structural.</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>theorem weakening {Γ : Ctx} {e : Expr} {τ σ : Ty} {c : Nat}
+    (ht : HasType Γ e τ) :
+    HasType (Γ.insertAt c σ) (shift 1 c e) τ := by
+  induction ht generalizing c with
+  | tInt _ n =&gt; simp [shift]; exact HasType.tInt _ _
+  | tBool _ b =&gt; simp [shift]; exact HasType.tBool _ _
+  | tVar _ i τ hlookup =&gt;
+    simp only [shift]
+    split
+    · next hlt =&gt;
+      exact HasType.tVar _ _ _
+        (by rw [Ctx.insertAt_lt _ c _ σ hlt]; exact hlookup)
+    · next hge =&gt;
+      have hge' : c ≤ i := Nat.le_of_not_lt hge
+      have hgt : c &lt; i + 1 := by omega
+      apply HasType.tVar
+      rw [Ctx.insertAt_gt _ c _ σ hgt]
+      have : i + 1 - 1 = i := by omega
+      rw [this]; exact hlookup
+  | tLam _ τ₁ τ₂ body _ ih =&gt;
+    simp [shift]
+    apply HasType.tLam
+    rw [← Ctx.extend_insertAt]
+    exact ih
+  | tApp _ e₁ e₂ τ₁ τ₂ _ _ ih₁ ih₂ =&gt;
+    simp [shift]; exact HasType.tApp _ _ _ _ _ ih₁ ih₂
+  | tAdd _ e₁ e₂ _ _ ih₁ ih₂ =&gt;
+    simp [shift]; exact HasType.tAdd _ _ _ ih₁ ih₂
+  | tNeg _ e _ ih =&gt;
+    simp [shift]; exact HasType.tNeg _ _ ih
+  | tIf _ e₁ e₂ e₃ τ _ _ _ ih₁ ih₂ ih₃ =&gt;
+    simp [shift]; exact HasType.tIf _ _ _ _ _ ih₁ ih₂ ih₃
+  | tLet _ e₁ e₂ τ₁ τ₂ _ _ ih₁ ih₂ =&gt;
+    simp [shift]
+    apply HasType.tLet _ _ _ _ _
+    · exact ih₁
+    · rw [← Ctx.extend_insertAt]; exact ih₂
+</code></pre></div></div>
+
+<p>The T-Var case splits on whether the variable is below or above the
+insertion point. The T-Lam case uses <code class="language-plaintext highlighter-rouge">Ctx.extend_insertAt</code>: extending
+a context and then inserting is the same as inserting and then
+extending (with the position shifted). This commutation lemma is the
+key piece of de Bruijn bookkeeping.</p>
+
+<p><strong>Generalized substitution</strong> (at arbitrary position <code class="language-plaintext highlighter-rouge">j</code>):</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>private theorem subst_aux (Γ₀ : Ctx) (e : Expr) (τ₂ : Ty)
+    (he : HasType Γ₀ e τ₂)
+    (Γ : Ctx) (v : Expr) (τ₁ : Ty) (j : Nat)
+    (hΓ : Γ₀ = Γ.insertAt j τ₁) (hv : HasType Γ v τ₁) :
+    HasType Γ (subst j v e) τ₂ := by
+  induction he generalizing Γ j v τ₁ with
+  | tInt =&gt; subst hΓ; simp [subst]; exact HasType.tInt _ _
+  | tBool =&gt; subst hΓ; simp [subst]; exact HasType.tBool _ _
+  | tVar _ i τ hlookup =&gt;
+    subst hΓ; simp [subst]
+    split
+    · next heq =&gt;
+      have hij : i = j := by omega
+      subst hij
+      rw [Ctx.insertAt_self] at hlookup
+      injection hlookup with h; subst h; exact hv
+    · split
+      · next hne hjlt =&gt;
+        have hij : j &lt; i := by omega
+        rw [Ctx.insertAt_gt _ _ _ _ hij] at hlookup
+        exact HasType.tVar _ _ _ hlookup
+      · next hne hjge =&gt;
+        have hij : i &lt; j := by omega
+        rw [Ctx.insertAt_lt _ _ _ _ hij] at hlookup
+        exact HasType.tVar _ _ _ hlookup
+  | tLam _ τ₁' τ₂' body _ ih =&gt;
+    subst hΓ; simp [subst]
+    apply HasType.tLam
+    apply ih
+    · exact (Ctx.extend_insertAt Γ τ₁' τ₁ j).symm
+    · have h := @weakening Γ _ _ τ₁' 0 hv
+      rwa [Ctx.insertAt_zero] at h
+  | tApp _ e₁ e₂ σ₁ σ₂ _ _ ih₁ ih₂ =&gt;
+    subst hΓ; simp [subst]
+    exact HasType.tApp _ _ _ _ _ (ih₁ _ _ _ _ rfl hv) (ih₂ _ _ _ _ rfl hv)
+  | tAdd _ e₁ e₂ _ _ ih₁ ih₂ =&gt;
+    subst hΓ; simp [subst]
+    exact HasType.tAdd _ _ _ (ih₁ _ _ _ _ rfl hv) (ih₂ _ _ _ _ rfl hv)
+  | tNeg _ e _ ih =&gt;
+    subst hΓ; simp [subst]
+    exact HasType.tNeg _ _ (ih _ _ _ _ rfl hv)
+  | tIf _ e₁ e₂ e₃ τ _ _ _ ih₁ ih₂ ih₃ =&gt;
+    subst hΓ; simp [subst]
+    exact HasType.tIf _ _ _ _ _
+      (ih₁ _ _ _ _ rfl hv) (ih₂ _ _ _ _ rfl hv) (ih₃ _ _ _ _ rfl hv)
+  | tLet _ e₁ e₂ σ₁ σ₂ _ _ ih₁ ih₂ =&gt;
+    subst hΓ; simp [subst]
+    apply HasType.tLet _ _ _ _ _
+    · exact ih₁ _ _ _ _ rfl hv
+    · apply ih₂
+      · exact (Ctx.extend_insertAt Γ σ₁ τ₁ j).symm
+      · have h := @weakening Γ _ _ σ₁ 0 hv
+        rwa [Ctx.insertAt_zero] at h
+</code></pre></div></div>
+
+<p><strong>Reading the key cases:</strong></p>
+
+<ul>
+  <li><strong>tVar (i = j)</strong>: the variable being substituted. <code class="language-plaintext highlighter-rouge">insertAt_self</code>
+tells us the looked-up type is <code class="language-plaintext highlighter-rouge">τ₁</code>. Since the substitution
+replaces it with <code class="language-plaintext highlighter-rouge">v</code>, and <code class="language-plaintext highlighter-rouge">v</code> has type <code class="language-plaintext highlighter-rouge">τ₁</code>, we’re done.</li>
+  <li><strong>tVar (i &gt; j)</strong>: above the substitution point. The index
+decrements by one (since a binder was consumed). <code class="language-plaintext highlighter-rouge">insertAt_gt</code>
+aligns the context lookup.</li>
+  <li><strong>tVar (i &lt; j)</strong>: below the substitution point. Unchanged.
+<code class="language-plaintext highlighter-rouge">insertAt_lt</code> aligns.</li>
+  <li><strong>tLam</strong>: the induction increments <code class="language-plaintext highlighter-rouge">j</code> and shifts <code class="language-plaintext highlighter-rouge">v</code>. We need the
+commutation lemma (<code class="language-plaintext highlighter-rouge">extend_insertAt</code>) to align the context, and
+<code class="language-plaintext highlighter-rouge">weakening</code> at position 0 to give <code class="language-plaintext highlighter-rouge">v</code> the right type under the
+extended context.</li>
+  <li><strong>All other cases</strong>: structural. Apply IH to each subexpression,
+passing <code class="language-plaintext highlighter-rouge">rfl</code> for the context equation and <code class="language-plaintext highlighter-rouge">hv</code> for the value
+typing.</li>
+</ul>
+
+<p><strong>The public API</strong> wraps this at position 0:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>theorem substitution_general {Γ : Ctx} {e v : Expr} {τ₁ τ₂ : Ty}
+    {j : Nat}
+    (he : HasType (Γ.insertAt j τ₁) e τ₂) (hv : HasType Γ v τ₁) :
+    HasType Γ (subst j v e) τ₂ :=
+  subst_aux _ _ _ he _ _ _ _ rfl hv
+
+theorem substitution {Γ : Ctx} {e v : Expr} {τ₁ τ₂ : Ty}
+    (he : HasType (Γ.extend τ₁) e τ₂)
+    (hv : HasType Γ v τ₁) :
+    HasType Γ (subst 0 v e) τ₂ := by
+  rw [Ctx.extend_eq_insertAt] at he
+  exact substitution_general he hv
+</code></pre></div></div>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>In the T-Var case when <code class="language-plaintext highlighter-rouge">i = j</code>, what tells us that <code class="language-plaintext highlighter-rouge">τ = τ₁</code> (the
+type of the variable equals the type of the substituted value)?</p>
+</blockquote>
+
+<hr />
+
+<h2 id="preservation">Preservation</h2>
+
+<p><strong>Theorem.</strong> If <code class="language-plaintext highlighter-rouge">HasType Γ e τ</code> and <code class="language-plaintext highlighter-rouge">Step e e'</code>, then <code class="language-plaintext highlighter-rouge">HasType Γ e' τ</code>.</p>
+
+<h3 id="how-would-you-approach-this-proof-1">How would you approach this proof?</h3>
+
+<p>Again, what do we induct on? We have two things: a typing derivation
+<code class="language-plaintext highlighter-rouge">ht : HasType Γ e τ</code> and a step <code class="language-plaintext highlighter-rouge">hs : Step e e'</code>. We could try
+induction on <code class="language-plaintext highlighter-rouge">hs</code> (the step), but then we’d need to extract typing
+information for the subexpressions, which is awkward. Induction on
+<code class="language-plaintext highlighter-rouge">ht</code> (the typing) works better: each case tells us the shape of <code class="language-plaintext highlighter-rouge">e</code>,
+and then we do case analysis on which step rule could have fired.</p>
+
+<p>Most cases fall into two patterns:</p>
+
+<p><strong>Congruence cases</strong> (e.g., T-App + E-AppL): a subexpression stepped.
+The IH says it preserved its type. Rebuild the typing derivation with
+the new subexpression. This is mechanical.</p>
+
+<p><strong>Computation cases</strong> (e.g., T-App + E-AppAbs): the real work.
+β-reduction produces <code class="language-plaintext highlighter-rouge">subst 0 v₂ body</code>. We need to show this is
+well-typed. This is <em>exactly</em> what the substitution lemma says. The
+entire substitution infrastructure we just built exists for this
+single moment.</p>
+
+<h3 id="walking-through-β-reduction-concretely">Walking through β-reduction concretely</h3>
+
+<p>Take <code class="language-plaintext highlighter-rouge">((λ (x : int) (+ x 1)) 5) → (+ 5 1)</code>. The typing derivation
+before the step:</p>
+
+<div data-proof-tree="((&quot;T-App&quot; :right) ((&quot;T-Lam&quot; :right) ((&quot;T-Add&quot; :right) ((&quot;T-Var&quot; :right) --- &quot;x : int ⊢ x : int&quot;) ((&quot;T-Int&quot; :right) --- &quot;x : int ⊢ 1 : int&quot;) --- &quot;x : int ⊢ (+ x 1) : int&quot;) --- &quot;⊢ (λ (x:int) (+ x 1)) : int -&gt; int&quot;) ((&quot;T-Int&quot; :right) --- &quot;⊢ 5 : int&quot;) --- &quot;⊢ ((λ (x:int) (+ x 1)) 5) : int&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>E-AppAbs fires. From the derivation, we extract:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">x : int ⊢ (+ x 1) : int</code> (the body is well-typed assuming x is int)</li>
+  <li><code class="language-plaintext highlighter-rouge">⊢ 5 : int</code> (the argument is an int)</li>
+</ul>
+
+<p>The substitution lemma says: since the body is typed under <code class="language-plaintext highlighter-rouge">Γ.extend
+int</code> and <code class="language-plaintext highlighter-rouge">5</code> has type <code class="language-plaintext highlighter-rouge">int</code> under <code class="language-plaintext highlighter-rouge">Γ</code>, then <code class="language-plaintext highlighter-rouge">subst 0 5 (+ x 1)</code> (which
+is <code class="language-plaintext highlighter-rouge">(+ 5 1)</code>) has type <code class="language-plaintext highlighter-rouge">int</code> under <code class="language-plaintext highlighter-rouge">Γ</code>. That’s preservation for this
+step.</p>
+
+<p>After the step, the derivation of <code class="language-plaintext highlighter-rouge">(+ 5 1) : int</code> is:</p>
+
+<div data-proof-tree="((&quot;T-Add&quot; :right) ((&quot;T-Int&quot; :right) --- &quot;⊢ 5 : int&quot;) ((&quot;T-Int&quot; :right) --- &quot;⊢ 1 : int&quot;) --- &quot;⊢ (+ 5 1) : int&quot;)" data-proof-tree-zoom="false"></div>
+
+<p>The substitution lemma constructed this derivation for us: it walked
+through the body <code class="language-plaintext highlighter-rouge">(+ x 1)</code>, replaced the T-Var node for <code class="language-plaintext highlighter-rouge">x</code> with the
+T-Int proof for <code class="language-plaintext highlighter-rouge">5</code>, and rebuilt the T-Add on top.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>What happens in the T-App + E-AppL case (function position steps)?
+Why is this case easier than β-reduction?</p>
+</blockquote>
+
+<h3 id="the-full-lean4-proof-1">The full Lean4 proof</h3>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>private theorem preservation_general {Γ : Ctx} {e e' : Expr} {τ : Ty}
+    (ht : HasType Γ e τ) (hs : Step e e') :
+    HasType Γ e' τ := by
+  induction ht generalizing e' with
+  | tInt =&gt; cases hs
+  | tBool =&gt; cases hs
+  | tVar =&gt; cases hs
+  | tLam =&gt; cases hs
+  | tApp Γ e₁ e₂ τ₁ τ₂ ht₁ ht₂ ih₁ ih₂ =&gt;
+    cases hs with
+    | appL _ e₁' _ hs₁ =&gt;
+      exact HasType.tApp _ _ _ _ _ (ih₁ hs₁) ht₂
+    | appR _ _ e₂' _ hs₂ =&gt;
+      exact HasType.tApp _ _ _ _ _ ht₁ (ih₂ hs₂)
+    | appAbs _ body _ hv₂ =&gt;
+      cases ht₁ with
+      | tLam _ _ _ _ htbody =&gt; exact substitution htbody ht₂
+  | tAdd Γ e₁ e₂ ht₁ ht₂ ih₁ ih₂ =&gt;
+    cases hs with
+    | addL _ e₁' _ hs₁ =&gt;
+      exact HasType.tAdd _ _ _ (ih₁ hs₁) ht₂
+    | addR _ _ e₂' _ hs₂ =&gt;
+      exact HasType.tAdd _ _ _ ht₁ (ih₂ hs₂)
+    | addN =&gt; exact HasType.tInt _ _
+  | tNeg Γ e ht ih =&gt;
+    cases hs with
+    | negStep _ e' hs' =&gt; exact HasType.tNeg _ _ (ih hs')
+    | negN =&gt; exact HasType.tInt _ _
+  | tIf Γ e₁ e₂ e₃ τ ht₁ ht₂ ht₃ ih₁ _ _ =&gt;
+    cases hs with
+    | ifStep _ e₁' _ _ hs₁ =&gt;
+      exact HasType.tIf _ _ _ _ _ (ih₁ hs₁) ht₂ ht₃
+    | ifTrue =&gt; exact ht₂
+    | ifFalse =&gt; exact ht₃
+  | tLet Γ e₁ e₂ τ₁ τ₂ ht₁ ht₂ ih₁ _ =&gt;
+    cases hs with
+    | letStep _ e₁' _ hs₁ =&gt;
+      exact HasType.tLet _ _ _ _ _ (ih₁ hs₁) ht₂
+    | letVal _ _ hv₁ =&gt; exact substitution ht₂ ht₁
+
+theorem preservation {e e' : Expr} {τ : Ty}
+    (ht : HasType Ctx.empty e τ) (hs : Step e e') :
+    HasType Ctx.empty e' τ :=
+  preservation_general ht hs
+</code></pre></div></div>
+
+<p><strong>Reading the key cases:</strong></p>
+
+<ul>
+  <li><strong>tInt/tBool/tVar/tLam</strong>: these forms can never step (<code class="language-plaintext highlighter-rouge">cases hs</code>
+finds no matching step rule), so the cases are vacuously true.</li>
+  <li><strong>tApp + appAbs</strong>: this is β-reduction, the critical case. We
+invert <code class="language-plaintext highlighter-rouge">ht₁</code> to extract <code class="language-plaintext highlighter-rouge">htbody : HasType (Γ.extend τ₁) body τ₂</code>,
+then apply <code class="language-plaintext highlighter-rouge">substitution htbody ht₂</code> to conclude that
+<code class="language-plaintext highlighter-rouge">subst 0 v₂ body</code> has type <code class="language-plaintext highlighter-rouge">τ₂</code>.</li>
+  <li><strong>tApp + appL/appR</strong>: congruence. The subexpression that stepped
+preserves its type by IH; rebuild with <code class="language-plaintext highlighter-rouge">tApp</code>.</li>
+  <li><strong>tAdd + addN</strong>: both operands were integer literals, so the result
+<code class="language-plaintext highlighter-rouge">litInt (n₁ + n₂)</code> has type <code class="language-plaintext highlighter-rouge">int</code> by <code class="language-plaintext highlighter-rouge">tInt</code>.</li>
+  <li><strong>tIf + ifTrue/ifFalse</strong>: the selected branch already has the right
+type (both branches were required to have type <code class="language-plaintext highlighter-rouge">τ</code> by <code class="language-plaintext highlighter-rouge">tIf</code>).</li>
+  <li><strong>tLet + letVal</strong>: same as β-reduction: apply <code class="language-plaintext highlighter-rouge">substitution</code>.</li>
+</ul>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>In the tApp + appAbs case, what would go wrong if we didn’t have
+the substitution lemma? What would we be unable to conclude?</p>
+</blockquote>
+
+<hr />
+
+<h2 id="putting-it-together-type-soundness">Putting It Together: Type Soundness</h2>
+
+<p>With progress and preservation in hand, type soundness follows by
+iteration:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>inductive MultiStep : Expr → Expr → Prop where
+  | refl (e : Expr) : MultiStep e e
+  | step (e e' e'' : Expr)
+    : Step e e' → MultiStep e' e'' → MultiStep e e''
+
+theorem preservation_multi {e e' : Expr} {τ : Ty}
+    (ht : HasType Ctx.empty e τ) (hms : MultiStep e e') :
+    HasType Ctx.empty e' τ := by
+  induction hms with
+  | refl =&gt; exact ht
+  | step _ _ _ hs _ ih =&gt; exact ih (preservation ht hs)
+
+theorem type_soundness {e e' : Expr} {τ : Ty}
+    (ht : HasType Ctx.empty e τ) (hms : MultiStep e e') :
+    Value e' ∨ ∃ e'' : Expr, Step e' e'' :=
+  progress (preservation_multi ht hms)
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">MultiStep</code> is the reflexive-transitive closure of <code class="language-plaintext highlighter-rouge">Step</code>.
+<code class="language-plaintext highlighter-rouge">preservation_multi</code> iterates preservation over multiple steps.
+<code class="language-plaintext highlighter-rouge">type_soundness</code> combines them: after any number of steps from a
+well-typed term, apply progress to the (still well-typed) result.</p>
+
+<p><strong>What this means:</strong> if you write a well-typed STLC program, you will
+never see a runtime type error. Every intermediate state is
+well-typed, and the program either keeps running or reaches a value.
+Since STLC has no general recursion (the Y combinator is untypable),
+every well-typed STLC program terminates and produces a value.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Why does STLC type soundness also imply termination? What feature
+would we need to add to STLC to get non-terminating programs?</p>
+</blockquote>
+
+<hr />
+
+<h2 id="the-lean4-formalization">The Lean4 Formalization</h2>
+
+<p>The complete Lean4 formalization lives in <code class="language-plaintext highlighter-rouge">lecture-projects/stlc-lean/</code> in the course
+repository. To build it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>lecture-projects/stlc-lean <span class="o">&amp;&amp;</span> lake build
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>What it formalizes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Syntax.lean</code></td>
+      <td>Types, expressions, values, de Bruijn shifting, substitution, contexts</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Typing.lean</code></td>
+      <td>The typing relation <code class="language-plaintext highlighter-rouge">HasType Γ e τ</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Semantics.lean</code></td>
+      <td>Small-step CBV operational semantics</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">CanonicalForms.lean</code></td>
+      <td>Values match their types</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Substitution.lean</code></td>
+      <td>Weakening and the substitution lemma</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Progress.lean</code></td>
+      <td>Well-typed closed terms are not stuck</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Preservation.lean</code></td>
+      <td>Stepping preserves types; type soundness corollary</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Every theorem is fully proved with <strong>zero <code class="language-plaintext highlighter-rouge">sorry</code></strong>. The substitution
+proof required a generalized weakening lemma (<code class="language-plaintext highlighter-rouge">insertAt</code> at an
+arbitrary position) and a commutation lemma showing that extending a
+context commutes with insertion. These are the standard de Bruijn
+bookkeeping lemmas; they are mechanical but must be done carefully to
+get the index arithmetic right.</p>
+
+<hr />
+
+<h2 id="summary">Summary</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Concept</th>
+      <th>Statement</th>
+      <th>Intuition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Stuck</td>
+      <td>Not a value, can’t step</td>
+      <td>Runtime type error</td>
+    </tr>
+    <tr>
+      <td>Progress</td>
+      <td>Well-typed closed → value or can step</td>
+      <td>“You can always move”</td>
+    </tr>
+    <tr>
+      <td>Canonical forms</td>
+      <td>Values have the shape their type predicts</td>
+      <td>Ints are ints, functions are lambdas</td>
+    </tr>
+    <tr>
+      <td>Substitution lemma</td>
+      <td>Plugging in a well-typed term preserves typing</td>
+      <td>The heart of β-reduction safety</td>
+    </tr>
+    <tr>
+      <td>Preservation</td>
+      <td>Stepping preserves the type</td>
+      <td>“You stay on track”</td>
+    </tr>
+    <tr>
+      <td>Type soundness</td>
+      <td>Progress + preservation, iterated</td>
+      <td>Well-typed programs don’t go wrong</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>See also:</strong> <a href="/cis352-s26/stlc-intrinsic">Dependent De Bruijn Indices and Intrinsic
+Typing</a> redoes this entire
+development with dependent de Bruijn indices, where the term type
+itself carries the typing proof. Preservation becomes free, and the
+formalization shrinks by half.</p>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '26) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src="/cis352-s26/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="/cis352-s26/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js"></script>
+
+
+  </body>
+
+</html>

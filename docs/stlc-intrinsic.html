@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Dependent De Bruijn Indices and Intrinsic Typing</title>
+  <meta name="description" content="Prerequisites: the STLC lecture andthe type soundness notes.">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://kmicinski.com/cis352-s26/css/main.css">
+  <link rel="canonical" href="https://kmicinski.com/cis352-s26/stlc-intrinsic">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="https://kmicinski.com/cis352-s26/feed.xml">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  
+  <link rel="stylesheet" href="/cis352-s26/assets/proof-tree.css">
+  <script src="/cis352-s26/assets/proof-tree.js"></script>
+  <link rel="stylesheet" href="/cis352-s26/assets/proof-checker.css">
+  <script src="/cis352-s26/assets/proof-checker-glue.js"></script>
+  
+</head>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="https://kmicinski.com//cis352-s26/">CIS352</a>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/#schedule">Schedule</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/syllabus">Syllabus</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://autograde.org">Autograde</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/playground">Proof Playground</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://kmicinski.com//cis352-s26/lambda-explorer">Lambda Explorer</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+    <!-- <nav class="site-nav"> -->
+    <!--   <a href="#" class="menu-icon"> -->
+    <!--     <svg viewBox="0 0 18 15"> -->
+    <!--       <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/> -->
+    <!--       <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/> -->
+    <!--       <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/> -->
+    <!--     </svg> -->
+    <!--   </a> -->
+
+    <!--   <div class="trigger"> -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/playground">Proof Tree Playground</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/schedule/">Schedule</a> -->
+    <!--        -->
+    <!--      -->
+    <!--        -->
+    <!--       <a class="page-link" href="https://kmicinski.com//cis352-s26/syllabus/">Syllabus</a> -->
+    <!--        -->
+    <!--      -->
+    <!--   </div> -->
+    <!-- </nav> -->
+
+  </div>
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    
+    <div class="advanced-badge">
+      <span class="advanced-badge-icon"><i class="fas fa-flask"></i></span>
+      <span class="advanced-badge-label">Advanced Topics</span>
+    </div>
+    
+    <h1 class="post-title" itemprop="name headline">Dependent De Bruijn Indices and Intrinsic Typing</h1>
+    
+    <div class="advanced-notice">
+      This is supplementary material and is <strong>not required reading</strong>
+      for the course. It is intended for students who want to go deeper
+      into the formal foundations.
+    </div>
+    
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p><em>Prerequisites: the <a href="/cis352-s26/stlc">STLC lecture</a> and
+the <a href="/cis352-s26/stlc-formal">type soundness notes</a>.</em></p>
+
+<p>In the type soundness notes, we proved progress and preservation for
+STLC the hard way. We defined untyped expressions, a separate typing
+relation, substitution with de Bruijn index arithmetic, a weakening
+lemma, a commutation lemma, and then proved progress and preservation.
+It was about 400 lines of Lean4, and the substitution infrastructure
+alone was 130 lines.</p>
+
+<p>What if we could get the same guarantee with a fraction of the work?</p>
+
+<p>The idea: instead of defining expressions and then <em>proving</em> they’re
+well-typed, we define expressions that <em>are</em> well-typed by
+construction. The de Bruijn indices become <strong>dependent</strong>: the term
+type is indexed by its typing context and its type. A <code class="language-plaintext highlighter-rouge">Term Γ τ</code> is,
+by construction, a well-typed term of type <code class="language-plaintext highlighter-rouge">τ</code> in context <code class="language-plaintext highlighter-rouge">Γ</code>. If
+you can build the term, it’s well-typed. If it’s ill-typed, you can’t
+build it.</p>
+
+<p>This is sometimes called <strong>intrinsic typing</strong>, and it’s one of the
+deepest ideas in programming language theory. The principle extends
+far beyond type soundness: <em>encoding invariants into your data
+structures eliminates the need to prove those invariants hold.</em> Rust’s
+borrow checker, Haskell’s GADTs, and dependent types in Agda/Lean all
+use this idea.</p>
+
+<hr />
+
+<h2 id="what-changes">What Changes?</h2>
+
+<p>In the extrinsic approach (the type soundness notes), we had two
+separate things:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-- The term (untyped data)
+Expr : Type
+
+-- The typing judgement (a separate proof)
+HasType : Ctx → Expr → Ty → Prop
+</code></pre></div></div>
+
+<p>A term exists independently of its type. You construct the term, then
+separately prove it has a type. In the dependent de Bruijn approach,
+we fuse them:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-- The term IS the typing proof
+Term : Ctx → Ty → Type
+</code></pre></div></div>
+
+<p>A <code class="language-plaintext highlighter-rouge">Term Γ τ</code> is simultaneously a term <em>and</em> a proof that it has type
+<code class="language-plaintext highlighter-rouge">τ</code> in context <code class="language-plaintext highlighter-rouge">Γ</code>. There’s no such thing as an ill-typed term.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>In the extrinsic approach, what happens if you construct <code class="language-plaintext highlighter-rouge">Expr.app
+(Expr.litInt 5) (Expr.litInt 3)</code>? Is it well-typed? In the
+dependent de Bruijn approach, can you construct the analogous term?</p>
+</blockquote>
+
+<hr />
+
+<h2 id="the-full-lean4-development">The Full Lean4 Development</h2>
+
+<h3 id="types-and-contexts">Types and contexts</h3>
+
+<p>Types are the same as before. A context is a list of types (de Bruijn:
+head is the most recent binder):</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>inductive Ty : Type where
+  | int  : Ty
+  | bool : Ty
+  | arrow : Ty → Ty → Ty
+  deriving DecidableEq, Repr
+
+abbrev Ctx := List Ty
+</code></pre></div></div>
+
+<h3 id="variables-as-membership-proofs">Variables as membership proofs</h3>
+
+<p>In the extrinsic version, a variable was a <code class="language-plaintext highlighter-rouge">Nat</code> (de Bruijn index)
+plus a separate proof that the context maps it to the right type.
+With dependent de Bruijn, the variable <em>is</em> the proof: <code class="language-plaintext highlighter-rouge">Mem τ Γ</code> is a
+constructive proof that type <code class="language-plaintext highlighter-rouge">τ</code> appears in context <code class="language-plaintext highlighter-rouge">Γ</code>.</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>inductive Mem : Ty → Ctx → Type where
+  | here  : {Γ : Ctx} → {τ : Ty} → Mem τ (τ :: Γ)
+  | there : {Γ : Ctx} → {τ σ : Ty} → Mem τ Γ → Mem τ (σ :: Γ)
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">Mem.here</code> says “I’m variable 0 and my type matches the head of the
+context.” <code class="language-plaintext highlighter-rouge">Mem.there m</code> says “skip one binder and use proof <code class="language-plaintext highlighter-rouge">m</code> for
+the rest.” For example, in context <code class="language-plaintext highlighter-rouge">[int, bool, int]</code>:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Mem.here</code> : variable 0 has type <code class="language-plaintext highlighter-rouge">int</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Mem.there Mem.here</code> : variable 1 has type <code class="language-plaintext highlighter-rouge">bool</code></li>
+  <li><code class="language-plaintext highlighter-rouge">Mem.there (Mem.there Mem.here)</code> : variable 2 has type <code class="language-plaintext highlighter-rouge">int</code></li>
+</ul>
+
+<p>There’s no way to construct a <code class="language-plaintext highlighter-rouge">Mem .bool [.int, .int]</code>: <code class="language-plaintext highlighter-rouge">bool</code>
+isn’t in <code class="language-plaintext highlighter-rouge">[int, int]</code>. Out-of-scope and mistyped variable references
+are <em>unrepresentable</em>.</p>
+
+<h3 id="intrinsically-typed-terms">Intrinsically-typed terms</h3>
+
+<p>Each constructor enforces its typing rule. Compare with the extrinsic
+version side by side:</p>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Extrinsic (HasType)</span>
+<pre><code>| tLam (Γ : Ctx) (τ₁ τ₂ : Ty)
+  (body : Expr)
+  : HasType (Γ.extend τ₁) body τ₂
+  → HasType Γ (.lam τ₁ body) (τ₁ ⇒ τ₂)</code></pre>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Dependent de Bruijn</span>
+<pre><code>| lam : Term (τ₁ :: Γ) τ₂
+      → Term Γ (τ₁ ⇒ τ₂)</code></pre>
+</div>
+</div>
+
+<div class="rule-card">
+<div class="rule-card-math">
+<span class="rule-card-math-label">Extrinsic (HasType)</span>
+<pre><code>| tApp (Γ : Ctx) (e₁ e₂ : Expr)
+  (τ₁ τ₂ : Ty)
+  : HasType Γ e₁ (τ₁ ⇒ τ₂)
+  → HasType Γ e₂ τ₁
+  → HasType Γ (.app e₁ e₂) τ₂</code></pre>
+</div>
+<div class="rule-card-lean">
+<span class="rule-card-lean-label">Dependent de Bruijn</span>
+<pre><code>| app : Term Γ (τ₁ ⇒ τ₂)
+      → Term Γ τ₁
+      → Term Γ τ₂</code></pre>
+</div>
+</div>
+
+<p>Look at <code class="language-plaintext highlighter-rouge">app</code>. The extrinsic version takes two expressions plus two
+typing proofs. The dependent version takes two <em>typed terms</em>: the
+function must have type <code class="language-plaintext highlighter-rouge">τ₁ ⇒ τ₂</code> and the argument must have type
+<code class="language-plaintext highlighter-rouge">τ₁</code>. If you try to pass a <code class="language-plaintext highlighter-rouge">Term Γ .bool</code> as the function, Lean
+rejects it: <code class="language-plaintext highlighter-rouge">.bool</code> doesn’t unify with <code class="language-plaintext highlighter-rouge">τ₁ ⇒ τ₂</code>.</p>
+
+<p>The full definition:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>inductive Term : Ctx → Ty → Type where
+  | var     : {Γ : Ctx} → {τ : Ty} → Mem τ Γ → Term Γ τ
+  | litInt  : {Γ : Ctx} → Int → Term Γ .int
+  | litBool : {Γ : Ctx} → Bool → Term Γ .bool
+  | lam     : {Γ : Ctx} → {τ₁ τ₂ : Ty} → Term (τ₁ :: Γ) τ₂ → Term Γ (τ₁ ⇒ τ₂)
+  | app     : {Γ : Ctx} → {τ₁ τ₂ : Ty} → Term Γ (τ₁ ⇒ τ₂) → Term Γ τ₁ → Term Γ τ₂
+  | add     : {Γ : Ctx} → Term Γ .int → Term Γ .int → Term Γ .int
+  | neg     : {Γ : Ctx} → Term Γ .int → Term Γ .int
+  | ifz     : {Γ : Ctx} → {τ : Ty} → Term Γ .int → Term Γ τ → Term Γ τ → Term Γ τ
+  | letE    : {Γ : Ctx} → {τ₁ τ₂ : Ty} → Term Γ τ₁ → Term (τ₁ :: Γ) τ₂ → Term Γ τ₂
+
+inductive Value : {Γ : Ctx} → {τ : Ty} → Term Γ τ → Prop where
+  | litInt  {Γ : Ctx} (n : Int)                                    : Value (Γ := Γ) (.litInt n)
+  | litBool {Γ : Ctx} (b : Bool)                                   : Value (Γ := Γ) (.litBool b)
+  | lam     {Γ : Ctx} {τ₁ τ₂ : Ty} (body : Term (τ₁ :: Γ) τ₂)   : Value (.lam body)
+</code></pre></div></div>
+
+<h3 id="renaming-and-weakening">Renaming and weakening</h3>
+
+<p>In the extrinsic version, shifting (adjusting de Bruijn indices when
+moving under a binder) was a function on raw <code class="language-plaintext highlighter-rouge">Nat</code> indices, and we
+needed a weakening <em>theorem</em> (30+ lines) to show it preserved typing.
+With dependent de Bruijn, renaming is a typed function. A <code class="language-plaintext highlighter-rouge">Ren Γ Δ</code>
+maps variables in <code class="language-plaintext highlighter-rouge">Γ</code> to variables in <code class="language-plaintext highlighter-rouge">Δ</code>, preserving types. Weakening
+falls out as a one-liner:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>abbrev Ren (Γ Δ : Ctx) := {τ : Ty} → Mem τ Γ → Mem τ Δ
+
+def Ren.ext {Γ Δ : Ctx} {τ : Ty} (ρ : Ren Γ Δ) : Ren (τ :: Γ) (τ :: Δ) :=
+  fun {σ} m =&gt; match m with
+  | .here =&gt; .here
+  | .there m' =&gt; .there (ρ m')
+
+def rename {Γ Δ : Ctx} {τ : Ty} (ρ : Ren Γ Δ) : Term Γ τ → Term Δ τ
+  | .var m        =&gt; .var (ρ m)
+  | .litInt n     =&gt; .litInt n
+  | .litBool b    =&gt; .litBool b
+  | .lam body     =&gt; .lam (rename ρ.ext body)
+  | .app e₁ e₂    =&gt; .app (rename ρ e₁) (rename ρ e₂)
+  | .add e₁ e₂    =&gt; .add (rename ρ e₁) (rename ρ e₂)
+  | .neg e        =&gt; .neg (rename ρ e)
+  | .ifz e₁ e₂ e₃ =&gt; .ifz (rename ρ e₁) (rename ρ e₂) (rename ρ e₃)
+  | .letE e₁ e₂   =&gt; .letE (rename ρ e₁) (rename ρ.ext e₂)
+
+def weaken {Γ : Ctx} {τ σ : Ty} : Term Γ τ → Term (σ :: Γ) τ :=
+  rename (fun m =&gt; .there m)
+</code></pre></div></div>
+
+<p>Compare <code class="language-plaintext highlighter-rouge">weaken</code> here (one line, no proof) with the 30-line weakening
+theorem in the extrinsic version.</p>
+
+<h3 id="typed-substitution">Typed substitution</h3>
+
+<p>A <code class="language-plaintext highlighter-rouge">Sub Γ Δ</code> maps variables in <code class="language-plaintext highlighter-rouge">Γ</code> to <em>terms</em> in <code class="language-plaintext highlighter-rouge">Δ</code>. Again, the
+types are preserved by construction:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>abbrev Sub (Γ Δ : Ctx) := {τ : Ty} → Mem τ Γ → Term Δ τ
+
+def Sub.ext {Γ Δ : Ctx} {τ : Ty} (σs : Sub Γ Δ) : Sub (τ :: Γ) (τ :: Δ) :=
+  fun {ρ} m =&gt; match m with
+  | .here =&gt; .var .here
+  | .there m' =&gt; weaken (σs m')
+
+def subst {Γ Δ : Ctx} {τ : Ty} (σs : Sub Γ Δ) : Term Γ τ → Term Δ τ
+  | .var m        =&gt; σs m
+  | .litInt n     =&gt; .litInt n
+  | .litBool b    =&gt; .litBool b
+  | .lam body     =&gt; .lam (subst σs.ext body)
+  | .app e₁ e₂    =&gt; .app (subst σs e₁) (subst σs e₂)
+  | .add e₁ e₂    =&gt; .add (subst σs e₁) (subst σs e₂)
+  | .neg e        =&gt; .neg (subst σs e)
+  | .ifz e₁ e₂ e₃ =&gt; .ifz (subst σs e₁) (subst σs e₂) (subst σs e₃)
+  | .letE e₁ e₂   =&gt; .letE (subst σs e₁) (subst σs.ext e₂)
+
+def substSingle {Γ : Ctx} {τ₁ : Ty} (v : Term Γ τ₁) : Sub (τ₁ :: Γ) Γ :=
+  fun {τ} m =&gt;
+    match τ, m with
+    | _, .here     =&gt; v
+    | _, .there m' =&gt; .var m'
+
+def substTop {Γ : Ctx} {τ₁ τ₂ : Ty} (v : Term Γ τ₁) (body : Term (τ₁ :: Γ) τ₂) : Term Γ τ₂ :=
+  subst (substSingle v) body
+</code></pre></div></div>
+
+<p>Look at <code class="language-plaintext highlighter-rouge">substTop</code>’s type: it takes <code class="language-plaintext highlighter-rouge">v : Term Γ τ₁</code> and
+<code class="language-plaintext highlighter-rouge">body : Term (τ₁ :: Γ) τ₂</code> and returns <code class="language-plaintext highlighter-rouge">Term Γ τ₂</code>. The substitution
+lemma from the extrinsic version (130 lines of proof) is now <em>the type
+signature of a function</em>. No commutation lemma, no <code class="language-plaintext highlighter-rouge">insertAt</code>, no
+generalization over position. The types do all the work.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Why doesn’t the dependent de Bruijn version need a commutation lemma
+(<code class="language-plaintext highlighter-rouge">extend_insertAt</code>) for substitution under binders?</p>
+</blockquote>
+
+<h3 id="small-step-semantics-preservation-is-the-signature">Small-step semantics: preservation is the signature</h3>
+
+<p>The critical difference:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-- Extrinsic: preservation is a THEOREM
+Step : Expr → Expr → Prop
+preservation : HasType Γ e τ → Step e e' → HasType Γ e' τ  -- 40 lines
+
+-- Dependent de Bruijn: preservation is the TYPE SIGNATURE
+Step : Term Γ τ → Term Γ τ → Prop
+-- Both sides have the same Γ and τ. Nothing to prove.
+</code></pre></div></div>
+
+<p>The full step relation:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>inductive Step : {Γ : Ctx} → {τ : Ty} → Term Γ τ → Term Γ τ → Prop where
+  | appL     {Γ : Ctx} {τ₁ τ₂ : Ty} {e₁ e₁' : Term Γ (τ₁ ⇒ τ₂)} {e₂ : Term Γ τ₁}
+             : Step e₁ e₁' → Step (.app e₁ e₂) (.app e₁' e₂)
+  | appR     {Γ : Ctx} {τ₁ τ₂ : Ty} {v₁ : Term Γ (τ₁ ⇒ τ₂)} {e₂ e₂' : Term Γ τ₁}
+             : Value v₁ → Step e₂ e₂' → Step (.app v₁ e₂) (.app v₁ e₂')
+  | appAbs   {Γ : Ctx} {τ₁ τ₂ : Ty} {body : Term (τ₁ :: Γ) τ₂} {v₂ : Term Γ τ₁}
+             : Value v₂ → Step (.app (.lam body) v₂) (substTop v₂ body)
+  | addL     {Γ : Ctx} {e₁ e₁' e₂ : Term Γ .int}
+             : Step e₁ e₁' → Step (.add e₁ e₂) (.add e₁' e₂)
+  | addR     {Γ : Ctx} {v₁ e₂ e₂' : Term Γ .int}
+             : Value v₁ → Step e₂ e₂' → Step (.add v₁ e₂) (.add v₁ e₂')
+  | addN     {Γ : Ctx} {n₁ n₂ : Int}
+             : Step (.add (.litInt n₁) (.litInt n₂)) (.litInt (n₁ + n₂) : Term Γ .int)
+  | negStep  {Γ : Ctx} {e e' : Term Γ .int}
+             : Step e e' → Step (.neg e) (.neg e')
+  | negN     {Γ : Ctx} {n : Int}
+             : Step (.neg (.litInt n)) (.litInt (-n) : Term Γ .int)
+  | ifStep   {Γ : Ctx} {τ : Ty} {e₁ e₁' : Term Γ .int} {e₂ e₃ : Term Γ τ}
+             : Step e₁ e₁' → Step (.ifz e₁ e₂ e₃) (.ifz e₁' e₂ e₃)
+  | ifTrue   {Γ : Ctx} {τ : Ty} {e₂ e₃ : Term Γ τ}
+             : Step (.ifz (.litInt 0) e₂ e₃) e₂
+  | ifFalse  {Γ : Ctx} {τ : Ty} {n : Int} {e₂ e₃ : Term Γ τ}
+             : n ≠ 0 → Step (.ifz (.litInt n) e₂ e₃) e₃
+  | letStep  {Γ : Ctx} {τ₁ τ₂ : Ty} {e₁ e₁' : Term Γ τ₁} {e₂ : Term (τ₁ :: Γ) τ₂}
+             : Step e₁ e₁' → Step (.letE e₁ e₂) (.letE e₁' e₂)
+  | letVal   {Γ : Ctx} {τ₁ τ₂ : Ty} {v₁ : Term Γ τ₁} {e₂ : Term (τ₁ :: Γ) τ₂}
+             : Value v₁ → Step (.letE v₁ e₂) (substTop v₁ e₂)
+</code></pre></div></div>
+
+<h3 id="progress">Progress</h3>
+
+<p>Progress still needs a proof (it’s about <em>behavior</em>, not types), but
+canonical forms is gone. When <code class="language-plaintext highlighter-rouge">e₁ : Term [] (τ₁ ⇒ τ₂)</code> is a value,
+pattern matching on <code class="language-plaintext highlighter-rouge">Value e₁</code> directly gives <code class="language-plaintext highlighter-rouge">Value.lam body</code>: no
+other value constructor produces an arrow type. The type index does the
+work that the canonical forms lemma used to do.</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>theorem progress {τ : Ty} (t : Term [] τ) :
+    Value t ∨ ∃ t' : Term [] τ, Step t t' := by
+  match t with
+  | .var m =&gt; exact (nomatch m)
+  | .litInt _  =&gt; left; exact Value.litInt _
+  | .litBool _ =&gt; left; exact Value.litBool _
+  | .lam _     =&gt; left; exact Value.lam _
+  | .app e₁ e₂ =&gt;
+    right
+    have ih₁ := progress e₁
+    have ih₂ := progress e₂
+    rcases ih₁ with hv₁ | ⟨e₁', hs₁⟩
+    · rcases ih₂ with hv₂ | ⟨e₂', hs₂⟩
+      · cases hv₁ with
+        | lam body =&gt; exact ⟨_, Step.appAbs hv₂⟩
+      · exact ⟨_, Step.appR hv₁ hs₂⟩
+    · exact ⟨_, Step.appL hs₁⟩
+  | .add e₁ e₂ =&gt;
+    right
+    have ih₁ := progress e₁
+    have ih₂ := progress e₂
+    rcases ih₁ with hv₁ | ⟨e₁', hs₁⟩
+    · rcases ih₂ with hv₂ | ⟨e₂', hs₂⟩
+      · cases hv₁ with
+        | litInt n₁ =&gt; cases hv₂ with
+          | litInt n₂ =&gt; exact ⟨_, Step.addN⟩
+      · exact ⟨_, Step.addR hv₁ hs₂⟩
+    · exact ⟨_, Step.addL hs₁⟩
+  | .neg e =&gt;
+    right
+    have ih := progress e
+    rcases ih with hv | ⟨e', hs⟩
+    · cases hv with
+      | litInt n =&gt; exact ⟨_, Step.negN⟩
+    · exact ⟨_, Step.negStep hs⟩
+  | .ifz e₁ e₂ e₃ =&gt;
+    right
+    have ih₁ := progress e₁
+    rcases ih₁ with hv₁ | ⟨e₁', hs₁⟩
+    · cases hv₁ with
+      | litInt n =&gt;
+        by_cases h : n = 0
+        · subst h; exact ⟨_, Step.ifTrue⟩
+        · exact ⟨_, Step.ifFalse h⟩
+    · exact ⟨_, Step.ifStep hs₁⟩
+  | .letE e₁ e₂ =&gt;
+    right
+    have ih₁ := progress e₁
+    rcases ih₁ with hv₁ | ⟨e₁', hs₁⟩
+    · exact ⟨_, Step.letVal hv₁⟩
+    · exact ⟨_, Step.letStep hs₁⟩
+</code></pre></div></div>
+
+<p>Notice: the <code class="language-plaintext highlighter-rouge">.app</code> case does <code class="language-plaintext highlighter-rouge">cases hv₁ with | lam body =&gt; ...</code>
+directly. No canonical forms lemma needed. The type index <code class="language-plaintext highlighter-rouge">τ₁ ⇒ τ₂</code>
+forces the only possible value constructor to be <code class="language-plaintext highlighter-rouge">lam</code>.</p>
+
+<h3 id="type-soundness">Type soundness</h3>
+
+<p>Preservation is free. Type soundness is just progress applied after
+multi-step:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>inductive MultiStep : {Γ : Ctx} → {τ : Ty} → Term Γ τ → Term Γ τ → Prop where
+  | refl  {Γ : Ctx} {τ : Ty} {t : Term Γ τ} : MultiStep t t
+  | step  {Γ : Ctx} {τ : Ty} {t t' t'' : Term Γ τ}
+          : Step t t' → MultiStep t' t'' → MultiStep t t''
+
+theorem type_soundness {τ : Ty} (t : Term [] τ) {t' : Term [] τ}
+    (hms : MultiStep t t') :
+    Value t' ∨ ∃ t'' : Term [] τ, Step t' t'' :=
+  progress t'
+</code></pre></div></div>
+
+<p>That’s it. One line. Preservation doesn’t appear because it was never
+needed: <code class="language-plaintext highlighter-rouge">Step</code> already guarantees the type is preserved by its
+signature.</p>
+
+<hr />
+
+<h2 id="the-comparison">The Comparison</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th>Extrinsic</th>
+      <th>Dependent de Bruijn</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Terms</td>
+      <td><code class="language-plaintext highlighter-rouge">Expr : Type</code> (untyped)</td>
+      <td><code class="language-plaintext highlighter-rouge">Term : Ctx → Ty → Type</code> (typed)</td>
+    </tr>
+    <tr>
+      <td>Typing relation</td>
+      <td><code class="language-plaintext highlighter-rouge">HasType</code> (9-rule inductive)</td>
+      <td>Built into <code class="language-plaintext highlighter-rouge">Term</code></td>
+    </tr>
+    <tr>
+      <td>Variables</td>
+      <td><code class="language-plaintext highlighter-rouge">Nat</code> + lookup proof</td>
+      <td><code class="language-plaintext highlighter-rouge">Mem τ Γ</code> (proof IS the variable)</td>
+    </tr>
+    <tr>
+      <td>Preservation</td>
+      <td>40-line theorem</td>
+      <td>Free (type signature)</td>
+    </tr>
+    <tr>
+      <td>Substitution lemma</td>
+      <td>130 lines</td>
+      <td>Not needed (function is typed)</td>
+    </tr>
+    <tr>
+      <td>Weakening</td>
+      <td>30-line theorem</td>
+      <td>One-line function</td>
+    </tr>
+    <tr>
+      <td>Canonical forms</td>
+      <td>Separate lemma</td>
+      <td>Pattern matching</td>
+    </tr>
+    <tr>
+      <td>Ill-typed terms</td>
+      <td>Representable</td>
+      <td>Unrepresentable</td>
+    </tr>
+    <tr>
+      <td>Total Lean4 LOC</td>
+      <td>~400</td>
+      <td>~180</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="what-we-gained">What we gained</h3>
+
+<p>Dependent de Bruijn cuts the formalization roughly in half.
+Preservation, the substitution lemma, weakening, and canonical forms
+all either vanish or become trivial. The code is shorter <em>and</em> carries
+more information.</p>
+
+<h3 id="what-we-lost">What we lost</h3>
+
+<p>Terms are harder to construct: you need membership proofs for
+variables instead of raw numbers. Metaprograms that generate terms
+(compilers, for example) need to produce typed output, which can be
+more work. And the indexed type <code class="language-plaintext highlighter-rouge">Term : Ctx → Ty → Type</code> requires a
+type system (like Lean4’s) that supports indexed inductive families.</p>
+
+<h3 id="the-deeper-lesson">The deeper lesson</h3>
+
+<p>This isn’t just a proof technique. It’s a design principle: <strong>encoding
+invariants into your data structures eliminates entire categories of
+bugs.</strong> Rust’s ownership system prevents use-after-free not by
+checking at runtime, but by making dangling pointers <em>unrepresentable
+in the type system</em>. The same principle is at work here: we made
+ill-typed terms unrepresentable, and preservation became free.</p>
+
+<p>When you design a system, ask: what invariants could I encode into the
+types? Every invariant you encode is an invariant you never have to
+check, test, or prove.</p>
+
+<hr />
+
+<h2 id="the-lean4-code">The Lean4 Code</h2>
+
+<p>The complete formalization lives in <code class="language-plaintext highlighter-rouge">lecture-projects/stlc-intrinsic/</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>lecture-projects/stlc-intrinsic <span class="o">&amp;&amp;</span> lake build
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Contents</th>
+      <th>LOC</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Syntax.lean</code></td>
+      <td>Ty, Mem, Term, Value</td>
+      <td>~35</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Renaming.lean</code></td>
+      <td>Typed renaming, weakening</td>
+      <td>~25</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Substitution.lean</code></td>
+      <td>Typed substitution, substTop</td>
+      <td>~30</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Semantics.lean</code></td>
+      <td>Step (preservation is the signature)</td>
+      <td>~30</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Progress.lean</code></td>
+      <td>Progress theorem</td>
+      <td>~55</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Soundness.lean</code></td>
+      <td>MultiStep, type soundness</td>
+      <td>~15</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Every theorem is fully proved with <strong>zero <code class="language-plaintext highlighter-rouge">sorry</code></strong>.</p>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">CIS352</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>CIS352</li>
+          <li><a href="mailto:"></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>CMSC352--Principles of Programming Languages (Spring '26) at Syracuse</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+<script src="/cis352-s26/bower_components/jquery/dist/jquery.min.js"></script>
+<script src="/cis352-s26/bower_components/bootstrap-sass/assets/javascripts/bootstrap.min.js"></script>
+
+
+  </body>
+
+</html>
