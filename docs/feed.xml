@@ -5,8 +5,8 @@
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
     <link>https://kmicinski.com/cis352-s26/</link>
     <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 31 Mar 2026 23:46:05 -0400</pubDate>
-    <lastBuildDate>Tue, 31 Mar 2026 23:46:05 -0400</lastBuildDate>
+    <pubDate>Wed, 01 Apr 2026 10:34:29 -0400</pubDate>
+    <lastBuildDate>Wed, 01 Apr 2026 10:34:29 -0400</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -2773,7 +2773,7 @@ problems.&lt;/p&gt;
         <title>Church Encoding</title>
         <description>&lt;p&gt;We will now turn our attention to convincing ourselves of the Turing
 completeness of the λ-calculus. We will do this by systematically
-taking forms from the λ-calculus and explaining how they translate
+taking forms from Scheme/Racket and explaining how they translate
 into simpler forms. We will do this in a piecemeal style, starting
 with relatively simple forms and then expanding to more complex forms.&lt;/p&gt;
 
