@@ -9,9 +9,9 @@
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="https://kmicinski.com/cis352-s26/css/main.css">
-  <link rel="canonical" href="https://kmicinski.com/cis352-s26/stlc">
-  <link rel="alternate" type="application/rss+xml" title="CIS352" href="https://kmicinski.com/cis352-s26/feed.xml">
+  <link rel="stylesheet" href="https://kmicinski.com//cis352-s26/css/main.css">
+  <link rel="canonical" href="https://kmicinski.com//cis352-s26/stlc">
+  <link rel="alternate" type="application/rss+xml" title="CIS352" href="https://kmicinski.com//cis352-s26/feed.xml">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   
   <link rel="stylesheet" href="/cis352-s26/assets/proof-tree.css">
@@ -501,9 +501,7 @@ evaluation.</p>
 or keeps computing, and its type never changes along the way.</p>
 
 <p>We will not prove type soundness in this class, but it is the
-foundational result that justifies type systems. In CIS552, you would
-prove this formally.</p>
-
+foundational result that justifies type systems.</p>
 <blockquote>
   <p>QuickAnswer</p>
 
@@ -519,37 +517,207 @@ prove this formally.</p>
 <strong>syntax-directed</strong>. Each rule applies to exactly one syntactic form
 (T-Int for integers, T-Lam for lambdas, T-App for applications,
 etc.). This means we can implement type checking as a simple recursive
-function over the expression:</p>
+function over the expression. In this section we will build a
+nearly-complete type checker for STLC in Racket.</p>
 
-<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">type-check</span> <span class="nv">Γ</span> <span class="nv">e</span><span class="p">)</span>
-  <span class="p">(</span><span class="nf">match</span> <span class="nv">e</span>
-    <span class="p">[(</span><span class="nf">?</span> <span class="nv">integer?</span><span class="p">)</span>       <span class="ss">'int</span><span class="p">]</span>
-    <span class="p">[(</span><span class="nf">?</span> <span class="nv">boolean?</span><span class="p">)</span>       <span class="ss">'bool</span><span class="p">]</span>
-    <span class="p">[(</span><span class="nf">?</span> <span class="nv">symbol?</span> <span class="nv">x</span><span class="p">)</span>      <span class="p">(</span><span class="nf">hash-ref</span> <span class="nv">Γ</span> <span class="nv">x</span><span class="p">)]</span>
-    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">λ</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span> <span class="nv">:</span> <span class="o">,</span><span class="nv">τ</span><span class="p">)</span> <span class="o">,</span><span class="nv">body</span><span class="p">)</span>
-     <span class="p">(</span><span class="k">define</span> <span class="nv">τ-body</span> <span class="p">(</span><span class="nf">type-check</span> <span class="p">(</span><span class="nf">hash-set</span> <span class="nv">Γ</span> <span class="nv">x</span> <span class="nv">τ</span><span class="p">)</span> <span class="nv">body</span><span class="p">))</span>
-     <span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">τ</span> <span class="nv">→</span> <span class="o">,</span><span class="nv">τ-body</span><span class="p">)]</span>
-    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">e1</span> <span class="o">,</span><span class="nv">e2</span><span class="p">)</span>
-     <span class="p">(</span><span class="nf">match</span> <span class="p">(</span><span class="nf">type-check</span> <span class="nv">Γ</span> <span class="nv">e1</span><span class="p">)</span>
-       <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">τ1</span> <span class="nv">→</span> <span class="o">,</span><span class="nv">τ2</span><span class="p">)</span>
-        <span class="p">(</span><span class="k">define</span> <span class="nv">τ-arg</span> <span class="p">(</span><span class="nf">type-check</span> <span class="nv">Γ</span> <span class="nv">e2</span><span class="p">))</span>
-        <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">equal?</span> <span class="nv">τ1</span> <span class="nv">τ-arg</span><span class="p">)</span> <span class="nv">τ2</span>
-            <span class="p">(</span><span class="nb">error</span> <span class="s">"type mismatch"</span><span class="p">))]</span>
-       <span class="p">[</span><span class="nf">_</span> <span class="p">(</span><span class="nb">error</span> <span class="s">"not a function"</span><span class="p">)])]</span>
-    <span class="o">...</span><span class="p">))</span>
+<h3 id="representing-types-and-expressions">Representing types and expressions</h3>
+
+<p>First, we need predicates that recognize valid STLC types and
+expressions. Types are either base types (<code class="language-plaintext highlighter-rouge">int</code>, <code class="language-plaintext highlighter-rouge">bool</code>) or arrow
+types:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">type?</span> <span class="nv">t</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">t</span>
+    <span class="p">[</span><span class="ss">'int</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="ss">'bool</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">type?</span> <span class="nv">t0</span><span class="p">)</span> <span class="nv">-&gt;</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">type?</span> <span class="nv">t1</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="nf">_</span> <span class="no">#f</span><span class="p">]))</span>
 </code></pre></div></div>
 
-<p>Each <code class="language-plaintext highlighter-rouge">match</code> case corresponds to exactly one typing rule. The
-structure of the code mirrors the structure of the proof. This is a
-recurring theme in programming languages: proofs and programs are
+<p>So <code class="language-plaintext highlighter-rouge">'int</code> is a type, <code class="language-plaintext highlighter-rouge">'(int -&gt; bool)</code> is a type, and
+<code class="language-plaintext highlighter-rouge">'((int -&gt; int) -&gt; (bool -&gt; (int -&gt; int)))</code> is a type. Arrow is
+represented as a two-element list with <code class="language-plaintext highlighter-rouge">-&gt;</code> in the middle.</p>
+
+<p>Expressions include variables, literals, annotated lambdas,
+applications, and type annotations on arbitrary subexpressions:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">expr?</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">e</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">symbol?</span> <span class="nv">x</span><span class="p">)</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">boolean?</span> <span class="nv">b</span><span class="p">)</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">integer?</span> <span class="nv">i</span><span class="p">)</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e0</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e1</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e</span><span class="p">)</span> <span class="nv">:</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">type?</span> <span class="nv">t</span><span class="p">))</span> <span class="no">#t</span><span class="p">]</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">symbol?</span> <span class="nv">x</span><span class="p">)</span> <span class="nv">:</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">type?</span> <span class="nv">t</span><span class="p">))</span> <span class="o">,</span><span class="p">(</span><span class="nf">?</span> <span class="nv">expr?</span> <span class="nv">e</span><span class="p">))</span> <span class="no">#t</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p>Notice two things. First, lambda parameters must carry type
+annotations: <code class="language-plaintext highlighter-rouge">(lambda (x : int) x)</code> rather than <code class="language-plaintext highlighter-rouge">(lambda (x) x)</code>.
+This is what makes type <em>checking</em> (as opposed to type <em>inference</em>)
+straightforward. Second, any subexpression can be annotated with a
+type via <code class="language-plaintext highlighter-rouge">(e : t)</code>, which serves as an explicit type ascription that
+the checker must verify.</p>
+
+<h3 id="type-synthesis">Type synthesis</h3>
+
+<p>The core of our type checker is <code class="language-plaintext highlighter-rouge">synthesize-type</code>: given a typing
+environment <code class="language-plaintext highlighter-rouge">env</code> (a hash mapping variable names to types) and an
+expression <code class="language-plaintext highlighter-rouge">e</code>, it returns the type of <code class="language-plaintext highlighter-rouge">e</code>, or raises an error if the
+expression is ill-typed.</p>
+
+<p>Because the rules are syntax-directed, each <code class="language-plaintext highlighter-rouge">match</code> case corresponds
+to exactly one typing rule:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">synthesize-type</span> <span class="nv">env</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">e</span>
+    <span class="c1">;; T-Int: integer literals have type int</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">integer?</span> <span class="nv">i</span><span class="p">)</span> <span class="ss">'int</span><span class="p">]</span>
+    <span class="c1">;; T-Bool: boolean literals have type bool</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">boolean?</span> <span class="nv">b</span><span class="p">)</span> <span class="ss">'bool</span><span class="p">]</span>
+    <span class="c1">;; T-Var: look up the variable in the environment</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">symbol?</span> <span class="nv">x</span><span class="p">)</span> <span class="p">(</span><span class="nf">hash-ref</span> <span class="nv">env</span> <span class="nv">x</span><span class="p">)]</span>
+    <span class="c1">;; T-Lam: extend the environment and synthesize the body</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span> <span class="nv">:</span> <span class="o">,</span><span class="nv">A</span><span class="p">)</span> <span class="o">,</span><span class="nv">e-body</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">define</span> <span class="nv">B</span> <span class="p">(</span><span class="nf">synthesize-type</span> <span class="p">(</span><span class="nf">hash-set</span> <span class="nv">env</span> <span class="nv">x</span> <span class="nv">A</span><span class="p">)</span> <span class="nv">e-body</span><span class="p">))</span>
+     <span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">A</span> <span class="nv">-&gt;</span> <span class="o">,</span><span class="nv">B</span><span class="p">)]</span>
+    <span class="c1">;; Type ascription: synthesize, then check it matches</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">e</span> <span class="nv">:</span> <span class="o">,</span><span class="nv">t</span><span class="p">)</span>
+     <span class="p">(</span><span class="k">let</span> <span class="p">([</span><span class="nf">e-t</span> <span class="p">(</span><span class="nf">synthesize-type</span> <span class="nv">env</span> <span class="nv">e</span><span class="p">)])</span>
+       <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">equal?</span> <span class="nv">e-t</span> <span class="nv">t</span><span class="p">)</span>
+           <span class="nv">t</span>
+           <span class="p">(</span><span class="nb">error</span> <span class="p">(</span><span class="nb">format</span> <span class="s">"types ~a and ~a are different"</span> <span class="nv">e-t</span> <span class="nv">t</span><span class="p">))))]</span>
+    <span class="c1">;; T-App: application</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">e1</span> <span class="o">,</span><span class="nv">e2</span><span class="p">)</span>
+     <span class="ss">'todo</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<p>The literal cases are axioms: integers are <code class="language-plaintext highlighter-rouge">int</code>, booleans are <code class="language-plaintext highlighter-rouge">bool</code>.
+The variable case is T-Var: look up the variable in <code class="language-plaintext highlighter-rouge">env</code>. The lambda
+case is T-Lam: extend the environment with <code class="language-plaintext highlighter-rouge">x : A</code> and recursively
+synthesize the body’s type <code class="language-plaintext highlighter-rouge">B</code>, returning the arrow type <code class="language-plaintext highlighter-rouge">(A -&gt; B)</code>.
+The annotation case synthesizes a type for the inner expression and
+verifies it matches the annotation.</p>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>The application case is left as <code class="language-plaintext highlighter-rouge">???</code>. Using the T-App rule as a
+guide, implement it. You need to: (1) synthesize the type of <code class="language-plaintext highlighter-rouge">e1</code>,
+(2) check that it is an arrow type, (3) synthesize the type of <code class="language-plaintext highlighter-rouge">e2</code>,
+(4) check that it matches the arrow’s input type, and (5) return the
+arrow’s output type. Raise an error on a mismatch.</p>
+</blockquote>
+
+<h3 id="wiring-up-the-initial-environment">Wiring up the initial environment</h3>
+
+<p>Our language includes two built-in operations: <code class="language-plaintext highlighter-rouge">+</code> (curried addition)
+and <code class="language-plaintext highlighter-rouge">is-zero?</code> (integer test). Rather than adding special typing rules
+for these, we simply put them in the initial environment with the
+right types:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">synthesize-stlc-type</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">synthesize-type</span> <span class="p">(</span><span class="nb">hash</span> <span class="ss">'+</span> <span class="o">'</span><span class="p">(</span><span class="nf">int</span> <span class="nv">-&gt;</span> <span class="p">(</span><span class="nf">int</span> <span class="nv">-&gt;</span> <span class="nv">int</span><span class="p">))</span>
+                         <span class="ss">'is-zero?</span> <span class="o">'</span><span class="p">(</span><span class="nf">int</span> <span class="nv">-&gt;</span> <span class="nv">bool</span><span class="p">))</span>
+                   <span class="nv">e</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>Notice that <code class="language-plaintext highlighter-rouge">+</code> is curried: it takes an <code class="language-plaintext highlighter-rouge">int</code>, returns a function
+<code class="language-plaintext highlighter-rouge">(int -&gt; int)</code>. So <code class="language-plaintext highlighter-rouge">(+ 3)</code> has type <code class="language-plaintext highlighter-rouge">(int -&gt; int)</code>, and <code class="language-plaintext highlighter-rouge">((+ 3) 4)</code>
+has type <code class="language-plaintext highlighter-rouge">int</code>. This means addition is written as <code class="language-plaintext highlighter-rouge">((+ e1) e2)</code> in our
+syntax.</p>
+
+<p>Let’s test it:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nf">synthesize-stlc-type</span> <span class="o">'</span><span class="p">((</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">x</span> <span class="nv">:</span> <span class="nv">int</span><span class="p">)</span> <span class="nv">x</span><span class="p">)</span> <span class="mi">23</span><span class="p">))</span>
+<span class="c1">;; =&gt; 'int</span>
+
+<span class="p">(</span><span class="nf">synthesize-stlc-type</span> <span class="o">'</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">x</span> <span class="nv">:</span> <span class="nv">int</span><span class="p">)</span>
+                         <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">y</span> <span class="nv">:</span> <span class="nv">bool</span><span class="p">)</span>
+                           <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">z</span> <span class="nv">:</span> <span class="nv">int</span><span class="p">)</span> <span class="nv">x</span><span class="p">))))</span>
+<span class="c1">;; =&gt; '(int -&gt; (bool -&gt; (int -&gt; int)))</span>
+</code></pre></div></div>
+
+<h3 id="type-checking-as-a-wrapper">Type checking as a wrapper</h3>
+
+<p>Once we can synthesize types, <em>checking</em> is trivial: synthesize and
+compare:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">check-stlc-type</span> <span class="nv">e</span> <span class="nv">t</span><span class="p">)</span>
+  <span class="ss">'todo</span><span class="p">)</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>QuickAnswer</p>
+
+  <p>Implement <code class="language-plaintext highlighter-rouge">check-stlc-type</code>. It takes an expression <code class="language-plaintext highlighter-rouge">e</code> and a type
+<code class="language-plaintext highlighter-rouge">t</code>, and returns <code class="language-plaintext highlighter-rouge">#t</code> if <code class="language-plaintext highlighter-rouge">e</code> has type <code class="language-plaintext highlighter-rouge">t</code>, <code class="language-plaintext highlighter-rouge">#f</code> otherwise.
+(Hint: this is a one-liner using <code class="language-plaintext highlighter-rouge">synthesize-stlc-type</code> and <code class="language-plaintext highlighter-rouge">equal?</code>.)</p>
+</blockquote>
+
+<h3 id="type-erasure">Type erasure</h3>
+
+<p>Here is the key insight connecting our type checker to actual
+execution: STLC terms are just λ-calculus terms with extra
+annotations. Once we know a program is well-typed, we can <strong>erase</strong>
+all the type annotations and run the result as plain Racket:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">erase-types</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">e</span>
+    <span class="c1">;; + is curried in STLC but not in Racket</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">((</span><span class="nb">+</span> <span class="o">,</span><span class="nv">e0</span><span class="p">)</span> <span class="o">,</span><span class="nv">e1</span><span class="p">)</span> <span class="o">`</span><span class="p">(</span><span class="nb">+</span> <span class="o">,</span><span class="p">(</span><span class="nf">erase-types</span> <span class="nv">e0</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">erase-types</span> <span class="nv">e1</span><span class="p">))]</span>
+    <span class="c1">;; Drop the type annotation from lambdas</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span> <span class="nv">:</span> <span class="o">,</span><span class="nv">t</span><span class="p">)</span> <span class="o">,</span><span class="nv">e-body</span><span class="p">)</span> <span class="o">`</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="o">,</span><span class="nv">x</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">erase-types</span> <span class="nv">e-body</span><span class="p">))]</span>
+    <span class="c1">;; Variables and literals pass through unchanged</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">symbol?</span> <span class="nv">x</span><span class="p">)</span> <span class="nv">x</span><span class="p">]</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">boolean?</span> <span class="nv">b</span><span class="p">)</span> <span class="nv">b</span><span class="p">]</span>
+    <span class="p">[(</span><span class="nf">?</span> <span class="nv">integer?</span> <span class="nv">i</span><span class="p">)</span> <span class="nv">i</span><span class="p">]</span>
+    <span class="c1">;; Drop type ascriptions</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">e</span> <span class="nv">:</span> <span class="o">,</span><span class="nv">t</span><span class="p">)</span> <span class="p">(</span><span class="nf">erase-types</span> <span class="nv">e</span><span class="p">)]</span>
+    <span class="c1">;; Recurse into applications</span>
+    <span class="p">[</span><span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="nv">e0</span> <span class="o">,</span><span class="nv">e1</span><span class="p">)</span> <span class="o">`</span><span class="p">(</span><span class="o">,</span><span class="p">(</span><span class="nf">erase-types</span> <span class="nv">e0</span><span class="p">)</span> <span class="o">,</span><span class="p">(</span><span class="nf">erase-types</span> <span class="nv">e1</span><span class="p">))]))</span>
+</code></pre></div></div>
+
+<p>The lambda case drops <code class="language-plaintext highlighter-rouge">: t</code> from the parameter. The ascription case
+<code class="language-plaintext highlighter-rouge">(e : t)</code> strips the annotation entirely. The <code class="language-plaintext highlighter-rouge">+</code> case uncurries
+<code class="language-plaintext highlighter-rouge">((+ e0) e1)</code> back into Racket’s <code class="language-plaintext highlighter-rouge">(+ e0 e1)</code>.</p>
+
+<h3 id="the-full-pipeline-stlc-to-racket">The full pipeline: STLC to Racket</h3>
+
+<p>Putting it all together, we can compile STLC to Racket by first type
+checking, then erasing types. If the type checker raises an error, we
+catch it and return <code class="language-plaintext highlighter-rouge">'type-error</code>:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="k">define</span> <span class="p">(</span><span class="nf">stlc-&gt;racket</span> <span class="nv">e</span><span class="p">)</span>
+  <span class="p">(</span><span class="k">with-handlers</span> <span class="p">([</span><span class="nb">exn:fail?</span> <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nb">exn</span><span class="p">)</span> <span class="ss">'type-error</span><span class="p">)])</span>
+    <span class="p">(</span><span class="nf">synthesize-stlc-type</span> <span class="nv">e</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">erase-types</span> <span class="nv">e</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p>This gives us a complete pipeline. Well-typed programs get compiled to
+executable Racket, ill-typed programs are rejected:</p>
+
+<div class="language-racket highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nf">stlc-&gt;racket</span> <span class="o">'</span><span class="p">((</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">x</span> <span class="nv">:</span> <span class="nv">int</span><span class="p">)</span> <span class="nv">x</span><span class="p">)</span> <span class="mi">23</span><span class="p">))</span>
+<span class="c1">;; =&gt; '((lambda (x) x) 23)</span>
+<span class="c1">;; evaluates to 23</span>
+
+<span class="p">(</span><span class="nf">stlc-&gt;racket</span> <span class="o">'</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">x</span> <span class="nv">:</span> <span class="p">(</span><span class="nf">int</span> <span class="nv">-&gt;</span> <span class="nv">int</span><span class="p">))</span>
+                 <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">y</span> <span class="nv">:</span> <span class="nv">bool</span><span class="p">)</span>
+                   <span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nf">z</span> <span class="nv">:</span> <span class="nv">int</span><span class="p">)</span> <span class="p">(</span><span class="nf">x</span> <span class="nv">y</span><span class="p">)))))</span>
+<span class="c1">;; =&gt; 'type-error</span>
+<span class="c1">;; because y : bool but x expects an int</span>
+</code></pre></div></div>
+
+<p>The structure of the code mirrors the structure of the proof. This is
+a recurring theme in programming languages: proofs and programs are
 deeply connected.</p>
 
 <blockquote>
   <p>QuickAnswer</p>
 
-  <p>In the type checker above, what does the <code class="language-plaintext highlighter-rouge">T-Lam</code> case do with the
-environment? How does this correspond to the premise of the T-Lam
-rule?</p>
+  <p>Trace through what <code class="language-plaintext highlighter-rouge">stlc-&gt;racket</code> does on
+<code class="language-plaintext highlighter-rouge">'(lambda (x : int) ((+ x) 1))</code>.
+What does <code class="language-plaintext highlighter-rouge">synthesize-stlc-type</code> return? What does <code class="language-plaintext highlighter-rouge">erase-types</code>
+produce?</p>
 </blockquote>
 
 <hr />
@@ -590,7 +758,11 @@ rule?</p>
     </tr>
     <tr>
       <td>Syntax-directed</td>
-      <td>One rule per form → type checking is a recursive function</td>
+      <td>One rule per form, so type checking is a recursive function</td>
+    </tr>
+    <tr>
+      <td>Type erasure</td>
+      <td>Once checked, strip annotations and run as untyped code</td>
     </tr>
   </tbody>
 </table>
@@ -601,10 +773,6 @@ automatically deduce types without requiring annotations, using
 Hindley-Milner type inference as implemented in languages like OCaml,
 Haskell, and Rust.</p>
 
-<p><strong>Advanced reading:</strong> For a complete proof that well-typed STLC
-programs never go wrong (progress and preservation), with a companion
-<a href="https://github.com/kmicinski/cis352-s26/tree/main/lecture-projects/stlc-lean">Lean4 formalization</a>,
-see the <a href="/cis352-s26/stlc-formal">Type Soundness notes</a>.</p>
 
                 </div>
               </article>

@@ -3,10 +3,10 @@
   <channel>
     <title>CIS352</title>
     <description>CMSC352--Principles of Programming Languages (Spring &apos;26) at Syracuse</description>
-    <link>https://kmicinski.com/cis352-s26/</link>
-    <atom:link href="https://kmicinski.com/cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 01 Apr 2026 10:34:29 -0400</pubDate>
-    <lastBuildDate>Wed, 01 Apr 2026 10:34:29 -0400</lastBuildDate>
+    <link>https://kmicinski.com//cis352-s26/</link>
+    <atom:link href="https://kmicinski.com//cis352-s26/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Tue, 07 Apr 2026 12:34:19 -0400</pubDate>
+    <lastBuildDate>Tue, 07 Apr 2026 12:34:19 -0400</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
     
       <item>
@@ -395,9 +395,7 @@ evaluation.&lt;/p&gt;
 or keeps computing, and its type never changes along the way.&lt;/p&gt;
 
 &lt;p&gt;We will not prove type soundness in this class, but it is the
-foundational result that justifies type systems. In CIS552, you would
-prove this formally.&lt;/p&gt;
-
+foundational result that justifies type systems.&lt;/p&gt;
 &lt;blockquote&gt;
   &lt;p&gt;QuickAnswer&lt;/p&gt;
 
@@ -413,37 +411,207 @@ prove this formally.&lt;/p&gt;
 &lt;strong&gt;syntax-directed&lt;/strong&gt;. Each rule applies to exactly one syntactic form
 (T-Int for integers, T-Lam for lambdas, T-App for applications,
 etc.). This means we can implement type checking as a simple recursive
-function over the expression:&lt;/p&gt;
+function over the expression. In this section we will build a
+nearly-complete type checker for STLC in Racket.&lt;/p&gt;
 
-&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;type-check&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;Γ&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;integer?&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;       &lt;span class=&quot;ss&quot;&gt;&apos;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;boolean?&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;       &lt;span class=&quot;ss&quot;&gt;&apos;bool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;symbol?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;      &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;hash-ref&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;Γ&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;λ&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;τ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-     &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;τ-body&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;type-check&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;hash-set&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;Γ&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;τ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-     &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;τ&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;→&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;τ-body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-     &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;type-check&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;Γ&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-       &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;τ1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;→&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;τ2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;τ-arg&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;type-check&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;Γ&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;τ1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;τ-arg&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;τ2&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;error&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;type mismatch&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]&lt;/span&gt;
-       &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;error&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;not a function&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)])]&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;h3 id=&quot;representing-types-and-expressions&quot;&gt;Representing types and expressions&lt;/h3&gt;
+
+&lt;p&gt;First, we need predicates that recognize valid STLC types and
+expressions. Types are either base types (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;int&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bool&lt;/code&gt;) or arrow
+types:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;type?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;int&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;&apos;bool&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;type?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;type?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Each &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;match&lt;/code&gt; case corresponds to exactly one typing rule. The
-structure of the code mirrors the structure of the proof. This is a
-recurring theme in programming languages: proofs and programs are
+&lt;p&gt;So &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;int&lt;/code&gt; is a type, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;(int -&amp;gt; bool)&lt;/code&gt; is a type, and
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;((int -&amp;gt; int) -&amp;gt; (bool -&amp;gt; (int -&amp;gt; int)))&lt;/code&gt; is a type. Arrow is
+represented as a two-element list with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-&amp;gt;&lt;/code&gt; in the middle.&lt;/p&gt;
+
+&lt;p&gt;Expressions include variables, literals, annotated lambdas,
+applications, and type annotations on arbitrary subexpressions:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;symbol?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;boolean?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;integer?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;type?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;symbol?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;type?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;expr?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;#t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Notice two things. First, lambda parameters must carry type
+annotations: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (x : int) x)&lt;/code&gt; rather than &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(lambda (x) x)&lt;/code&gt;.
+This is what makes type &lt;em&gt;checking&lt;/em&gt; (as opposed to type &lt;em&gt;inference&lt;/em&gt;)
+straightforward. Second, any subexpression can be annotated with a
+type via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e : t)&lt;/code&gt;, which serves as an explicit type ascription that
+the checker must verify.&lt;/p&gt;
+
+&lt;h3 id=&quot;type-synthesis&quot;&gt;Type synthesis&lt;/h3&gt;
+
+&lt;p&gt;The core of our type checker is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;synthesize-type&lt;/code&gt;: given a typing
+environment &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;env&lt;/code&gt; (a hash mapping variable names to types) and an
+expression &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt;, it returns the type of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt;, or raises an error if the
+expression is ill-typed.&lt;/p&gt;
+
+&lt;p&gt;Because the rules are syntax-directed, each &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;match&lt;/code&gt; case corresponds
+to exactly one typing rule:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;synthesize-type&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;env&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;;; T-Int: integer literals have type int&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;integer?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;;; T-Bool: boolean literals have type bool&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;boolean?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;bool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;;; T-Var: look up the variable in the environment&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;symbol?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;hash-ref&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;env&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;;; T-Lam: extend the environment and synthesize the body&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e-body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+     &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;B&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;synthesize-type&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;hash-set&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;env&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e-body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+     &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;A&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;;; Type ascription: synthesize, then check it matches&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+     &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;e-t&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;synthesize-type&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;env&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)])&lt;/span&gt;
+       &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;equal?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e-t&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+           &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;
+           &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;error&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;format&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;types ~a and ~a are different&quot;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e-t&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))]&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;;; T-App: application&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+     &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The literal cases are axioms: integers are &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;int&lt;/code&gt;, booleans are &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bool&lt;/code&gt;.
+The variable case is T-Var: look up the variable in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;env&lt;/code&gt;. The lambda
+case is T-Lam: extend the environment with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x : A&lt;/code&gt; and recursively
+synthesize the body’s type &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;B&lt;/code&gt;, returning the arrow type &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(A -&amp;gt; B)&lt;/code&gt;.
+The annotation case synthesizes a type for the inner expression and
+verifies it matches the annotation.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;The application case is left as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;???&lt;/code&gt;. Using the T-App rule as a
+guide, implement it. You need to: (1) synthesize the type of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e1&lt;/code&gt;,
+(2) check that it is an arrow type, (3) synthesize the type of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e2&lt;/code&gt;,
+(4) check that it matches the arrow’s input type, and (5) return the
+arrow’s output type. Raise an error on a mismatch.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;wiring-up-the-initial-environment&quot;&gt;Wiring up the initial environment&lt;/h3&gt;
+
+&lt;p&gt;Our language includes two built-in operations: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt; (curried addition)
+and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;is-zero?&lt;/code&gt; (integer test). Rather than adding special typing rules
+for these, we simply put them in the initial environment with the
+right types:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;synthesize-stlc-type&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;synthesize-type&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;hash&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;+&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+                         &lt;span class=&quot;ss&quot;&gt;&apos;is-zero?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+                   &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Notice that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt; is curried: it takes an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;int&lt;/code&gt;, returns a function
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(int -&amp;gt; int)&lt;/code&gt;. So &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ 3)&lt;/code&gt; has type &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(int -&amp;gt; int)&lt;/code&gt;, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((+ 3) 4)&lt;/code&gt;
+has type &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;int&lt;/code&gt;. This means addition is written as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((+ e1) e2)&lt;/code&gt; in our
+syntax.&lt;/p&gt;
+
+&lt;p&gt;Let’s test it:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;synthesize-stlc-type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;23&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; =&amp;gt; &apos;int&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;synthesize-stlc-type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                         &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                           &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; =&amp;gt; &apos;(int -&amp;gt; (bool -&amp;gt; (int -&amp;gt; int)))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;type-checking-as-a-wrapper&quot;&gt;Type checking as a wrapper&lt;/h3&gt;
+
+&lt;p&gt;Once we can synthesize types, &lt;em&gt;checking&lt;/em&gt; is trivial: synthesize and
+compare:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;check-stlc-type&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;ss&quot;&gt;&apos;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;QuickAnswer&lt;/p&gt;
+
+  &lt;p&gt;Implement &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;check-stlc-type&lt;/code&gt;. It takes an expression &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; and a type
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;t&lt;/code&gt;, and returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#t&lt;/code&gt; if &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; has type &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;t&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#f&lt;/code&gt; otherwise.
+(Hint: this is a one-liner using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;synthesize-stlc-type&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;equal?&lt;/code&gt;.)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;type-erasure&quot;&gt;Type erasure&lt;/h3&gt;
+
+&lt;p&gt;Here is the key insight connecting our type checker to actual
+execution: STLC terms are just λ-calculus terms with extra
+annotations. Once we know a program is well-typed, we can &lt;strong&gt;erase&lt;/strong&gt;
+all the type annotations and run the result as plain Racket:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;erase-types&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;match&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;;; + is curried in STLC but not in Racket&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;erase-types&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;erase-types&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;;; Drop the type annotation from lambdas&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e-body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;erase-types&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e-body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;;; Variables and literals pass through unchanged&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;symbol?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;boolean?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;integer?&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;;; Drop type ascriptions&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;erase-types&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;;; Recurse into applications&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;erase-types&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;erase-types&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The lambda case drops &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;: t&lt;/code&gt; from the parameter. The ascription case
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(e : t)&lt;/code&gt; strips the annotation entirely. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt; case uncurries
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;((+ e0) e1)&lt;/code&gt; back into Racket’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(+ e0 e1)&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;the-full-pipeline-stlc-to-racket&quot;&gt;The full pipeline: STLC to Racket&lt;/h3&gt;
+
+&lt;p&gt;Putting it all together, we can compile STLC to Racket by first type
+checking, then erasing types. If the type checker raises an error, we
+catch it and return &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;type-error&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;define&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;stlc-&amp;gt;racket&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;with-handlers&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;exn:fail?&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;exn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;&apos;type-error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)])&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;synthesize-stlc-type&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;erase-types&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This gives us a complete pipeline. Well-typed programs get compiled to
+executable Racket, ill-typed programs are rejected:&lt;/p&gt;
+
+&lt;div class=&quot;language-racket highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;stlc-&amp;gt;racket&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;23&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; =&amp;gt; &apos;((lambda (x) x) 23)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; evaluates to 23&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;stlc-&amp;gt;racket&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+                 &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                   &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; =&amp;gt; &apos;type-error&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;;; because y : bool but x expects an int&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The structure of the code mirrors the structure of the proof. This is
+a recurring theme in programming languages: proofs and programs are
 deeply connected.&lt;/p&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;QuickAnswer&lt;/p&gt;
 
-  &lt;p&gt;In the type checker above, what does the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;T-Lam&lt;/code&gt; case do with the
-environment? How does this correspond to the premise of the T-Lam
-rule?&lt;/p&gt;
+  &lt;p&gt;Trace through what &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;stlc-&amp;gt;racket&lt;/code&gt; does on
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&apos;(lambda (x : int) ((+ x) 1))&lt;/code&gt;.
+What does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;synthesize-stlc-type&lt;/code&gt; return? What does &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;erase-types&lt;/code&gt;
+produce?&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;hr /&gt;
@@ -484,7 +652,11 @@ rule?&lt;/p&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;td&gt;Syntax-directed&lt;/td&gt;
-      &lt;td&gt;One rule per form → type checking is a recursive function&lt;/td&gt;
+      &lt;td&gt;One rule per form, so type checking is a recursive function&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Type erasure&lt;/td&gt;
+      &lt;td&gt;Once checked, strip annotations and run as untyped code&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
@@ -495,14 +667,10 @@ automatically deduce types without requiring annotations, using
 Hindley-Milner type inference as implemented in languages like OCaml,
 Haskell, and Rust.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;Advanced reading:&lt;/strong&gt; For a complete proof that well-typed STLC
-programs never go wrong (progress and preservation), with a companion
-&lt;a href=&quot;https://github.com/kmicinski/cis352-s26/tree/main/lecture-projects/stlc-lean&quot;&gt;Lean4 formalization&lt;/a&gt;,
-see the &lt;a href=&quot;/cis352-s26/stlc-formal&quot;&gt;Type Soundness notes&lt;/a&gt;.&lt;/p&gt;
 </description>
         <pubDate>Thu, 02 Apr 2026 00:00:00 -0400</pubDate>
-        <link>https://kmicinski.com/cis352-s26/stlc</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/stlc</guid>
+        <link>https://kmicinski.com//cis352-s26/stlc</link>
+        <guid isPermaLink="true">https://kmicinski.com//cis352-s26/stlc</guid>
         
         
       </item>
@@ -1817,8 +1985,8 @@ itself carries the typing proof. Preservation becomes free, and the
 formalization shrinks by half.&lt;/p&gt;
 </description>
         <pubDate>Thu, 02 Apr 2026 00:00:00 -0400</pubDate>
-        <link>https://kmicinski.com/cis352-s26/stlc-formal</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/stlc-formal</guid>
+        <link>https://kmicinski.com//cis352-s26/stlc-formal</link>
+        <guid isPermaLink="true">https://kmicinski.com//cis352-s26/stlc-formal</guid>
         
         
       </item>
@@ -2343,8 +2511,8 @@ check, test, or prove.&lt;/p&gt;
 &lt;p&gt;Every theorem is fully proved with &lt;strong&gt;zero &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sorry&lt;/code&gt;&lt;/strong&gt;.&lt;/p&gt;
 </description>
         <pubDate>Thu, 02 Apr 2026 00:00:00 -0400</pubDate>
-        <link>https://kmicinski.com/cis352-s26/stlc-intrinsic</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/stlc-intrinsic</guid>
+        <link>https://kmicinski.com//cis352-s26/stlc-intrinsic</link>
+        <guid isPermaLink="true">https://kmicinski.com//cis352-s26/stlc-intrinsic</guid>
         
         
       </item>
@@ -2715,8 +2883,8 @@ your &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;if&lt;/c
 &lt;/ul&gt;
 </description>
         <pubDate>Mon, 30 Mar 2026 00:00:00 -0400</pubDate>
-        <link>https://kmicinski.com/cis352-s26/projects/4</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/projects/4</guid>
+        <link>https://kmicinski.com//cis352-s26/projects/4</link>
+        <guid isPermaLink="true">https://kmicinski.com//cis352-s26/projects/4</guid>
         
         
         <category>assignment</category>
@@ -2753,8 +2921,8 @@ problems.&lt;/p&gt;
 &lt;p&gt;##&lt;/p&gt;
 </description>
         <pubDate>Fri, 20 Mar 2026 00:00:00 -0400</pubDate>
-        <link>https://kmicinski.com/cis352-s26/exam-2-practice</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/exam-2-practice</guid>
+        <link>https://kmicinski.com//cis352-s26/exam-2-practice</link>
+        <guid isPermaLink="true">https://kmicinski.com//cis352-s26/exam-2-practice</guid>
         
         
       </item>
@@ -2763,8 +2931,8 @@ problems.&lt;/p&gt;
         <title>Church Encoding</title>
         <description></description>
         <pubDate>Wed, 18 Mar 2026 00:00:00 -0400</pubDate>
-        <link>https://kmicinski.com/cis352-s26/2026/03/18/church-encoding/</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/2026/03/18/church-encoding/</guid>
+        <link>https://kmicinski.com//cis352-s26/2026/03/18/church-encoding/</link>
+        <guid isPermaLink="true">https://kmicinski.com//cis352-s26/2026/03/18/church-encoding/</guid>
         
         
       </item>
@@ -3781,8 +3949,8 @@ compiler: a function that translates high-level Scheme programs into
 pure λ-calculus.&lt;/p&gt;
 </description>
         <pubDate>Wed, 18 Mar 2026 00:00:00 -0400</pubDate>
-        <link>https://kmicinski.com/cis352-s26/church-encoding</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/church-encoding</guid>
+        <link>https://kmicinski.com//cis352-s26/church-encoding</link>
+        <guid isPermaLink="true">https://kmicinski.com//cis352-s26/church-encoding</guid>
         
         
       </item>
@@ -4487,8 +4655,8 @@ from the start, but that is rewarded by a more fundamentally elegant
 approach.&lt;/p&gt;
 </description>
         <pubDate>Thu, 05 Mar 2026 00:00:00 -0500</pubDate>
-        <link>https://kmicinski.com/cis352-s26/reduction-strategies</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/reduction-strategies</guid>
+        <link>https://kmicinski.com//cis352-s26/reduction-strategies</link>
+        <guid isPermaLink="true">https://kmicinski.com//cis352-s26/reduction-strategies</guid>
         
         
       </item>
@@ -5318,8 +5486,8 @@ var _bsConfig = ProofChecker.theoryConfig(&apos;big-step&apos;);
 &lt;/ul&gt;
 </description>
         <pubDate>Wed, 04 Mar 2026 00:00:00 -0500</pubDate>
-        <link>https://kmicinski.com/cis352-s26/closures</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/closures</guid>
+        <link>https://kmicinski.com//cis352-s26/closures</link>
+        <guid isPermaLink="true">https://kmicinski.com//cis352-s26/closures</guid>
         
         
       </item>
@@ -5516,8 +5684,8 @@ standard. Tests with &lt;code class=&quot;language-plaintext highlighter-rouge&q
 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;server-bonus-runtime-error&lt;/code&gt;) are extra credit.&lt;/p&gt;
 </description>
         <pubDate>Tue, 03 Mar 2026 00:00:00 -0500</pubDate>
-        <link>https://kmicinski.com/cis352-s26/projects/3</link>
-        <guid isPermaLink="true">https://kmicinski.com/cis352-s26/projects/3</guid>
+        <link>https://kmicinski.com//cis352-s26/projects/3</link>
+        <guid isPermaLink="true">https://kmicinski.com//cis352-s26/projects/3</guid>
         
         
         <category>assignment</category>
