@@ -1,0 +1,452 @@
+/*
+ * CIS352 reveal.js theme: Syracuse Orange (#F76900) + Navy (#000E54)
+ * Light variant: white slide background, solarized-light code blocks.
+ * Designed for the Rust whirlwind tour (first-day + day-two deck).
+ */
+
+:root {
+  --su-orange: #f76900;
+  --su-orange-soft: #ff8a2e;
+  --su-orange-deep: #c25200;
+  --su-navy: #000e54;
+  --su-navy-soft: #1a277a;
+  --su-navy-deep: #000729;
+  --su-ink: #1a1a1a;
+  --su-text: #26304a;
+  --su-muted: #6b7a99;
+  --su-accent: #b58900;       /* solarized yellow &mdash; harmonizes with code blocks */
+  --su-rust-red: #b7410e;
+  --su-page: #ffffff;
+  --su-page-soft: #fbf9f4;    /* very subtle cream, matches solarized bg tone */
+  --su-rule: #e6e0d1;
+  --su-code-bg: #fdf6e3;      /* solarized base3 */
+  --su-good: #6aa84f;
+}
+
+.reveal-viewport {
+  background: var(--su-page);
+  background-attachment: fixed;
+}
+
+.reveal {
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 34px;
+  font-weight: 400;
+  color: var(--su-text);
+  letter-spacing: 0.003em;
+}
+
+.reveal .slides {
+  text-align: left;
+}
+
+.reveal .slides > section,
+.reveal .slides > section > section {
+  padding: 10px 20px;
+  line-height: 1.35;
+}
+
+/* Subtle accent bar along the top of every slide */
+.reveal .slides > section::before,
+.reveal .slides > section > section::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--su-orange) 0%, var(--su-accent) 100%);
+  opacity: 0.9;
+}
+
+/* ---------- Headings ---------- */
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  margin: 0 0 0.35em 0;
+  text-shadow: none;
+  color: var(--su-navy);
+}
+
+.reveal h1 {
+  font-size: 2.4em;
+  color: var(--su-orange);
+}
+
+.reveal h2 {
+  font-size: 1.7em;
+  color: var(--su-navy);
+  border-bottom: 4px solid var(--su-orange);
+  padding-bottom: 0.12em;
+  margin-bottom: 0.45em;
+  display: inline-block;
+}
+
+.reveal h3 {
+  font-size: 1.25em;
+  color: var(--su-orange-deep);
+}
+
+.reveal h4 {
+  font-size: 1.05em;
+  color: var(--su-navy-soft);
+}
+
+.reveal p {
+  margin: 0.4em 0;
+  line-height: 1.45;
+  color: var(--su-text);
+}
+
+.reveal strong {
+  color: var(--su-orange-deep);
+  font-weight: 700;
+}
+
+.reveal em {
+  color: var(--su-navy-soft);
+  font-style: italic;
+}
+
+.reveal a,
+.reveal a:visited {
+  color: var(--su-orange-deep);
+  text-decoration: none;
+  border-bottom: 2px solid rgba(247, 105, 0, 0.4);
+  transition: all 0.12s ease-in-out;
+}
+
+.reveal a:hover {
+  color: var(--su-navy);
+  border-bottom-color: var(--su-navy);
+  background: rgba(247, 105, 0, 0.08);
+}
+
+.reveal ul,
+.reveal ol {
+  display: block;
+  margin-left: 1.1em;
+}
+
+.reveal ul li,
+.reveal ol li {
+  margin: 0.25em 0;
+  color: var(--su-text);
+}
+
+.reveal ul {
+  list-style: none;
+}
+
+.reveal ul li::before {
+  content: "▸";
+  color: var(--su-orange);
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+  font-weight: 700;
+}
+
+.reveal blockquote {
+  display: block;
+  position: relative;
+  background: var(--su-page-soft);
+  border-left: 5px solid var(--su-orange);
+  margin: 0.6em 0;
+  padding: 0.55em 0.9em;
+  width: 95%;
+  color: var(--su-text);
+  font-style: italic;
+  box-shadow: 0 2px 10px rgba(0, 14, 84, 0.06);
+  border-radius: 6px;
+}
+
+/* ---------- Code ---------- */
+
+.reveal code {
+  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  background: var(--su-code-bg);
+  color: var(--su-orange-deep);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.92em;
+  border: 1px solid var(--su-rule);
+}
+
+.reveal pre {
+  font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  display: block;
+  width: 100%;
+  margin: 0.55em auto;
+  font-size: 0.56em;
+  line-height: 1.45;
+  box-shadow: 0 6px 22px rgba(0, 14, 84, 0.1);
+  border: 1px solid var(--su-rule);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.reveal pre::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--su-orange) 0%, var(--su-accent) 100%);
+  z-index: 2;
+}
+
+.reveal pre code {
+  display: block;
+  padding: 1.1em 1.2em 1em 1.2em;
+  max-height: 640px;
+  word-wrap: normal;
+  background: var(--su-code-bg);
+  color: #657b83;   /* solarized base00 */
+  border-radius: 0;
+  border: none;
+}
+
+.reveal pre code.hljs {
+  padding: 1.1em 1.2em 1em 1.2em;
+  background: var(--su-code-bg);
+}
+
+/* ---------- Tables ---------- */
+
+.reveal table {
+  margin: 0.6em auto;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: var(--su-page);
+  border: 1px solid var(--su-rule);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 14, 84, 0.05);
+}
+
+.reveal table th {
+  background: var(--su-orange);
+  color: #fff;
+  font-weight: 700;
+  padding: 0.4em 0.85em;
+  text-align: left;
+  border: none;
+}
+
+.reveal table td {
+  padding: 0.35em 0.85em;
+  border-top: 1px solid var(--su-rule);
+  color: var(--su-text);
+}
+
+.reveal table tr:nth-child(even) td {
+  background: var(--su-page-soft);
+}
+
+/* ---------- Title slide ---------- */
+
+.reveal section.title-slide {
+  text-align: center;
+}
+
+.reveal section.title-slide h1 {
+  font-size: 3em;
+  background: linear-gradient(135deg, var(--su-orange) 0%, var(--su-orange-deep) 60%, var(--su-navy) 120%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.2em;
+}
+
+.reveal section.title-slide h2 {
+  font-size: 1.1em;
+  color: var(--su-navy);
+  border: none;
+  display: block;
+  font-weight: 400;
+  margin-top: 0.3em;
+}
+
+.reveal section.title-slide .course-tag {
+  display: inline-block;
+  background: var(--su-orange);
+  color: #fff;
+  padding: 0.28em 0.9em;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.7em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.8em;
+}
+
+/* ---------- Section dividers ---------- */
+
+.reveal section.section-divider {
+  text-align: center;
+}
+
+.reveal section.section-divider h1 {
+  font-size: 3.2em;
+  color: var(--su-orange);
+  margin-bottom: 0.1em;
+}
+
+.reveal section.section-divider h2 {
+  color: var(--su-navy);
+  border: none;
+  font-weight: 400;
+  font-size: 1.1em;
+  display: block;
+}
+
+.reveal section.section-divider .chapter-num {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  color: var(--su-orange-deep);
+  font-size: 0.9em;
+  letter-spacing: 0.2em;
+  margin-bottom: 0.5em;
+  text-transform: uppercase;
+}
+
+/* ---------- Big point slides ---------- */
+
+.reveal section.big-point {
+  text-align: center;
+}
+
+.reveal section.big-point h1 {
+  font-size: 2.6em;
+  color: var(--su-orange);
+}
+
+.reveal section.big-point p {
+  font-size: 1.2em;
+  color: var(--su-navy);
+}
+
+/* ---------- Two-column helper ---------- */
+
+.reveal .two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2em;
+  align-items: start;
+}
+
+.reveal .col-left,
+.reveal .col-right {
+  min-width: 0;
+}
+
+/* ---------- Callouts ---------- */
+
+.reveal .callout {
+  background: #fff4ec;
+  border-left: 5px solid var(--su-rust-red);
+  border-radius: 6px;
+  padding: 0.55em 0.9em;
+  margin: 0.5em 0;
+  font-size: 0.85em;
+  color: var(--su-ink);
+  box-shadow: 0 1px 4px rgba(0, 14, 84, 0.05);
+}
+
+.reveal .callout.note {
+  background: #eef2fb;
+  border-left-color: var(--su-navy);
+}
+
+.reveal .callout.good {
+  background: #eef8e9;
+  border-left-color: var(--su-good);
+}
+
+.reveal .callout strong {
+  color: var(--su-orange-deep);
+}
+
+/* ---------- Playground link (subtle, under code blocks) ---------- */
+
+.reveal .playground {
+  display: inline-block;
+  font-size: 0.48em;
+  background: transparent;
+  color: var(--su-orange-deep) !important;
+  border: 1px solid rgba(247, 105, 0, 0.35);
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  margin-top: -0.1em;
+  box-shadow: none;
+  opacity: 0.75;
+  transition: opacity 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+.reveal .playground:hover {
+  background: rgba(247, 105, 0, 0.08);
+  border-color: var(--su-orange);
+  color: var(--su-orange-deep) !important;
+  opacity: 1;
+}
+
+/* ---------- Footer branding ---------- */
+
+.reveal .footer {
+  position: absolute;
+  bottom: 14px;
+  right: 24px;
+  font-size: 14px;
+  color: var(--su-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+/* ---------- Slide number + controls ---------- */
+
+.reveal .slide-number {
+  background: var(--su-orange);
+  color: #fff;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.reveal .controls {
+  color: var(--su-orange);
+}
+
+.reveal .progress {
+  color: var(--su-orange);
+  height: 5px;
+  background: rgba(0, 14, 84, 0.08);
+}
+
+.reveal .progress span {
+  background: linear-gradient(90deg, var(--su-orange) 0%, var(--su-accent) 100%);
+}
+
+/* ---------- Print / PDF tweaks ---------- */
+
+@media print {
+  .reveal-viewport {
+    background: #ffffff !important;
+  }
+}
