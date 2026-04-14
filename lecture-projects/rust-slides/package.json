@@ -1,0 +1,13 @@
+{
+  "name": "cis352-rust-slides",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CIS352 whirlwind tour of Rust (Day 1 + Day 2 lecture deck).",
+  "scripts": {
+    "serve": "npx --yes http-server . -p 8088 -c-1 -o /index.html",
+    "print-pdf": "echo 'Open http://localhost:8088/?print-pdf in Chrome, then File > Print > Save as PDF.'"
+  },
+  "dependencies": {
+    "reveal.js": "^5.1.0"
+  }
+}

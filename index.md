@@ -612,7 +612,7 @@ layout: mainpage
 
 <!-- WEEK 11 -->
 <div class="week-header">
-  <h2><i class="fa-solid fa-calendar-week"></i> Week 11: Church Encoding and Type Systems</h2>
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 11: Church Encoding and Y Combinator</h2>
 </div>
 <div class="week-schedule">
   <ul>
@@ -622,7 +622,7 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Church Numerals, Church Encoding, and the Y Combinator
+          Church Numerals and Church Encoding
         </div>
         <ul class="resources-inline">
           <li>
@@ -631,7 +631,11 @@ layout: mainpage
           </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=DC-9wWgXQTc&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=24">Numerals</a>
+            <a href="https://www.youtube.com/watch?v=EjNalq6EihU">Church Encoding (NEW)</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=DC-9wWgXQTc&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=24">Numerals (OLD)</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
@@ -639,19 +643,11 @@ layout: mainpage
           </li>
           <li>
             <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=izfoxmSAQ28">Encoding</a>
+            <a href="https://www.youtube.com/watch?v=izfoxmSAQ28">Encoding (OLD)</a>
           </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
             <a href="{{ '/assets/slides/p4.pdf' | relative_url }}">Slides (Encoding)</a>
-          </li>
-          <li>
-            <i class="fa-brands fa-youtube youtube-icon"></i>
-            <a href="https://www.youtube.com/watch?v=GJi4H2UMaRU&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=27">Y Combinator</a>
-          </li>
-          <li>
-            <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ '/assets/slides/y-comb.pdf' | relative_url }}">Slides (Y Combinator)</a>
           </li>
         </ul>
       </div>
@@ -662,12 +658,20 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Simply-Typed λ-Calculus and Type Soundness
+          Church Encodings (Continued) and Y Combinator
         </div>
-        <ul class="resources-list">
+        <ul class="resources-inline">
+          <li>
+            <i class="fa-solid fa-book-open notes-icon"></i>
+            <a href="{{ '/church-encoding' | relative_url }}">Lecture Notes</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-youtube youtube-icon"></i>
+            <a href="https://www.youtube.com/watch?v=GJi4H2UMaRU&amp;list=PLXaqTeMx01E_eK1ZEpKvKL5KwSaj7cJW9&amp;index=27">Y Combinator</a>
+          </li>
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ '/assets/slides/types-part1.pdf' | relative_url }}">Lecture Slides</a>
+            <a href="{{ '/assets/slides/y-comb.pdf' | relative_url }}">Slides (Y Combinator)</a>
           </li>
         </ul>
       </div>
@@ -696,7 +700,7 @@ layout: mainpage
 
 <!-- WEEK 12 -->
 <div class="week-header">
-  <h2><i class="fa-solid fa-calendar-week"></i> Week 12: Type Inference and Objects vs. Closures</h2>
+  <h2><i class="fa-solid fa-calendar-week"></i> Week 12: Type Theory</h2>
 </div>
 <div class="week-schedule">
   <ul>
@@ -706,12 +710,16 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Hindley-Milner Type Inference
+          Y Combinator and Type Theory Introduction
         </div>
         <ul class="resources-list">
           <li>
             <i class="fa-solid fa-file-lines notes-icon"></i>
-            <a href="{{ '/assets/slides/types-part2.pdf' | relative_url }}">Lecture Slides</a>
+            <a href="{{ '/stlc' | relative_url }}">Lecture Notes</a> (NEW)
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="{{ '/assets/slides/types-part1.pdf' | relative_url }}">Lecture Slides</a>
           </li>
         </ul>
       </div>
@@ -722,8 +730,14 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Objects vs. Closures and Intro to Rust
+          Programs as Proofs, Formalizing Math in Lean
         </div>
+        <ul class="resources-list">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="{{ '/assets/slides/types-part2.pdf' | relative_url }}">Lecture Slides</a>
+          </li>
+        </ul>
       </div>
     </li>
   </ul>
@@ -741,8 +755,22 @@ layout: mainpage
       <div class="session-col">
         <div class="session-title">
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
-          Rust Fundamentals: Ownership, Borrowing, and Algebraic Data Types
+          Types Continued and Introduction to Rust
         </div>
+        <ul class="resources-inline">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="{{ '/assets/slides/types-part2.pdf' | relative_url }}">
+              Lecture Slides
+            </a>
+          </li>
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="{{ '/lecture-projects/rust-slides/' | relative_url }}">
+              Rust Slides (Day 1)
+            </a>
+          </li>
+        </ul>
       </div>
     </li>
     <!-- Session: 4/16 -->
@@ -753,6 +781,14 @@ layout: mainpage
           <i class="fa-solid fa-chalkboard-user lecture-icon"></i>
           Rust Type System: Traits, Lifetimes, and Functional Programming Patterns
         </div>
+        <ul class="resources-inline">
+          <li>
+            <i class="fa-solid fa-file-lines notes-icon"></i>
+            <a href="{{ '/lecture-projects/rust-slides/#/6' | relative_url }}">
+              Slides (Day 2)
+            </a>
+          </li>
+        </ul>
       </div>
     </li>
   </ul>
